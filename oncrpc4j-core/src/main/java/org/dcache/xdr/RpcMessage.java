@@ -28,7 +28,7 @@ public class RpcMessage implements XdrAble {
         this.xdrDecode(xdr);
     }
 
-    RpcMessage(int xid, int type) {
+    public RpcMessage(int xid, int type) {
         _xid = xid;
         _type = type;
     }
