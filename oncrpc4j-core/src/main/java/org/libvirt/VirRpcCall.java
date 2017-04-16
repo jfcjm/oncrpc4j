@@ -96,7 +96,7 @@ public class VirRpcCall {
     /**
      * Authentication credential.
      */
-    private RpcAuth _cred;
+    //private RpcAuth _cred;
 
     /**
      * RPC call transport.
@@ -180,7 +180,7 @@ public class VirRpcCall {
     public VirRpcCall(int prog, int ver, RpcAuth cred, Xdr xdr, XdrTransport transport) {
         _prog = prog;
         _version = ver;
-        _cred = cred;
+        //_cred = cred;
         _transport = transport;
         _xdr = xdr;
         _proc = 0;
@@ -197,7 +197,7 @@ public class VirRpcCall {
         _prog = prog;
         _version = ver;
         _proc = proc;
-        _cred = cred;
+        //_cred = cred;
         _xdr = xdr;
         _transport = transport;
         _rpcvers = RPCVERS;
@@ -217,7 +217,7 @@ public class VirRpcCall {
         _prog = _xdr.xdrDecodeInt();
         _version = _xdr.xdrDecodeInt();
         _proc = _xdr.xdrDecodeInt();
-        _cred = RpcCredential.decode(_xdr);
+        //_cred = RpcCredential.decode(_xdr);
      }
 
     /**
@@ -244,7 +244,7 @@ public class VirRpcCall {
     }
 
     public RpcAuth getCredential() {
-        return _cred;
+        return null ;//_cred;
     }
 
     /**
@@ -322,7 +322,7 @@ public class VirRpcCall {
             xdr.beginEncoding();
             replyMessage.xdrEncode(_xdr);
             xdr.xdrEncodeInt(RpcReplyStatus.MSG_ACCEPTED);
-            _cred.getVerifier().xdrEncode(xdr);
+            //_cred.getVerifier().xdrEncode(xdr);
             xdr.xdrEncodeInt(state);
             reply.xdrEncode(xdr);
             xdr.endEncoding();
@@ -463,7 +463,7 @@ public class VirRpcCall {
         if (auth != null) {
             auth.xdrEncode(xdr);
         } else {
-            _cred.xdrEncode(xdr);
+            //_cred.xdrEncode(xdr);
         }
         args.xdrEncode(xdr);
         xdr.endEncoding();
