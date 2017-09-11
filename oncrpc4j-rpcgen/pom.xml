@@ -94,6 +94,33 @@
                             </arguments>
                         </configuration>
                     </execution>
+                <execution>
+                        <id>TestTrafficLight</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>org.acplt.oncrpc.apps.jrpcgen.jrpcgen</mainClass>
+                            <includePluginDependencies>true</includePluginDependencies>
+                            <arguments>
+                                <argument>-debug</argument>
+                                <argument>-d</argument>
+                                <argument>${project.build.directory}/generated-test-sources/rpc</argument>
+                                <argument>-p</argument>
+                                <argument>org.dcache.oncrpc4j.rpcgen</argument>
+                                <argument>-bean</argument>
+                                <argument>-asyncfuture</argument>
+                                <argument>-asynccallback</argument>
+                                <argument>-oneway</argument>
+                                <argument>-c</argument>
+                                <argument>TrafficLightClient</argument>
+                                <argument>-s</argument>
+                                <argument>TrafficLightServer</argument>
+                                <argument>${project.basedir}/src/test/xdr/TrafficLight.x</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
 
