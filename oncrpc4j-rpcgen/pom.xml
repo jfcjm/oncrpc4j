@@ -136,7 +136,7 @@
                                 <argument>-d</argument>
                                 <argument>${project.build.directory}/generated-test-sources/rpc-with-enum</argument>
                                 <argument>-p</argument>
-                                <argument>org.dcache.oncrpc4j.rpcgen</argument>
+                                <argument>org.dcache.oncrpc4j.rpcgen.enums</argument>
                                 <argument>-bean</argument>
                                 <argument>-asyncfuture</argument>
                                 <argument>-asynccallback</argument>

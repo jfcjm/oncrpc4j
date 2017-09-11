@@ -404,7 +404,7 @@ public class jrpcgen {
      * Dump the value of a constant and optionally first dump all constants
      * it depends on.
      */
-    public static void dumpConstantAndDependency(JrpcgenConst c, List<String> declarations, Set<String> imports) {
+    public static void dumpEnumConstantAndDependency(ConstantTranslator translator,JrpcgenConst c, List<String> declarations, Set<String> imports) {
         //
         // This simple test avoids endless recursions: we already dumped this
         // particular constant in some place, so we should not proceed.
@@ -439,24 +439,39 @@ public class jrpcgen {
                     // with the identifier we depend on (which is currently
                     // the case), so we just need to prepend the enclosure.
                     //
-                    translateConstant(c, declarations, imports, dc.enclosure + "." + c.value);
+                	translator.translate(c, declarations, imports, dc.enclosure + "." + c.value);
+                    // JMLK TOMREMOVE translateEnumConstant(c, declarations, imports, dc.enclosure + "." + c.value);
                     return;
                 }
                 //
                 // Only dump the identifier we're dependent on, if it's in
                 // the same enclosure.
                 //
-                dumpConstantAndDependency(dc, declarations, imports);
+                dumpEnumConstantAndDependency(translator,dc, declarations, imports);
             }
         }
         //
         // Just dump the plain value (without enclosure).
         //
-        translateConstant(c, declarations, imports, null);
+        translator.translate(c, declarations, imports, null);
+        //JMK TOREMOVE translateEnumConstant(c, declarations, imports, null);
     }
-
-    public static void translateConstant(JrpcgenConst constDecl, List<String> declarations, Set<String> imports, String valueOverride) {
-        String rawValue = constDecl.resolveValue();
+    enum ResConstant{
+    	unknown,
+    	isBigInteger,
+    	isLong,
+    	isInt
+    };
+    
+    @FunctionalInterface
+    interface ConstantTranslator{
+    	void translate(JrpcgenConst constDecl, List<String> declarations, Set<String> imports,String valueOverride);
+    	
+    }
+    
+    public static ResConstant translateEnumConstant(JrpcgenConst constDecl, List<String> declarations, Set<String> imports, String valueOverride) {
+    	ResConstant result=ResConstant.unknown;
+    	String rawValue = constDecl.resolveValue();
         String str = rawValue.toLowerCase(Locale.ROOT);
 
         //parse the numeric value of the constant
@@ -487,6 +502,56 @@ public class jrpcgen {
             //outside long representation range. use BigInt
             imports.add("import " + BigInteger.class.getCanonicalName() + ";");
             String val = valueOverride != null ? valueOverride : "new BigInteger(\"" + valueSansPrefix + "\", " + radix + ")";
+            //declarations.add("    public static final BigInteger " + constDecl.identifier + " = " + val + ";");
+            declarations.add("    " +constDecl.identifier + '('+val+")");
+            result = ResConstant.isBigInteger;
+        } else if (value.compareTo(maxIntBound) > 0 || value.compareTo(BigInteger.valueOf(Integer.MIN_VALUE)) < 0) {
+            //outside int range, use long
+            String val = valueOverride != null ? valueOverride : rawValue + "L";
+            //declarations.add("    public static final long " + constDecl.identifier + " = " + val + ";");
+            declarations.add("    " +constDecl.identifier + '('+val+")");
+            result = ResConstant.isLong;
+        } else {
+            //default to int
+            String val = valueOverride != null ? valueOverride : rawValue;
+            //declarations.add("    public static final int " + constDecl.identifier + " = " + val + ";");
+            declarations.add("    " +constDecl.identifier + '('+val+")");
+            result = ResConstant.isInt;
+        }
+        return result;
+    }
+    public static void translateConstant(JrpcgenConst constDecl, List<String> declarations, Set<String> imports, String valueOverride) {
+        String rawValue = constDecl.resolveValue();
+        String str = rawValue.toLowerCase(Locale.ROOT);
+        //parse the numeric value of the constant
+        BigInteger value;
+        String valueSansPrefix;
+        int radix;
+        boolean hexOrOctal = true;
+        if (str.startsWith("0x")) { //hex
+            valueSansPrefix = rawValue.substring(2);
+            radix = 16;
+            value = new BigInteger(str.substring(2), 16);
+        } else if (str.length() > 1 && str.startsWith("0")) { //octal
+            valueSansPrefix = rawValue.substring(1);
+            radix = 8;
+            value = new BigInteger(str.substring(1), 8);
+        } else { //decimal (possibly negative)
+            hexOrOctal = false;
+            valueSansPrefix = rawValue;
+            radix = 10;
+            value = new BigInteger(str, 10);
+        }
+
+        //now figure out what type the constant fits in
+        BigInteger maxLongBound = hexOrOctal ? new BigInteger("FFFFFFFFFFFFFFFF", 16) : BigInteger.valueOf(Long.MAX_VALUE);
+        BigInteger maxIntBound = hexOrOctal ? new BigInteger("FFFFFFFF", 16) : BigInteger.valueOf(Integer.MAX_VALUE);
+        //remember hex and octal constants are unsigned and so positive, so we dont bother fixing up the negative range ends
+        
+        if (value.compareTo(maxLongBound) > 0 || value.compareTo(BigInteger.valueOf(Long.MIN_VALUE)) < 0) {
+            //outside long representation range. use BigInt
+            imports.add("import " + BigInteger.class.getCanonicalName() + ";");
+            String val = valueOverride != null ? valueOverride : "new BigInteger(\"" + valueSansPrefix + "\", " + radix + ")";
             declarations.add("    public static final BigInteger " + constDecl.identifier + " = " + val + ";");
         } else if (value.compareTo(maxIntBound) > 0 || value.compareTo(BigInteger.valueOf(Integer.MIN_VALUE)) < 0) {
             //outside int range, use long
@@ -497,8 +562,8 @@ public class jrpcgen {
             String val = valueOverride != null ? valueOverride : rawValue;
             declarations.add("    public static final int " + constDecl.identifier + " = " + val + ";");
         }
+        
     }
-
     /**
      * Generate source code file containing all constants defined in the
      * x-file as well as all implicitely defined constants, like program,
@@ -531,7 +596,7 @@ public class jrpcgen {
                 // belong to other Java class enclosures.
                 //
                 if (baseClassname.equals(c.enclosure)) {
-                    dumpConstantAndDependency(c, declarations, imports);
+                    dumpEnumConstantAndDependency(jrpcgen::translateConstant,c, declarations, imports);
                 }
             }
         }
@@ -572,11 +637,14 @@ public class jrpcgen {
         out.println("/**");
         out.println(" * Enumeration (collection of constants).");
         out.println(" */");
-
-        out.println("public interface " + e.identifier + " {");
+        out.println("import java.util.HashMap;");
+        out.println("import java.util.EnumSet;");
+        out.println();
+        out.println("public enum " + e.identifier + " {");
         out.println();
 
         Enumeration enums = e.enums.elements();
+        int enumIdx = e.enums.size();
         while (enums.hasMoreElements()) {
             JrpcgenConst c = (JrpcgenConst) enums.nextElement();
             //
@@ -587,11 +655,14 @@ public class jrpcgen {
             List<String> declLines = new ArrayList<>();
             Set<String> imports = Collections.emptySet(); //will throw if modified
             //enums are ints in xdrs, so we dont expect to need imports, hence the unmodifiable set above
-            dumpConstantAndDependency(c, declLines, imports);
+            dumpEnumConstantAndDependency(jrpcgen::translateEnumConstant,c, declLines, imports);
+            int idx = declLines.size();
             for (String line : declLines) {
                 out.println(line);
             }
+            out.println((enumIdx--) > 1 ? "," : ";");
         }
+        dumpEnumConstructor(out,e.identifier);
         //
         // Close class...
         //
@@ -599,7 +670,30 @@ public class jrpcgen {
         out.println("}");
         closeJavaSourceFile();
     }
-    /**
+    private static void dumpEnumConstructor(PrintWriter out, String identifier) {
+    	out.println ("int _value;");
+		out.println (identifier + "(int intValue){");
+		{
+			out.println ("   _value = intValue;");
+		}
+		out.println("};");
+		
+		out.println ("public int getValue() { return _value; }");
+		
+		out.println("static HashMap<Integer, " + identifier + "> lookup = new HashMap<>();");
+		out.println("static {");
+		{
+			out.println("  for (" + identifier + " s : EnumSet.allOf("+identifier+ ".class)) {");
+			{
+				out.println("  lookup.put(s.getValue(), s);");
+			}
+			out.println("  }");
+		}
+		out.println("}");
+		out.println("public static " + identifier + " get(int value) { return lookup.get(value); }");
+		
+	}
+	/**
      * Java base data types for which are XDR encoding and decoding helper
      * methods available.
      */
@@ -1942,8 +2036,6 @@ public class jrpcgen {
         out.println("public class " + clientClass + " implements Closeable {");
         out.println();
 
-        // constants
-        out.println("    private static final String DEFAULT_SERVICE_NAME = null;");
         // generated class fields
         out.println("    private final OncRpcClient rpcClient;");
         out.println("    private final RpcCall client;");
@@ -1953,58 +2045,50 @@ public class jrpcgen {
         // Generate constructors...
         //
         out.println("    /**");
-        out.println("     * see {@link #" + clientClass + "(InetAddress, int, RpcAuth, int, int, int , int, IoStrategy, String)}");
+        out.println("     * see {@link #" + clientClass + "(InetAddress, int, RpcAuth, int, int, int , int, IoStrategy)}");
         out.println("     */");
         out.println("    public " + clientClass + "(InetAddress host, int port)");
         out.println("           throws OncRpcException, IOException {");
-        out.println("        this(host, port, new RpcAuthTypeNone(), " + baseClassname + "." + programInfo.programId + ", " + baseClassname + "." + maxVersionInfo.versionId + ", IpProtocolType.TCP, 0, IoStrategy.SAME_THREAD, DEFAULT_SERVICE_NAME);");
+        out.println("        this(host, port, new RpcAuthTypeNone(), " + baseClassname + "." + programInfo.programId + ", " + baseClassname + "." + maxVersionInfo.versionId + ", IpProtocolType.TCP, 0, IoStrategy.SAME_THREAD);");
         out.println("    }");
         out.println();
 
         out.println("    /**");
-        out.println("     * see {@link #" + clientClass + "(InetAddress, int, RpcAuth, int, int, int , int, IoStrategy, String)}");
+        out.println("     * see {@link #" + clientClass + "(InetAddress, int, RpcAuth, int, int, int , int, IoStrategy)}");
         out.println("     */");
         out.println("    public " + clientClass + "(InetAddress host, int port, int version)");
         out.println("           throws OncRpcException, IOException {");
-        out.println("        this(host, port, new RpcAuthTypeNone(), " + baseClassname + "." + programInfo.programId + ", version, IpProtocolType.TCP, 0, IoStrategy.SAME_THREAD, DEFAULT_SERVICE_NAME);");
+        out.println("        this(host, port, new RpcAuthTypeNone(), " + baseClassname + "." + programInfo.programId + ", version, IpProtocolType.TCP, 0, IoStrategy.SAME_THREAD);");
         out.println("    }");
         out.println();
 
         out.println("    /**");
-        out.println("     * see {@link #" + clientClass + "(InetAddress, int, RpcAuth, int, int, int , int, IoStrategy, String)}");
+        out.println("     * see {@link #" + clientClass + "(InetAddress, int, RpcAuth, int, int, int , int, IoStrategy)}");
         out.println("     */");
         out.println("    public " + clientClass + "(InetAddress host, int port, int program, int version, int protocol)");
         out.println("           throws OncRpcException, IOException {");
-        out.println("        this(host, port, new RpcAuthTypeNone(), program, version, protocol, 0, IoStrategy.SAME_THREAD, DEFAULT_SERVICE_NAME);");
+        out.println("        this(host, port, new RpcAuthTypeNone(), program, version, protocol, 0, IoStrategy.SAME_THREAD);");
         out.println("    }");
         out.println();
 
         out.println("    /**");
-        out.println("     * see {@link #" + clientClass + "(InetAddress, int, RpcAuth, int, int, int , int, IoStrategy, String)}");
+        out.println("     * see {@link #" + clientClass + "(InetAddress, int, RpcAuth, int, int, int , int, IoStrategy)}");
         out.println("     */");
         out.println("    public " + clientClass + "(InetAddress host, int port, RpcAuth auth, int program, int version, int protocol)");
         out.println("           throws OncRpcException, IOException {");
-        out.println("        this(host, port, auth, program, version, protocol, 0, IoStrategy.SAME_THREAD, DEFAULT_SERVICE_NAME);");
+        out.println("        this(host, port, auth, program, version, protocol, 0, IoStrategy.SAME_THREAD);");
         out.println("    }");
         out.println();
 
         out.println("    /**");
-        out.println("     * see {@link #" + clientClass + "(InetAddress, int, RpcAuth, int, int, int , int, IoStrategy, String)}");
+        out.println("     * see {@link #" + clientClass + "(InetAddress, int, RpcAuth, int, int, int , int, IoStrategy)}");
         out.println("     */");
         out.println("    public " + clientClass + "(InetAddress host, int port, RpcAuth auth, int program, int version, int protocol, int localPort)");
         out.println("           throws OncRpcException, IOException {");
-        out.println("        this(host, port, auth, program, version, protocol, localPort, IoStrategy.SAME_THREAD, DEFAULT_SERVICE_NAME);");
+        out.println("        this(host, port, auth, program, version, protocol, localPort, IoStrategy.SAME_THREAD);");
         out.println("    }");
         out.println();
 
-        out.println("    /**");
-        out.println("     * see {@link #" + clientClass + "(InetAddress, int, RpcAuth, int, int, int , int, IoStrategy, String)}");
-        out.println("     */");
-        out.println("    public " + clientClass + "(InetAddress host, int port, RpcAuth auth, int program, int version, int protocol, int localPort, IoStrategy ioStrategy)");
-        out.println("           throws OncRpcException, IOException {");
-        out.println("        this(host, port, auth, program, version, protocol, localPort, ioStrategy, DEFAULT_SERVICE_NAME);");
-        out.println("    }");
-        out.println();
         out.println("    /**");
         out.println("     * Constructs a <code>" + clientClass + "</code> client stub proxy object");
         out.println("     * from which the " + programInfo.programId + " remote program can be accessed.");
@@ -2017,13 +2101,12 @@ public class jrpcgen {
         out.println("     *   used for ONC/RPC calls.");
         out.println("     * @param localPort local port to bind to. <=0 for any (ephemeral)");
         out.println("     * @param ioStrategy io handling strategy. null for default");
-        out.println("     * @param serviceName to identify threads created for the service. null for default");
         out.println("     * @throws OncRpcException if an ONC/RPC error occurs.");
         out.println("     * @throws IOException if an I/O error occurs.");
         out.println("     */");
-        out.println("    public " + clientClass + "(InetAddress host, int port, RpcAuth auth, int program, int version, int protocol, int localPort, IoStrategy ioStrategy, String serviceName)");
+        out.println("    public " + clientClass + "(InetAddress host, int port, RpcAuth auth, int program, int version, int protocol, int localPort, IoStrategy ioStrategy)");
         out.println("           throws OncRpcException, IOException {");
-        out.println("        rpcClient = new OncRpcClient(host, protocol, port, localPort, ioStrategy, serviceName);");
+        out.println("        rpcClient = new OncRpcClient(host, protocol, port, localPort, ioStrategy);");
         out.println("        try {");
         out.println("            client = new RpcCall(program, version, auth, rpcClient.connect());");
         out.println("        } catch (IOException e) {");
