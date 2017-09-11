@@ -2,19 +2,27 @@ package org.dcache.oncrpc4j.rpcgen.testenums;
 
 import static org.junit.Assert.*;
 import static spoon.testing.Assert.assertThat;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.PrintStream;
 import java.util.Collections;
 
 import javax.xml.ws.spi.Invoker;
 
+import org.acplt.oncrpc.apps.jrpcgen.jrpcgen;
 import org.apache.maven.shared.invoker.DefaultInvocationRequest;
 import org.apache.maven.shared.invoker.DefaultInvoker;
 import org.apache.maven.shared.invoker.InvocationRequest;
 import org.apache.maven.shared.invoker.MavenInvocationException;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.Assertion;
+import org.junit.contrib.java.lang.system.ExpectedSystemExit;
 
 import spoon.Launcher;
+import spoon.reflect.declaration.CtField;
 import spoon.reflect.declaration.CtType;
 
 public class TestGenerateEnumCode {
@@ -56,13 +64,38 @@ public class TestGenerateEnumCode {
     private static final String getJavaFilePath(String name) {
         return JAVA_FILE_DIR + File.separator + name;
     }
+    @Rule
+    public final ExpectedSystemExit exit = ExpectedSystemExit.none();
+    @Test
+    public void testJrpcgenParameterExists(){
+        final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outContent));
+        String args[] = {
+              "-enums",
+        };
+        exit.expectSystemExitWithStatus(0);
+        exit.checkAssertionAfterwards(new Assertion(){
+
+            @Override
+            public void checkAssertion() throws Exception {
+                assertFalse(outContent.toString().contains("Unrecognized option: -enums"));
+            }
+            
+        });
+        jrpcgen.main(args);
+        System.setOut(null);
+    }
+    
 
     //mvn  -Dexec.skip=true -Dtest="**/TestGenerateEnumCode.java" test
     @Test
     public void test() {
         CtType<Object> type = spoon.getFactory().Type().get("org.dcache.oncrpc4j.rpcgen.TrafficLightColor");
         assertNotNull(type);
-        assertThat(type.getField("RED")).isEqualTo("public static final int RED = 1;");
+        assertTrue(type.isEnum());
+        CtField<?> redDefintion = type.getField("RED");
+        assertNotNull(redDefintion);
+        assertThat(type.getField("RED")).isEqualTo("RED(1)");
         
         fail("Not yet implemented");
     }

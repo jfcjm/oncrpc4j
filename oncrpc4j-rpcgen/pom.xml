@@ -94,6 +94,7 @@
                             </arguments>
                         </configuration>
                     </execution>
+                    
                 <execution>
                         <id>TestTrafficLight</id>
                         <phase>generate-test-sources</phase>
@@ -113,6 +114,34 @@
                                 <argument>-asyncfuture</argument>
                                 <argument>-asynccallback</argument>
                                 <argument>-oneway</argument>
+                                <argument>-c</argument>
+                                <argument>TrafficLightClient</argument>
+                                <argument>-s</argument>
+                                <argument>TrafficLightServer</argument>
+                                <argument>${project.basedir}/src/test/xdr/TrafficLight.x</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                	<execution>
+                        <id>TestTrafficLightWithEnum</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>org.acplt.oncrpc.apps.jrpcgen.jrpcgen</mainClass>
+                            <includePluginDependencies>true</includePluginDependencies>
+                            <arguments>
+                                <argument>-debug</argument>
+                                <argument>-d</argument>
+                                <argument>${project.build.directory}/generated-test-sources/rpc-with-enum</argument>
+                                <argument>-p</argument>
+                                <argument>org.dcache.oncrpc4j.rpcgen</argument>
+                                <argument>-bean</argument>
+                                <argument>-asyncfuture</argument>
+                                <argument>-asynccallback</argument>
+                                <argument>-oneway</argument>
+                                <argument>-enums</argument>
                                 <argument>-c</argument>
                                 <argument>TrafficLightClient</argument>
                                 <argument>-s</argument>
@@ -172,5 +201,12 @@
             <artifactId>maven-invoker</artifactId>
             <scope>test</scope>
         </dependency>
+        <!--  Junit rules for system exit result tests -->
+        <dependency>
+    		<groupId>com.github.stefanbirkner</groupId>
+    		<artifactId>system-rules</artifactId>
+    		<version>1.16.1</version>
+    		<scope>test</scope>
+		</dependency>
     </dependencies>
 </project>
