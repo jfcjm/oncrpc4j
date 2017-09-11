@@ -75,6 +75,7 @@ public class jrpcgen {
         System.out.println("  -s <classname>  specify class name of server proxy stub");
         System.out.println("  -ser            tag generated XDR classes as serializable");
         System.out.println("  -bean           generate accessors for usage as bean, implies -ser");
+        System.out.println("  -enums          generate java enums for xdr enums");
         System.out.println("  -noclamp        do not clamp version number in client method stubs");
         System.out.println("  -initstrings    initialize all strings to be empty instead of null");
         System.out.println("  -nobackup       do not make backups of old source code files");
@@ -213,6 +214,10 @@ public class jrpcgen {
      * Enable generation of accessors in order to use XDR classes as beans.
      */
     public static boolean makeBean = false;
+    /**
+     * Generate java enums instead of interfaces for xdr enums
+     */
+    public static boolean generateEnums = false;
     /**
      * Enable automatic initialization of String with empty Strings
      * instead of null reference.
@@ -404,7 +409,7 @@ public class jrpcgen {
      * Dump the value of a constant and optionally first dump all constants
      * it depends on.
      */
-    public static void dumpEnumConstantAndDependency(ConstantTranslator translator,JrpcgenConst c, List<String> declarations, Set<String> imports) {
+    public static void dumpEnumConstantAndDependency(EnumTranslator translator,JrpcgenConst c, List<String> declarations, Set<String> imports) {
         //
         // This simple test avoids endless recursions: we already dumped this
         // particular constant in some place, so we should not proceed.
@@ -464,12 +469,12 @@ public class jrpcgen {
     };
     
     @FunctionalInterface
-    interface ConstantTranslator{
+    interface EnumTranslator{
     	void translate(JrpcgenConst constDecl, List<String> declarations, Set<String> imports,String valueOverride);
     	
     }
     
-    public static ResConstant translateEnumConstant(JrpcgenConst constDecl, List<String> declarations, Set<String> imports, String valueOverride) {
+    public static void translateEnumConstant(JrpcgenConst constDecl, List<String> declarations, Set<String> imports, String valueOverride) {
     	ResConstant result=ResConstant.unknown;
     	String rawValue = constDecl.resolveValue();
         String str = rawValue.toLowerCase(Locale.ROOT);
@@ -504,21 +509,17 @@ public class jrpcgen {
             String val = valueOverride != null ? valueOverride : "new BigInteger(\"" + valueSansPrefix + "\", " + radix + ")";
             //declarations.add("    public static final BigInteger " + constDecl.identifier + " = " + val + ";");
             declarations.add("    " +constDecl.identifier + '('+val+")");
-            result = ResConstant.isBigInteger;
         } else if (value.compareTo(maxIntBound) > 0 || value.compareTo(BigInteger.valueOf(Integer.MIN_VALUE)) < 0) {
             //outside int range, use long
             String val = valueOverride != null ? valueOverride : rawValue + "L";
             //declarations.add("    public static final long " + constDecl.identifier + " = " + val + ";");
             declarations.add("    " +constDecl.identifier + '('+val+")");
-            result = ResConstant.isLong;
         } else {
             //default to int
             String val = valueOverride != null ? valueOverride : rawValue;
             //declarations.add("    public static final int " + constDecl.identifier + " = " + val + ";");
             declarations.add("    " +constDecl.identifier + '('+val+")");
-            result = ResConstant.isInt;
         }
-        return result;
     }
     public static void translateConstant(JrpcgenConst constDecl, List<String> declarations, Set<String> imports, String valueOverride) {
         String rawValue = constDecl.resolveValue();
@@ -654,8 +655,14 @@ public class jrpcgen {
             //
             List<String> declLines = new ArrayList<>();
             Set<String> imports = Collections.emptySet(); //will throw if modified
+            EnumTranslator enumTranslator;
             //enums are ints in xdrs, so we dont expect to need imports, hence the unmodifiable set above
-            dumpEnumConstantAndDependency(jrpcgen::translateEnumConstant,c, declLines, imports);
+            if (generateEnums){
+                enumTranslator = jrpcgen::translateEnumConstant;
+            } else {
+                enumTranslator = jrpcgen::translateConstant;
+            }
+            dumpEnumConstantAndDependency(enumTranslator,c, declLines, imports);
             int idx = declLines.size();
             for (String line : declLines) {
                 out.println(line);
@@ -2550,6 +2557,8 @@ public class jrpcgen {
             } else if (arg.equals("-bean")) {
                 makeSerializable = true;
                 makeBean = true;
+            } else if (arg.equals("-enums")){
+                generateEnums = true;
             } else if (arg.equals("-initstrings")) {
                 initStrings = true;
             } else if (arg.equals("-debug")) {
