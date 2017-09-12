@@ -4,6 +4,8 @@
 //----------------------------------------------------
 package org.acplt.oncrpc.apps.jrpcgen;
 
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import org.acplt.oncrpc.apps.jrpcgen.cup_runtime.*;
 import java.util.Vector;
@@ -1441,6 +1443,12 @@ class CUP$JrpcgenParser$actions {
                 int valueright = ((org.acplt.oncrpc.apps.jrpcgen.cup_runtime.Symbol) CUP$JrpcgenParser$stack.elementAt(CUP$JrpcgenParser$top - 1)).right;
                 String value = (String) ((org.acplt.oncrpc.apps.jrpcgen.cup_runtime.Symbol) CUP$JrpcgenParser$stack.elementAt(CUP$JrpcgenParser$top - 1)).value;
 
+                try{
+                NumberFormat nf = NumberFormat.getInstance();
+                nf.parse(value);
+                }       catch (ParseException e){
+                	value="0";
+                }
                 JrpcgenConst type = new JrpcgenConst(id, value, jrpcgen.baseClassname);
                 if (jrpcgen.globalIdentifiers.put(id, type) != null) {
                     parser.report_error("const identifier \"" + id + "\" already defined", idleft);

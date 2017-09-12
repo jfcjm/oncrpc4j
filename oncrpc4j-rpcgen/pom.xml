@@ -36,6 +36,7 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <executions>
+               
                     <execution>
                         <id>generate client and server calculator for testing</id>
                         <phase>generate-test-sources</phase>
@@ -94,6 +95,72 @@
                             </arguments>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>generate client and server keepalive for testing</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>org.acplt.oncrpc.apps.jrpcgen.jrpcgen</mainClass>
+                            <includePluginDependencies>true</includePluginDependencies>
+                            <arguments>
+                                <argument>-debug</argument>
+                                <argument>-d</argument>
+                                <argument>${project.build.directory}/generated-test-sources/rpc</argument>
+                                <argument>-p</argument>
+                                <argument>org.dcache.oncrpc4j.rpcgen</argument>
+                                <argument>-bean</argument>
+                                <argument>-asyncfuture</argument>
+                                <argument>-asynccallback</argument>
+                                <argument>-oneway</argument>
+                                <argument>-timeouts</argument>
+                                <argument>-percallauth</argument>
+                                <argument>-c</argument>
+                                <argument>AdminProtocolClient</argument>
+                                <argument>-rpccallclass</argument>
+                                <argument>org.libvirt.VirRpcCall</argument>
+                                <!--  
+                                <argument>-s</argument>
+                                <argument>AdminProtocolServer</argument>-->
+                                <argument>${project.basedir}/src/test/xdr/keepalive.x</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    
+                    <execution>
+                        <id>generate client and server libvirt for testing</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>org.acplt.oncrpc.apps.jrpcgen.jrpcgen</mainClass>
+                            <includePluginDependencies>true</includePluginDependencies>
+                            <arguments>
+                                <argument>-debug</argument>
+                                <argument>-d</argument>
+                                <argument>${project.build.directory}/generated-test-sources/rpc</argument>
+                                <argument>-p</argument>
+                                <argument>org.dcache.oncrpc4j.rpcgen.libvirt</argument>
+                                <argument>-bean</argument>
+                                <argument>-asyncfuture</argument>
+                                <argument>-asynccallback</argument>
+                                <argument>-oneway</argument>
+                                <argument>-timeouts</argument>
+                                <argument>-percallauth</argument>
+                                <argument>-c</argument>
+                                <argument>LibvirtProtocolClient</argument>
+                                <argument>-rpccallclass</argument>
+                                <argument>org.libvirt.VirRpcCall</argument>
+                                <!--  
+                                <argument>-s</argument>
+                                <argument>LibvirtProtocolServer</argument>
+                                -->
+                                <argument>${project.basedir}/src/test/xdr/remote.x</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
 
@@ -135,5 +202,12 @@
             <artifactId>slf4j-simple</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+    <groupId>org.libvirt</groupId>
+    <artifactId>libvirt</artifactId>
+    <version>0.5.1</version>
+            <scope>test</scope>
+</dependency>
+        
     </dependencies>
 </project>

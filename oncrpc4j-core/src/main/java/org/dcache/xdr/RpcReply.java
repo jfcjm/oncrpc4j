@@ -20,6 +20,7 @@
 package org.dcache.xdr;
 
 import java.io.IOException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +35,7 @@ public class RpcReply {
      * XDR message
      */
     private final Xdr _xdr;
-    private int _replyStatus;
+    protected int _replyStatus;
     private int _acceptedStatus;
     private int _rejectStatus;
     private MismatchInfo _mismatchInfo;
@@ -49,34 +50,8 @@ public class RpcReply {
         _transport = transport;
 
         // decode
-        _replyStatus = xdr.xdrDecodeInt();
-        switch (_replyStatus) {
-            case RpcReplyStatus.MSG_ACCEPTED:
-                _verf = new RpcAuthVerifier(xdr);
-                _acceptedStatus = xdr.xdrDecodeInt();
-                switch (_acceptedStatus) {
-                    case RpcAccepsStatus.PROG_MISMATCH:
-                        _mismatchInfo = new MismatchInfo();
-                        _mismatchInfo.xdrDecode(xdr);
-                }
-                break;
-
-            case RpcReplyStatus.MSG_DENIED:
-                _rejectStatus = xdr.xdrDecodeInt();
-                switch (_rejectStatus) {
-                    case RpcRejectStatus.RPC_MISMATCH:
-                        _mismatchInfo = new MismatchInfo();
-                        _mismatchInfo.xdrDecode(xdr);
-                        break;
-                    case RpcRejectStatus.AUTH_ERROR:
-                        _authStatus = xdr.xdrDecodeInt();
-                        break;
-                }
-                break;
-            default:
-            // FIXME: ERROR CODE HERE
-        }
-
+        _replyStatus = getReplyStatus(xdr);
+        processReplyStatus(_replyStatus,xdr);
     }
 
     public boolean isAccepted() {
@@ -106,7 +81,8 @@ public class RpcReply {
         return _rejectStatus;
     }
 
-    public void getReplyResult(XdrAble result) throws OncRpcException, IOException {
+    public void getReplyResult(XdrAble result) throws OncRpcException, IOException {  	
+        _log.debug("decoding result class {}", result.getClass().getName());
         result.xdrDecode(_xdr);
         _xdr.endDecoding();
     }
@@ -132,4 +108,39 @@ public class RpcReply {
 
         return sb.toString();
     }
+
+    protected void processReplyStatus(int _replyStatus, Xdr xdr) throws OncRpcException, IOException {
+        switch (_replyStatus) {
+        case RpcReplyStatus.MSG_ACCEPTED:
+            _verf = new RpcAuthVerifier(xdr);
+            _acceptedStatus = xdr.xdrDecodeInt();
+            switch (_acceptedStatus) {
+                case RpcAccepsStatus.PROG_MISMATCH:
+                    _mismatchInfo = new MismatchInfo();
+                    _mismatchInfo.xdrDecode(xdr);
+            }
+            break;
+
+        case RpcReplyStatus.MSG_DENIED:
+            _rejectStatus = xdr.xdrDecodeInt();
+            switch (_rejectStatus) {
+                case RpcRejectStatus.RPC_MISMATCH:
+                    _mismatchInfo = new MismatchInfo();
+                    _mismatchInfo.xdrDecode(xdr);
+                    break;
+                case RpcRejectStatus.AUTH_ERROR:
+                    _authStatus = xdr.xdrDecodeInt();
+                    break;
+            }
+            break;
+        default:
+        // FIXME: ERROR CODE HERE
+    }
+        
+    }
+
+    protected int getReplyStatus(Xdr xdr) throws BadXdrOncRpcException {
+        return xdr.xdrDecodeInt();
+    }
+    
 }

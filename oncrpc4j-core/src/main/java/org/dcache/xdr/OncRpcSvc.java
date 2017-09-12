@@ -32,6 +32,7 @@ import org.glassfish.grizzly.GrizzlyFuture;
 import org.glassfish.grizzly.PortRange;
 import org.glassfish.grizzly.SocketBinder;
 import org.glassfish.grizzly.Transport;
+import org.glassfish.grizzly.filterchain.Filter;
 import org.glassfish.grizzly.filterchain.FilterChain;
 import org.glassfish.grizzly.filterchain.FilterChainBuilder;
 import org.glassfish.grizzly.filterchain.TransportFilter;
@@ -75,35 +76,34 @@ public class OncRpcSvc {
     private final static Logger _log = LoggerFactory.getLogger(OncRpcSvc.class);
 
     private final int _backlog;
-    private final boolean _publish;
+    protected boolean _publish;
     private final PortRange _portRange;
     private final String _bindAddress;
-    private final boolean _isClient;
-    private final List<NIOTransport> _transports = new ArrayList<>();
+    protected final boolean _isClient;
+    protected final List<NIOTransport> _transports = new ArrayList<>();
     private final Set<Connection<InetSocketAddress>> _boundConnections =
             new HashSet<>();
+    protected final ExecutorService _requestExecutor;
 
-    private final ExecutorService _requestExecutor;
+    protected final ReplyQueue _replyQueue = new ReplyQueue();
 
-    private final ReplyQueue _replyQueue = new ReplyQueue();
-
-    private final boolean _withSubjectPropagation;
+    protected final boolean _withSubjectPropagation;
     /**
      * Handle RPCSEC_GSS
      */
-    private final GssSessionManager _gssSessionManager;
+    protected final GssSessionManager _gssSessionManager;
 
     /**
      * mapping of registered programs.
      */
-    private final Map<OncRpcProgram, RpcDispatchable> _programs =
+    protected final Map<OncRpcProgram, RpcDispatchable> _programs =
             new ConcurrentHashMap<>();
 
     /**
      * Create new RPC service with defined configuration.
      * @param builder to build this service
      */
-    OncRpcSvc(OncRpcSvcBuilder builder) {
+    protected OncRpcSvc(OncRpcSvcBuilder builder) {
         _publish = builder.isAutoPublish();
         final int protocol = builder.getProtocol();
 
@@ -283,18 +283,19 @@ public class OncRpcSvc {
             clearPortmap(_programs.keySet());
         }
 
+        
         for (Transport t : _transports) {
 
             FilterChainBuilder filterChain = FilterChainBuilder.stateless();
             filterChain.add(new TransportFilter());
+            addPostTransportProtocolFilters(filterChain,t);
             filterChain.add(rpcMessageReceiverFor(t));
-            filterChain.add(new RpcProtocolFilter(_replyQueue));
+            filterChain.add(getRpcProtocolFilter(_replyQueue));
             // use GSS if configures
             if (_gssSessionManager != null) {
                 filterChain.add(new GssProtocolFilter(_gssSessionManager));
             }
             filterChain.add(new RpcDispatcher(_requestExecutor, _programs, _withSubjectPropagation));
-
             final FilterChain filters = filterChain.build();
 
             t.setProcessor(filters);
@@ -321,6 +322,17 @@ public class OncRpcSvc {
             t.start();
 
         }
+    }
+
+    protected Filter getRpcProtocolFilter(ReplyQueue replyQueue) {
+        return new RpcProtocolFilter(replyQueue);
+    }
+
+    protected void addPostRpcProtocolFilters(FilterChainBuilder filterChain) {
+        
+    }
+
+    protected void addPostTransportProtocolFilters(FilterChainBuilder filterChain, Transport t) {
     }
 
     public void stop() throws IOException {

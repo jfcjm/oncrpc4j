@@ -17,38 +17,53 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.xdr;
+package org.libvirt;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.CompletionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.glassfish.grizzly.filterchain.BaseFilter;
+import org.dcache.xdr.GrizzlyXdrTransport;
+import org.dcache.xdr.OncRpcAcceptedException;
+import org.dcache.xdr.OncRpcException;
+import org.dcache.xdr.OncRpcRejectedException;
+import org.dcache.xdr.ReplyQueue;
+import org.dcache.xdr.RpcAccepsStatus;
+import org.dcache.xdr.RpcException;
+import org.dcache.xdr.RpcMessage;
+import org.dcache.xdr.RpcMessageType;
+import org.dcache.xdr.RpcProtocolFilter;
+import org.dcache.xdr.RpcReply;
+import org.dcache.xdr.Xdr;
+import org.dcache.xdr.XdrTransport;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.filterchain.NextAction;
 
-public class RpcProtocolFilter extends BaseFilter {
+public class VirRpcProtocolFilter extends RpcProtocolFilter {
 
-    private final static Logger _log = LoggerFactory.getLogger(RpcProtocolFilter.class);
-    protected final ReplyQueue _replyQueue;
+    private final static Logger _log = LoggerFactory.getLogger(VirRpcProtocolFilter.class);
 
-    public RpcProtocolFilter(ReplyQueue replyQueue) {
-        _replyQueue = replyQueue;
+    public VirRpcProtocolFilter(ReplyQueue replyQueue) {
+        super(replyQueue);
+        _log.info("Creating a new VirRpcProtocolFilter");
     }
 
     @Override
     public NextAction handleRead(FilterChainContext ctx) throws IOException {
+        _log.info("VirRpcProtocolFilter handle read");
 
         Xdr xdr = ctx.getMessage();
+        _log.info("Got an xdr message");
         if (xdr == null) {
             _log.error("Parser returns bad XDR");
             return ctx.getStopAction();
         }
 
         xdr.beginDecoding();
-
-        RpcMessage message = new RpcMessage(xdr);
+        _log.info("will create a message");
+        RpcMessage message = new VirRpcMessage(xdr);
+        _log.info("new message created");
         /**
          * In case of UDP grizzly does not populates connection with correct destination address.
          * We have to get peer address from the request context, which will contain SocketAddress where from
@@ -59,7 +74,7 @@ public class RpcProtocolFilter extends BaseFilter {
         switch (message.type()) {
             case RpcMessageType.CALL:
             	_log.debug("Received a CALL message");
-                RpcCall call = new RpcCall(message.xid(), xdr, transport);
+                VirRpcCall call = new VirRpcCall(message.xid(), xdr, transport);
                 try {
                     call.accept();
                     ctx.setMessage(call);
@@ -76,7 +91,7 @@ public class RpcProtocolFilter extends BaseFilter {
             case RpcMessageType.REPLY:
             	_log.debug("Received a Reply message with xid {}",message.xid());
                 try {
-                    RpcReply reply = new RpcReply(message.xid(), xdr, transport);
+                    RpcReply reply = new VirRpcReply(message.xid(), xdr, transport);
                     _log.debug("Rpc reply is {}",reply);
                     CompletionHandler<RpcReply, XdrTransport> callback = _replyQueue.get(message.xid());
                     if (callback != null) {

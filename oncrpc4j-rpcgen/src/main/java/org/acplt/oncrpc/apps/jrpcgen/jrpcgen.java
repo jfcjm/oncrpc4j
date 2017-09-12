@@ -73,6 +73,7 @@ public class jrpcgen {
         System.out.println("  -d <dir>        specify directory where to place generated source code files");
         System.out.println("  -p <package>    specify package name for generated source code files");
         System.out.println("  -s <classname>  specify class name of server proxy stub");
+        System.out.println("  -rpccallclass <classname>  use rpccall class in generated client library");
         System.out.println("  -ser            tag generated XDR classes as serializable");
         System.out.println("  -bean           generate accessors for usage as bean, implies -ser");
         System.out.println("  -noclamp        do not clamp version number in client method stubs");
@@ -124,6 +125,10 @@ public class jrpcgen {
      */
     public static final String startDate =
             (new SimpleDateFormat()).format(new Date());
+    /**
+     * Default RpcCall in generated package *
+     */
+	private static final String DEFAULT_RPC_CALL_IN_CLIENT = "RpcCall";
     /**
      * Contains all global identifiers for type, structure and union specifiers
      * as well as for constants and enumeration members. This static attribute
@@ -242,7 +247,11 @@ public class jrpcgen {
      * generate all methods with an auth argument (nullable for default) to support per-call auth
      */
     public static boolean generatePerCallAuthSupport = false;
-
+    /**
+     * use this class name for client library
+     */
+    public static String useRpcCallClass = DEFAULT_RPC_CALL_IN_CLIENT;
+    
     /**
      * Creates a new source code file for a Java class based on its class
      * name. Same as {@link #createJavaSourceFile(String, boolean)} with
@@ -1919,7 +1928,9 @@ public class jrpcgen {
             System.out.println("CLIENT: " + clientClass);
         }
         PrintWriter out = createJavaSourceFile(clientClass);
-
+        if (! DEFAULT_RPC_CALL_IN_CLIENT.equals(useRpcCallClass)){
+        	out.println("import " + useRpcCallClass +";");
+        }
         out.println("import java.io.Closeable;");
         out.println("import java.net.InetAddress;");
         if (generateAsyncFutureClient) {
@@ -1946,7 +1957,7 @@ public class jrpcgen {
         out.println("    private static final String DEFAULT_SERVICE_NAME = null;");
         // generated class fields
         out.println("    private final OncRpcClient rpcClient;");
-        out.println("    private final RpcCall client;");
+        out.println("    private final " + useRpcCallClass + " client;");
         out.println();
 
         //
@@ -2025,7 +2036,7 @@ public class jrpcgen {
         out.println("           throws OncRpcException, IOException {");
         out.println("        rpcClient = new OncRpcClient(host, protocol, port, localPort, ioStrategy, serviceName);");
         out.println("        try {");
-        out.println("            client = new RpcCall(program, version, auth, rpcClient.connect());");
+        out.println("            client = new " + useRpcCallClass + "(program, version, auth, rpcClient.connect());");
         out.println("        } catch (IOException e) {");
         out.println("            rpcClient.close();");
         out.println("            throw e;");
@@ -2293,7 +2304,7 @@ public class jrpcgen {
                     + proc.procedureId + "(");
             if (proc.parameters != null) {
 
-                out.print("RpcCall call$, ");
+                out.print(useRpcCallClass+" call$, ");
 
                 int psize = proc.parameters.size();
                 for (int pidx = 0; pidx < psize; ++pidx) {
@@ -2306,7 +2317,7 @@ public class jrpcgen {
                     out.print(paramInfo.parameterName);
                 }
             } else {
-                out.print("RpcCall call$");
+                out.print(useRpcCallClass+" call$");
             }
             out.println(");");
             out.println();
@@ -2332,6 +2343,9 @@ public class jrpcgen {
 
         out.println("import org.dcache.xdr.*;");
         out.println();
+        if (! DEFAULT_RPC_CALL_IN_CLIENT.equals(useRpcCallClass)){
+        	out.println("import " + useRpcCallClass +";");
+        }
 
         out.println("/**");
         out.println(" */");
@@ -2343,7 +2357,7 @@ public class jrpcgen {
         //
         // Generate dispatcher code...
         //
-        out.println("    public void dispatchOncRpcCall(RpcCall call)");
+        out.println("    public void dispatchOncRpcCall("+ useRpcCallClass +" call)");
         out.println("           throws OncRpcException, IOException {");
         out.println();
         out.println("        int version = call.getProgramVersion();");
@@ -2496,6 +2510,12 @@ public class jrpcgen {
             } else if (arg.equals("-version")) {
                 System.out.println("jrpcgen version \"" + VERSION + "\"");
                 System.exit(1);
+            } else if (arg.equals("-rpccallclass")) {
+                if (++argIdx >= argc) {
+                    System.out.println("jrpcgen: missing rpccall class name");
+                    System.exit(1);
+                }
+                useRpcCallClass = args[argIdx];
             } else if (arg.equals("-help") || arg.equals("-?")) {
                 printHelp();
                 System.exit(1);

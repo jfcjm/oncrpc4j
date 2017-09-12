@@ -29,7 +29,7 @@ public class OncRpcClient implements AutoCloseable {
     private static final String DEFAULT_SERVICE_NAME = null;
 
     private final InetSocketAddress _socketAddress;
-    private final OncRpcSvc _rpcsvc;
+    protected final OncRpcSvc _rpcsvc;
 
     public OncRpcClient(InetAddress address, int protocol, int port) {
         this(new InetSocketAddress(address, port), protocol, 0, IoStrategy.SAME_THREAD, DEFAULT_SERVICE_NAME);
@@ -53,13 +53,17 @@ public class OncRpcClient implements AutoCloseable {
 
     public OncRpcClient(InetSocketAddress socketAddress, int protocol, int localPort, IoStrategy ioStrategy, String serviceName) {
         _socketAddress = socketAddress;
-        _rpcsvc = new OncRpcSvcBuilder()
+        _rpcsvc = getOncRpcSvcBuilder()
                 .withClientMode()
                 .withPort(localPort)
                 .withIpProtocolType(protocol)
                 .withIoStrategy(ioStrategy)
                 .withServiceName(serviceName)
                 .build();
+    }
+
+    protected  OncRpcSvcBuilder getOncRpcSvcBuilder() {
+         return new OncRpcSvcBuilder();
     }
 
     public XdrTransport connect() throws IOException {

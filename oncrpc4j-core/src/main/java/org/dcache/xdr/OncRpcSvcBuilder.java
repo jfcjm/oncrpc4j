@@ -290,6 +290,10 @@ public class OncRpcSvcBuilder {
             throw new IllegalArgumentException("Can't set worker thread pool size with external execution service");
         }
 
+        return getNewOncRpcSvc();
+    }
+    
+    protected OncRpcSvc getNewOncRpcSvc(){
         return new OncRpcSvc(this);
     }
 }

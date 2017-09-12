@@ -101,7 +101,7 @@ public class RpcCall {
      * The {link CompletionHandler} which is used to notify all registered
      * completion listeners.
      */
-    private class NotifyListenersCompletionHandler implements CompletionHandler<Integer, InetSocketAddress> {
+    protected class NotifyListenersCompletionHandler implements CompletionHandler<Integer, InetSocketAddress> {
 
         @Override
         public void completed(Integer result, InetSocketAddress attachment) {
@@ -430,7 +430,7 @@ public class RpcCall {
      * @throws OncRpcException
      * @throws IOException
      */
-    private int callInternal(int procedure, XdrAble args, CompletionHandler<RpcReply, XdrTransport> callback,
+    protected int callInternal(int procedure, XdrAble args, CompletionHandler<RpcReply, XdrTransport> callback,
                              long timeoutValue, TimeUnit timeoutUnits, RpcAuth auth)
             throws IOException {
 
@@ -659,7 +659,7 @@ public class RpcCall {
     }
 
 
-    private int nextXid() {
+    protected int nextXid() {
         return xidGenerator.incrementAndGet();
     }
 

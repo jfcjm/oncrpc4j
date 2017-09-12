@@ -26,4 +26,9 @@ public class OncRpcRejectedException extends OncRpcException {
         super(RpcRejectStatus.toString(status));
         _status = status;
     }
+
+	public OncRpcRejectedException(String error) {
+		super(error);
+		_status = 0;
+	}
 }

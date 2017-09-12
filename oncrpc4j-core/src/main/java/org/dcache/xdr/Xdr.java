@@ -770,4 +770,8 @@ public class Xdr implements XdrDecodingStream, XdrEncodingStream {
             throw new BadXdrOncRpcException("corrupted xdr");
         }
     }
+
+	public Xdr duplicateBuffer() {
+		return new Xdr(_buffer.duplicate().asReadOnlyBuffer());
+	}
 }
