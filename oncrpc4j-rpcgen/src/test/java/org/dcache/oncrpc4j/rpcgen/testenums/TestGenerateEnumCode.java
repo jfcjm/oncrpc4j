@@ -3,76 +3,44 @@ package org.dcache.oncrpc4j.rpcgen.testenums;
 import static org.junit.Assert.*;
 import static spoon.testing.Assert.assertThat;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.PrintStream;
-import java.util.Arrays;
-import java.util.List;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Paths;
 
 import org.acplt.oncrpc.apps.jrpcgen.jrpcgen;
-import org.apache.maven.shared.invoker.DefaultInvocationRequest;
-import org.apache.maven.shared.invoker.DefaultInvoker;
-import org.apache.maven.shared.invoker.InvocationRequest;
-import org.apache.maven.shared.invoker.MavenInvocationException;
+import org.apache.log4j.Logger;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.Assertion;
-import org.junit.contrib.java.lang.system.ExpectedSystemExit;
-
 import spoon.Launcher;
 import spoon.reflect.declaration.CtField;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtType;
 import spoon.reflect.factory.TypeFactory;
 
+
+// mvn  -Dexec.skip=true -Dtest="**/TestGenerateEnumCode.java" test
 public class TestGenerateEnumCode {
-
-    private static final String M2_HOME = "/usr/share/maven/";
-    private static final String POM_XML = "pom.xml";
-    private static final String MAVEN_TARGET = "exec:java@TestTrafficLightWithEnum";
-    private static final String MAVEN_TARGET_NON_REGRESSION = "exec:java@TestTrafficLight";
-    private static Launcher spoonBase;
-    private static Launcher spoonEnum;
+    public static final Logger LOGGER = Logger.getLogger(TestGenerateEnumCode.class);
+    private static Launcher spoon;
 
 
-    private static final String GEN_TOP_DIR = "target/generated-test-sources/rpc";
-    private static final String JAVA_FILE_DIR = "target/generated-test-sources/rpc/org/dcache/oncrpc4j/rpcgen";
     private static final String JAVA_FILE_DIR_ENUM = "target/generated-test-sources/rpc-with-enum/org/dcache/oncrpc4j/rpcgen/enums";
+    
+    static String[] baseArgArray ;
+    
     /**
      * Call maven task to generate java code before running test cases
      * 
      * @throws MavenInvocationException
+     * @throws XmlPullParserException 
+     * @throws IOException 
+     * @throws FileNotFoundException 
      */
-
-
-    private static void createSpoonBase() throws MavenInvocationException {
-
-        InvocationRequest request = new DefaultInvocationRequest();
-        File pomFile = new File(POM_XML);
-        assertTrue(pomFile.exists());
-        request.setPomFile(pomFile);
-         java.util.List<String> goals = Arrays.asList(new String[]{
-                MAVEN_TARGET,
-        });
-        request.setGoals(goals);
+    
+    public static void createSpoonEnum() {
         
-        
-        DefaultInvoker invoker = new DefaultInvoker();
-        invoker.setMavenHome(new File(M2_HOME));
-        invoker.execute(request);
-
-        File baseJavaCode = new File(getBaseJavaFilePath("TrafficLight.java"));
-        assertTrue(baseJavaCode.exists());
-
-        spoonBase = new Launcher();
-        spoonBase.addInputResource("target/generated-test-sources/rpc");
-        spoonBase.run();
-        
-    }
-
-    private static void createSpoonEnum() {
-        final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
         //System.setOut(new PrintStream(outContent));
         String args[] = {
                 "-verbose",
@@ -90,80 +58,34 @@ public class TestGenerateEnumCode {
                 "src/test/xdr/TrafficLight.x"
         };
         jrpcgen.main(args);
-        System.setOut(null);
-        System.err.println(outContent);
-        assertFalse(outContent.toString().contains("Unrecognized option: -enums"));
+        
         File enumJavaCode = new File(getJavaFilePath("TrafficLight.java"));
 
         System.err.println("Checking " + enumJavaCode.getPath());
         assertTrue(enumJavaCode.exists());
         
-        spoonEnum = new Launcher();
-        spoonEnum.addInputResource("target/generated-test-sources/rpc-with-enum");
-        spoonEnum.run();
+        spoon = new Launcher();
+        spoon.addInputResource("target/generated-test-sources/rpc-with-enum");
+        spoon.run();
+        
+        CtType<Object> enumTrafficLigth = spoon.getFactory().Type().get("org.dcache.oncrpc4j.rpcgen.enums.TrafficLightColor");
+        assertNotNull(enumTrafficLigth);
         
     }
     @BeforeClass
-    public static void invokeMavenTarget() throws MavenInvocationException {
-        createSpoonBase();
-        createSpoonEnum();
+    public static void invokeMavenTarget() {
+    createSpoonEnum();
 
-    }
-
-    private static final String getBaseJavaFilePath(String name) {
-        return JAVA_FILE_DIR + File.separator + name;
     }
 
     private static final String getJavaFilePath(String name) {
-        return JAVA_FILE_DIR_ENUM + File.separator + name;
+        return Paths.get(JAVA_FILE_DIR_ENUM,name).toString();
     }
     
-    /*
-     *
-     * 
-                            <arguments>
-                                <argument>-debug</argument>
-                                <argument>-d</argument>
-                                <argument>${project.build.directory}/generated-test-sources/rpc-with-enum</argument>
-                                <argument>-p</argument>
-                                <argument>org.dcache.oncrpc4j.rpcgen.enums</argument>
-                                <argument>-bean</argument>
-                                <argument>-asyncfuture</argument>
-                                <argument>-asynccallback</argument>
-                                <argument>-oneway</argument>
-                                <argument>-enums</argument>
-                                <argument>-c</argument>
-                                <argument>TrafficLightClient</argument>
-                                <argument>-s</argument>
-                                <argument>TrafficLightServer</argument>
-                                <argument>${project.basedir}/src/test/xdr/TrafficLight.x</argument>
-                            </arguments>
-     */
     
-    
-    @Rule
-    public final ExpectedSystemExit exit = ExpectedSystemExit.none();
-    @Test
-    public void testJrpcgenParameterExists(){
-        
-        
-    }
-  //mvn  -Dexec.skip=true -Dtest="**/TestGenerateEnumCode.java" test
-    @Test
-    public void testNonRegression() {
-        CtType<Object> type = spoonBase.getFactory().Type().get("org.dcache.oncrpc4j.rpcgen.TrafficLightColor");
-        assertNotNull(type);
-        assertTrue(type.isInterface());
-        CtField<?> redDefintion = type.getField("RED");
-        assertNotNull(redDefintion);
-        System.err.println(redDefintion.toString());;
-        assertThat(type.getField("RED")).isEqualTo("public static final int RED = 1;");
-    }
-
-    //mvn  -Dexec.skip=true -Dtest="**/TestGenerateEnumCode.java" test
     @Test
     public void test() {
-        CtType<Object> type = spoonEnum.getFactory().Type().get("org.dcache.oncrpc4j.rpcgen.enums.TrafficLightColor");
+        CtType<Object> type = spoon.getFactory().Type().get("org.dcache.oncrpc4j.rpcgen.enums.TrafficLightColor");
         assertNotNull(type);
         
         //Check if TrafficLightColor is an enum
@@ -173,7 +95,7 @@ public class TestGenerateEnumCode {
         assertThat(redDefintion).isEqualTo("RED(1)");
         
         
-        CtType<Object> client = spoonEnum.getFactory().Type().get("org.dcache.oncrpc4j.rpcgen.enums.TrafficLightClient");
+        CtType<Object> client = spoon.getFactory().Type().get("org.dcache.oncrpc4j.rpcgen.enums.TrafficLightClient");
         assertNotNull(type);
         System.err.println(client.toString());
         assertTrue(type.isEnum());
@@ -187,5 +109,20 @@ public class TestGenerateEnumCode {
         assertNotNull(setColorMethod);
         System.err.println(setColorMethod.toString());
     }
-
+    @Test
+    public void TestGenCodeForDependency(){
+        CtType<Object> reducedType = spoon.getFactory().Type().get("org.dcache.oncrpc4j.rpcgen.enums.ReducedTrafficLightColor");
+        assertNotNull(reducedType);
+        
+        CtField<?> redDefintion = reducedType.getField("ReducedRED");
+        System.err.println(redDefintion);
+        assertThat(redDefintion).isEqualTo("ReducedRED(org.dcache.oncrpc4j.rpcgen.enums.TrafficLightColor.RED.getValue())");
+        
+        CtType<Object> rainbowType = spoon.getFactory().Type().get("org.dcache.oncrpc4j.rpcgen.enums.RainbowTrafficLightColor");
+        assertNotNull(rainbowType);
+        System.err.println(rainbowType);
+        CtField<?> rainbowRed = rainbowType.getField("RAINBOW_RED");
+        assertNotNull(rainbowRed);
+        assertThat(rainbowRed).isEqualTo("RAINBOW_RED(org.dcache.oncrpc4j.rpcgen.enums.ReducedTrafficLightColor.ReducedRED.getValue())");
+    }
 }

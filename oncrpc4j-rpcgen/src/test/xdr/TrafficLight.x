@@ -4,6 +4,24 @@ enum TrafficLightColor {
  GREEN = 3
 };
 
+enum ReducedTrafficLightColor{
+ ReducedRED = RED	
+};
+
+enum RainbowTrafficLightColor{
+ BLUE = 1,
+ MAGENTA = BLUE,
+ RAINBOW_RED = ReducedRED
+};
+
+/* This definition triggers a numberFormatException both in
+   base and in modified code
+enum DarkTrafficLightColor {
+ DARK_RED,
+ DARK_GREEN,
+ DARK_ORANGE
+};
+*/
 struct light_state {
        TrafficLightColor color;
        hyper int timeRemaining;

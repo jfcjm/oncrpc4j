@@ -215,9 +215,9 @@ public class jrpcgen {
      */
     public static boolean makeBean = false;
     /**
-     * Generate java enums instead of interfaces for xdr enums
+     * when false, generate java enums instead of interfaces for xdr enums
      */
-    public static boolean generateEnums = false;
+    public static boolean generateConstants4Enums = true;
     /**
      * Enable automatic initialization of String with empty Strings
      * instead of null reference.
@@ -444,7 +444,11 @@ public class jrpcgen {
                     // with the identifier we depend on (which is currently
                     // the case), so we just need to prepend the enclosure.
                     //
-                	translator.translate(c, declarations, imports, dc.enclosure + "." + c.value);
+                    StringBuilder constantValue = new StringBuilder(dc.enclosure + "." + c.value);
+                    if (! generateConstants4Enums){
+                        constantValue.append(".getValue()");
+                    }
+                	translator.translate(c, declarations, imports, constantValue.toString());
                     // JMLK TOMREMOVE translateEnumConstant(c, declarations, imports, dc.enclosure + "." + c.value);
                     return;
                 }
@@ -461,12 +465,6 @@ public class jrpcgen {
         translator.translate(c, declarations, imports, null);
         //JMK TOREMOVE translateEnumConstant(c, declarations, imports, null);
     }
-    enum ResConstant{
-    	unknown,
-    	isBigInteger,
-    	isLong,
-    	isInt
-    };
     
     @FunctionalInterface
     interface EnumTranslator{
@@ -475,15 +473,15 @@ public class jrpcgen {
     }
     
     public static void translateEnumConstant(JrpcgenConst constDecl, List<String> declarations, Set<String> imports, String valueOverride) {
-    	ResConstant result=ResConstant.unknown;
-    	String rawValue = constDecl.resolveValue();
+        
+        String rawValue = constDecl.resolveValue();
         String str = rawValue.toLowerCase(Locale.ROOT);
-
         //parse the numeric value of the constant
         BigInteger value;
         String valueSansPrefix;
         int radix;
         boolean hexOrOctal = true;
+        try{
         if (str.startsWith("0x")) { //hex
             valueSansPrefix = rawValue.substring(2);
             radix = 16;
@@ -519,6 +517,12 @@ public class jrpcgen {
             String val = valueOverride != null ? valueOverride : rawValue;
             //declarations.add("    public static final int " + constDecl.identifier + " = " + val + ";");
             declarations.add("    " +constDecl.identifier + '('+val+")");
+        }
+        }
+        catch (NumberFormatException e){
+            e.printStackTrace();
+            System.err.println("Invalid Number representation: " + str);
+            throw(e);
         }
     }
     public static void translateConstant(JrpcgenConst constDecl, List<String> declarations, Set<String> imports, String valueOverride) {
@@ -638,10 +642,14 @@ public class jrpcgen {
         out.println("/**");
         out.println(" * Enumeration (collection of constants).");
         out.println(" */");
-        out.println("import java.util.HashMap;");
-        out.println("import java.util.EnumSet;");
-        out.println();
-        out.println("public enum " + e.identifier + " {");
+        if (generateConstants4Enums){
+            out.println("public interface " + e.identifier + " {");
+        } else {
+            out.println("import java.util.HashMap;");
+            out.println("import java.util.EnumSet;");
+            out.println();
+            out.println("public enum " + e.identifier + " {");
+        }
         out.println();
 
         Enumeration enums = e.enums.elements();
@@ -655,21 +663,22 @@ public class jrpcgen {
             //
             List<String> declLines = new ArrayList<>();
             Set<String> imports = Collections.emptySet(); //will throw if modified
-            EnumTranslator enumTranslator;
             //enums are ints in xdrs, so we dont expect to need imports, hence the unmodifiable set above
-            if (generateEnums){
-                enumTranslator = jrpcgen::translateEnumConstant;
-            } else {
-                enumTranslator = jrpcgen::translateConstant;
-            }
+            
+            EnumTranslator enumTranslator = 
+                    generateConstants4Enums ? jrpcgen::translateConstant : jrpcgen::translateEnumConstant;
             dumpEnumConstantAndDependency(enumTranslator,c, declLines, imports);
-            int idx = declLines.size();
+            
             for (String line : declLines) {
                 out.println(line);
             }
-            out.println((enumIdx--) > 1 ? "," : ";");
+            if (! generateConstants4Enums){
+                out.println((enumIdx--) > 1 ? "," : ";");
+            }
         }
-        dumpEnumConstructor(out,e.identifier);
+        if (! generateConstants4Enums){
+            dumpEnumConstructor(out,e.identifier);
+        }
         //
         // Close class...
         //
@@ -2558,7 +2567,7 @@ public class jrpcgen {
                 makeSerializable = true;
                 makeBean = true;
             } else if (arg.equals("-enums")){
-                generateEnums = true;
+                generateConstants4Enums = false;
             } else if (arg.equals("-initstrings")) {
                 initStrings = true;
             } else if (arg.equals("-debug")) {
