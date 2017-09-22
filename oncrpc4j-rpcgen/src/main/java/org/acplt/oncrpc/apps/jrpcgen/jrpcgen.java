@@ -74,6 +74,8 @@ public class jrpcgen {
         System.out.println("  -p <package>    specify package name for generated source code files");
         System.out.println("  -s <classname>  specify class name of server proxy stub");
         System.out.println("  -rpccallclass <classname>  use rpccall class in generated client library");
+        System.out.println("  -oncsvcclass <classname>  use oncsvcclass class in generated client library");
+        System.out.println("  -virtrpc        implies both -rpccallclass  VirRpcCall and -oncsvcclass VirOncRpcClient");
         System.out.println("  -ser            tag generated XDR classes as serializable");
         System.out.println("  -bean           generate accessors for usage as bean, implies -ser");
         System.out.println("  -noclamp        do not clamp version number in client method stubs");
@@ -129,6 +131,8 @@ public class jrpcgen {
      * Default RpcCall in generated package *
      */
 	private static final String DEFAULT_RPC_CALL_IN_CLIENT = "RpcCall";
+	
+    private static final String DEFAULT_ONC_SVC_IN_CLIENT = "OncRpcClient";
     /**
      * Contains all global identifiers for type, structure and union specifiers
      * as well as for constants and enumeration members. This static attribute
@@ -248,9 +252,13 @@ public class jrpcgen {
      */
     public static boolean generatePerCallAuthSupport = false;
     /**
-     * use this class name for client library
+     * use this class name for rpccall in generated client
      */
     public static String useRpcCallClass = DEFAULT_RPC_CALL_IN_CLIENT;
+    /**
+     * use this class name for OncSvcClient in generated client
+     */
+    public static String useOncSvcClass = DEFAULT_ONC_SVC_IN_CLIENT;
     
     /**
      * Creates a new source code file for a Java class based on its class
@@ -1931,6 +1939,9 @@ public class jrpcgen {
         if (! DEFAULT_RPC_CALL_IN_CLIENT.equals(useRpcCallClass)){
         	out.println("import " + useRpcCallClass +";");
         }
+        if (! DEFAULT_ONC_SVC_IN_CLIENT .equals(useOncSvcClass)){
+            out.println("import " + useOncSvcClass  +";");
+        }
         out.println("import java.io.Closeable;");
         out.println("import java.net.InetAddress;");
         if (generateAsyncFutureClient) {
@@ -2516,6 +2527,16 @@ public class jrpcgen {
                     System.exit(1);
                 }
                 useRpcCallClass = args[argIdx];
+            } else if (arg.equals("-oncsvcclass")) {
+                if (++argIdx >= argc) {
+                    System.out.println("jrpcgen: missing oncsvcclient class name");
+                    System.exit(1);
+                }
+                useOncSvcClass = args[argIdx];
+            } else if (arg.equals("-virtrpc")) {
+                useRpcCallClass = "org.libvirt.VirOncRpcClient";
+                useOncSvcClass  = "org.libvirt.VirRpcCall";
+                        
             } else if (arg.equals("-help") || arg.equals("-?")) {
                 printHelp();
                 System.exit(1);
