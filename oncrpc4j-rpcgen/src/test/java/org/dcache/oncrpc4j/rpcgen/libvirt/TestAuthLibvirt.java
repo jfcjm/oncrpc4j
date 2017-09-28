@@ -29,20 +29,20 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
-import tests.credentials.TestLibvirt;
+import tests.credentials.TestCredentials4Libvirt;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class TestAuthLibvirt {
 	
-	private static final String TEST_USER = TestLibvirt.TEST_USER;
+	private static final String TEST_USER = TestCredentials4Libvirt.TEST_USER;
     private static final String VIRT_URI = "qemu:///system";
-	private static final String TARHET_HOST = TestLibvirt.TARHET_HOST;;
+	private static final String TARHET_HOST = TestCredentials4Libvirt.TARHET_HOST;;
 	boolean isLibVirtLocal = false;
 	final static Logger logger = LoggerFactory.getLogger(TestLibvirtClientConnectOpen.class);
 	 
-	  private static final String TEST_PASSWORD = TestLibvirt.TEST_PASSWORD; 
+	  private static final String TEST_PASSWORD = TestCredentials4Libvirt.TEST_PASSWORD; 
 	private LibvirtProtocolClient client;
 
 	long _timeoutValue =10;
