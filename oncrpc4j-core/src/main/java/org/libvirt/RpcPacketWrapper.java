@@ -1,5 +1,6 @@
-package org.dcache.xdr;
+package org.libvirt;
 
+import org.dcache.xdr.OncRpcException;
 import org.glassfish.grizzly.Buffer;
 
 public interface RpcPacketWrapper {

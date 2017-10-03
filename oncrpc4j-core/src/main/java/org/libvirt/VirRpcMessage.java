@@ -46,7 +46,9 @@ public class VirRpcMessage extends RpcMessage {
         int _version = xdr.xdrDecodeInt();
         int _procedure = xdr.xdrDecodeInt();
         _log.debug("program {}, version {}, procedure {}",_program,_version,_procedure);
-        super.xdrDecode(xdr);
+
+        _type = xdr.xdrDecodeInt();
+        _xid = xdr.xdrDecodeInt();
         _log.debug("type : {}, xid: {}",type(),xid());
         xdr.beginDecoding();
     }
