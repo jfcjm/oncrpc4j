@@ -63,14 +63,15 @@ public class VirRpcProtocolFilter extends RpcProtocolFilter {
         xdr.beginDecoding();
         _log.info("will create a message");
         RpcMessage message = new VirRpcMessage(xdr);
-        _log.info("new message created");
+        _log.info("new message created" + message);
         /**
          * In case of UDP grizzly does not populates connection with correct destination address.
          * We have to get peer address from the request context, which will contain SocketAddress where from
          * request was coming.
          */
+        _log.info("Creating transport");
         XdrTransport transport = new GrizzlyXdrTransport(ctx.getConnection(), (InetSocketAddress)ctx.getAddress(), _replyQueue);
-
+        _log.info("transport created");
         switch (message.type()) {
             case RpcMessageType.CALL:
             	_log.debug("Received a CALL message");
@@ -115,6 +116,7 @@ public class VirRpcProtocolFilter extends RpcProtocolFilter {
                 return ctx.getStopAction();
             default:
                 // bad XDR
+                _log.warn("unknown message.type" + message.type());
                 return ctx.getStopAction();
         }
     }
