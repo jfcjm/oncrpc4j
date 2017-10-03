@@ -60,7 +60,7 @@ public class VirOncRpcSvc extends OncRpcSvc {
     @Override
     protected Filter rpcMessageReceiverFor(Transport t) {
         if (t instanceof TCPNIOTransport) {
-            return new RpcMessageParserTCP();
+            return new VirRpcMessageParserTCP();
         }
         throw new RuntimeException("Unsupported transport: " + t.getClass().getName());
     }

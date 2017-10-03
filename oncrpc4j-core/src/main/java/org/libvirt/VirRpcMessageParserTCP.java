@@ -34,7 +34,7 @@ import org.glassfish.grizzly.memory.BuffersBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class VirRpcMessageParserTCP extends BaseFilter {
+public class VirRpcMessageParserTCP extends  RpcMessageParserTCP{
 	final static Logger logger = LoggerFactory.getLogger(VirRpcMessageParserTCP.class);
     /**
      * RPC fragment record marker mask
@@ -45,9 +45,13 @@ public class VirRpcMessageParserTCP extends BaseFilter {
      */
     private final static int RPC_SIZE_MASK = 0xffffffff;
 
+    
+    
+    
+    
     @Override
     public NextAction handleWrite(FilterChainContext ctx) throws IOException {
-    	logger.debug("will write a message");
+       logger.debug("will write a message");
         Buffer b = ctx.getMessage();
         int len = b.remaining() | RPC_LAST_FRAG;
         logger.debug("Length of ctx message: {}", len);
@@ -62,8 +66,9 @@ public class VirRpcMessageParserTCP extends BaseFilter {
         composite.allowBufferDispose(true);
         ctx.setMessage(composite);
         logger.debug("Invoke next action");
-        return ctx.getInvokeAction();
+       return ctx.getInvokeAction();
     }
+
     @Override
     protected boolean isAllFragmentsArrived(Buffer messageBuffer) throws IOException {
         final Buffer buffer = messageBuffer.duplicate();
@@ -108,9 +113,9 @@ public class VirRpcMessageParserTCP extends BaseFilter {
     }
     @Override
     protected  boolean isLastFragment(int marker) {
-        return (marker & RPC_LAST_FRAG) != 0;
+        return (marker & RPC_LAST_FRAG) == 0;
     }
-    @Override
+    
     protected Xdr assembleXdr(Buffer messageBuffer) {
 
         Buffer currentFragment = null;

@@ -77,7 +77,7 @@ public class RpcMessageParserTCP extends BaseFilter {
         return ctx.getInvokeAction();
     }
 
-    private boolean isAllFragmentsArrived(Buffer messageBuffer) throws IOException {
+    protected boolean isAllFragmentsArrived(Buffer messageBuffer) throws IOException {
         final Buffer buffer = messageBuffer.duplicate();
         buffer.order(ByteOrder.BIG_ENDIAN);
 
@@ -109,15 +109,15 @@ public class RpcMessageParserTCP extends BaseFilter {
         return false;
     }
 
-    private static int getMessageSize(int marker) {
+    protected  int getMessageSize(int marker) {
         return marker & RPC_SIZE_MASK;
     }
 
-    private static boolean isLastFragment(int marker) {
+    protected  boolean isLastFragment(int marker) {
         return (marker & RPC_LAST_FRAG) != 0;
     }
 
-    private Xdr assembleXdr(Buffer messageBuffer) {
+    protected Xdr assembleXdr(Buffer messageBuffer) {
 
         Buffer currentFragment;
         BuffersBuffer multipleFragments = null;
