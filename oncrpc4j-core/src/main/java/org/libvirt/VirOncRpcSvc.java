@@ -8,8 +8,10 @@ import java.util.Map.Entry;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.OncRpcSvc;
 import org.dcache.xdr.ReplyQueue;
+import org.dcache.xdr.RpcMessageParserTCP;
 import org.dcache.xdr.RpcProtocolFilter;
 import org.glassfish.grizzly.Transport;
+import org.glassfish.grizzly.filterchain.Filter;
 import org.glassfish.grizzly.filterchain.FilterChainBuilder;
 import org.glassfish.grizzly.nio.transport.TCPNIOTransport;
 import org.slf4j.Logger;
@@ -54,6 +56,16 @@ public class VirOncRpcSvc extends OncRpcSvc {
         _transport2wrapper.put(t,pwf);
         filterChain.add(pwf);
     }
+    
+    @Override
+    protected Filter rpcMessageReceiverFor(Transport t) {
+        if (t instanceof TCPNIOTransport) {
+            return new RpcMessageParserTCP();
+        }
+        throw new RuntimeException("Unsupported transport: " + t.getClass().getName());
+    }
+    
+    
     
     public synchronized void setPacketWrapper(SASLPacketWrapper sc) throws OncRpcException {
         if (! _isClient){

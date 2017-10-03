@@ -68,7 +68,6 @@ import static com.google.common.base.Throwables.getRootCause;
 import static com.google.common.base.Throwables.propagateIfPossible;
 import java.net.SocketAddress;
 import static org.dcache.xdr.GrizzlyUtils.getSelectorPoolCfg;
-import static org.dcache.xdr.GrizzlyUtils.rpcMessageReceiverFor;
 import static org.dcache.xdr.GrizzlyUtils.transportFor;
 
 public class OncRpcSvc {
@@ -322,6 +321,20 @@ public class OncRpcSvc {
             t.start();
 
         }
+    }
+    
+
+
+    protected Filter rpcMessageReceiverFor(Transport t) {
+        if (t instanceof TCPNIOTransport) {
+            return new RpcMessageParserTCP();
+        }
+
+        if (t instanceof UDPNIOTransport) {
+            return new RpcMessageParserUDP();
+        }
+
+        throw new RuntimeException("Unsupported transport: " + t.getClass().getName());
     }
 
     protected Filter getRpcProtocolFilter(ReplyQueue replyQueue) {
