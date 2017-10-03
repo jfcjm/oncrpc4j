@@ -328,10 +328,6 @@ public class OncRpcSvc {
         return new RpcProtocolFilter(replyQueue);
     }
 
-    protected void addPostRpcProtocolFilters(FilterChainBuilder filterChain) {
-        
-    }
-
     protected void addPostTransportProtocolFilters(FilterChainBuilder filterChain, Transport t) {
     }
 
