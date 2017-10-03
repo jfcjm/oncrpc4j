@@ -19,32 +19,23 @@
  */
 package org.dcache.xdr;
 
-import org.glassfish.grizzly.Buffer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class RpcMessage implements XdrAble {
-	private final static Logger _log = LoggerFactory.getLogger(RpcMessage.class);
+
     private int _xid;
     private int _type;
 
-    protected RpcMessage(XdrDecodingStream xdr) throws BadXdrOncRpcException {
+    RpcMessage(XdrDecodingStream xdr) throws BadXdrOncRpcException {
         this.xdrDecode(xdr);
     }
 
-    protected RpcMessage(int xid, int type) {
+    RpcMessage(int xid, int type) {
         _xid = xid;
         _type = type;
     }
 
     public void xdrDecode(XdrDecodingStream xdr) throws BadXdrOncRpcException {
-    	// in virt rpc xid and type are not at the first position,
-        // we skip the first three int and then we'll rewind the buffer
-        _log.debug("decoding");
-        //
-        _type = xdr.xdrDecodeInt();
         _xid = xdr.xdrDecodeInt();
-        _log.debug("type : {}, xid: {}",_type,_xid);
+        _type = xdr.xdrDecodeInt();
     }
 
     public void xdrEncode(XdrEncodingStream xdr) {
