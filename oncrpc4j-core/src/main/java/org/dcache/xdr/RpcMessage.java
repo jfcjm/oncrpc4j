@@ -21,14 +21,14 @@ package org.dcache.xdr;
 
 public class RpcMessage implements XdrAble {
 
-    private int _xid;
-    private int _type;
+    protected int _xid;
+    protected int _type;
 
-    RpcMessage(XdrDecodingStream xdr) throws BadXdrOncRpcException {
+    protected RpcMessage(XdrDecodingStream xdr) throws BadXdrOncRpcException {
         this.xdrDecode(xdr);
     }
 
-    RpcMessage(int xid, int type) {
+    protected RpcMessage(int xid, int type) {
         _xid = xid;
         _type = type;
     }
