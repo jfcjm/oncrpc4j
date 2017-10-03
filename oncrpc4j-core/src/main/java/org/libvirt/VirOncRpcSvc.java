@@ -25,12 +25,13 @@ public class VirOncRpcSvc extends OncRpcSvc {
         super(virOncRpcSvcBuilder);
         _log.info("Creating a new VirOncRpcSvc");
     }
+    @Override
     public void start() throws IOException {
         if (!_isClient){
             _log.error("Cannot use libvirt rpc in server mode for now");
             throw new RuntimeException("Cannot use libvirt rpc in server mode for now");
         }
-        if (!_publish){
+        if (_publish){
             _log.warn("Libvirt does not publish its service through a portmapper");
             _publish=false;
         }
