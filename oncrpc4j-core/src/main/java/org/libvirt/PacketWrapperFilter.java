@@ -5,7 +5,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import org.dcache.xdr.GrizzlyMemoryManager;
-import org.dcache.xdr.RpcPacketWrapper;
 import org.glassfish.grizzly.Buffer;
 import org.glassfish.grizzly.filterchain.BaseFilter;
 import org.glassfish.grizzly.filterchain.FilterChainContext;

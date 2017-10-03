@@ -9,7 +9,6 @@ import javax.security.sasl.SaslException;
 
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.OncRpcRejectedException;
-import org.dcache.xdr.RpcPacketWrapper;
 import org.glassfish.grizzly.Buffer;
 import org.glassfish.grizzly.memory.Buffers;
 import org.glassfish.grizzly.memory.ByteBufferArray;
