@@ -108,6 +108,10 @@ public class VirRpcReply extends RpcReply{
         }
         return _error.getCode();
     }
+    
+    public remote_error getError(){
+        return _error;
+    }
     /*
     @Override
     public String toString() {

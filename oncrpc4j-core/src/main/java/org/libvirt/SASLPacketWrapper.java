@@ -33,7 +33,7 @@ public class SASLPacketWrapper implements RpcPacketWrapper {
 	}
 
 	@Override
-	public Buffer unwrap(byte[] msg) throws OncRpcException {
+	public Buffer unwrap(byte[] msg) throws VirRpcException {
 		try {
 			byte[] unwrapped = _sc.unwrap(msg, 0, msg.length);
 			
@@ -42,23 +42,23 @@ public class SASLPacketWrapper implements RpcPacketWrapper {
 			// d'un slice sur un ByteBufferWrapper
 			return Buffers.cloneBuffer(output);
 		} catch (SaslException e) {
-			OncRpcRejectedException exc = new OncRpcRejectedException("Unable to unwrap sasl packet");
+			VirRpcSASLException exc = new VirRpcSASLException("Unable to unwrap sasl packet");
 			exc.initCause(e);
 			throw exc;
 		}
 	}
-	protected byte[] wrap(byte[] msg) throws  OncRpcException{
+	protected byte[] wrap(byte[] msg) throws  VirRpcException{
 		try {
 			return _sc.wrap(msg, 0, msg.length);
 		} catch (SaslException e) {
-			OncRpcRejectedException exc = new OncRpcRejectedException("Unable to wrap sasl packet");
+			VirRpcSASLException exc = new VirRpcSASLException("Unable to wrap sasl packet");
 			exc.initCause(e);
 			throw exc;
 		}
 	}
 
 	@Override
-	public Buffer wrap(Buffer input) throws OncRpcException {
+	public Buffer wrap(Buffer input) throws VirRpcException {
 		_log.debug("input " +input.remaining());
 		_log.debug("input " +input.position());
 		final ByteBufferArray bba =

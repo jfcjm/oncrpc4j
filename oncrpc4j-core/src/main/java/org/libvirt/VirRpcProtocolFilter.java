@@ -92,17 +92,17 @@ public class VirRpcProtocolFilter extends RpcProtocolFilter {
             case RpcMessageType.REPLY:
             	_log.debug("Received a Reply message with xid {}",message.xid());
                 try {
-                    RpcReply reply = new VirRpcReply(message.xid(), xdr, transport);
+                    VirRpcReply reply = new VirRpcReply(message.xid(), xdr, transport);
                     _log.debug("Rpc reply is {}",reply);
                     CompletionHandler<RpcReply, XdrTransport> callback = _replyQueue.get(message.xid());
                     if (callback != null) {
                     	_log.debug("Processing callback");
                         if (!reply.isAccepted()) {
                         	_log.debug("Reply is not accepted");
-                            callback.failed(new OncRpcRejectedException(reply.getRejectStatus()), transport);
+                            callback.failed(new VirRpcRejectedException(reply.getError()), transport);
                         } else if (reply.getAcceptStatus() != RpcAccepsStatus.SUCCESS) {
                         	_log.debug("Accept status failed");
-                            callback.failed(new OncRpcAcceptedException(reply.getAcceptStatus()), transport);
+                            callback.failed(new VirRpcAcceptedException(reply.getAcceptStatus()), transport);
                         } else {
                         	_log.debug("Callback completed");
                             callback.completed(reply, transport);

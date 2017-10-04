@@ -28,6 +28,7 @@ import org.junit.matchers.JUnitMatchers;
 import org.junit.rules.ExpectedException;
 import org.libvirt.VirOncRpcClient;
 import org.libvirt.VirRpcCall;
+import org.libvirt.VirRpcRejectedException;
 
 public class TestLibvirt {
 	
@@ -210,7 +211,7 @@ public class TestLibvirt {
 	public ExpectedException thrown = ExpectedException.none();
 	@Test
 	public void testVirRPcRaisesExceptionAuth() throws IOException {
-		thrown.expect(OncRpcRejectedException.class);
+		thrown.expect(VirRpcRejectedException.class);
 		thrown.expectMessage(JUnitMatchers.containsString("authentication required"));
 		InetAddress localhost = InetAddress.getByName("127.0.0.1");
 		int tcp = IpProtocolType.TCP;
@@ -231,7 +232,7 @@ public class TestLibvirt {
 	}
 	@Test
 	public void testVirRPcRaisesExceptionBadProgram() throws IOException {
-		thrown.expect(OncRpcRejectedException.class);
+		thrown.expect(VirRpcRejectedException.class);
 		thrown.expectMessage(JUnitMatchers.containsString("Cannot find program"));
 		InetAddress localhost = InetAddress.getByName("127.0.0.1");
 		int tcp = IpProtocolType.TCP;
