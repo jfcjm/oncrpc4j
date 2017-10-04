@@ -55,7 +55,10 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
-
+/*
+ * Apdaptation of rpcCall for libvirt ! does not use rpcvers nor
+ * rpcauth
+ */
 public class VirRpcCall extends RpcCall{
 
     private final static Logger _log = LoggerFactory.getLogger(VirRpcCall.class);
@@ -153,6 +156,18 @@ public class VirRpcCall extends RpcCall{
             }
         });
         return xid;
+    }
+    @Override
+    public void accept() throws IOException, OncRpcException {
+        /*_rpcvers = _xdr.xdrDecodeInt();
+        if (_rpcvers != RPCVERS) {
+           throw new RpcMismatchReply(_rpcvers, 2);
+        }
+        */
+       _prog = _xdr.xdrDecodeInt();
+       _version = _xdr.xdrDecodeInt();
+       _proc = _xdr.xdrDecodeInt();
+       //_cred = RpcCredential.decode(_xdr);
     }
     
 }

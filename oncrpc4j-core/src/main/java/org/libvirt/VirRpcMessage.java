@@ -31,7 +31,7 @@ public class VirRpcMessage extends RpcMessage {
 
     VirRpcMessage(XdrDecodingStream xdr) throws BadXdrOncRpcException {
         super(xdr);
-        _log.info("Creating a new VirRpcMessage");
+        _log.info("Created a new VirRpcMessage");
     }
 
     public VirRpcMessage(int xid, int type) {

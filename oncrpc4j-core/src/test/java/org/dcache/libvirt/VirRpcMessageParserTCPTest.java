@@ -152,11 +152,11 @@ public class VirRpcMessageParserTCPTest {
 
             VirRpcMessage rpcMessage = new VirRpcMessage(xid, RpcMessageType.CALL);
             rpcMessage.xdrEncode(xdr);
-            xdr.xdrEncodeInt(rpcvers);
+            //xdr.xdrEncodeInt(rpcvers);
             xdr.xdrEncodeInt(prog);
             xdr.xdrEncodeInt(vers);
             xdr.xdrEncodeInt(proc);
-            auth.xdrEncode(xdr);
+            //auth.xdrEncode(xdr);
             args.xdrEncode(xdr);
 
             xdr.endEncoding();
@@ -166,7 +166,7 @@ public class VirRpcMessageParserTCPTest {
     /**
      * RPC fragment record marker mask
      */
-    private final static int RPC_LAST_FRAG = 0x80000000;
+    private final static int RPC_LAST_FRAG = 0x00000000;
 
     private static Buffer toFragmentedBuffer(Xdr xdr, int size) {
 

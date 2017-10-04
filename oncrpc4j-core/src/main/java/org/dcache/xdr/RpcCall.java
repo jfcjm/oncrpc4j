@@ -60,17 +60,17 @@ public class RpcCall {
     /**
      * RPC program number
      */
-    private int _prog;
+    protected int _prog;
 
     /**
      * RPC program version number
      */
-    private int _version;
+    protected int _version;
 
     /**
      * RPC program procedure number
      */
-    private int _proc;
+    protected int _proc;
 
     /**
      *  RPC protocol version number
@@ -90,7 +90,7 @@ public class RpcCall {
     /**
      * Call body.
      */
-    private final Xdr _xdr;
+    protected final Xdr _xdr;
 
     /**
      * Object used to synchronize access to sendListeners.
