@@ -52,14 +52,10 @@ public class VirRpcMessage extends RpcMessage {
         _log.debug("type : {}, xid: {}",type(),xid());
         xdr.beginDecoding();
     }
-    //TODO 
+    
     @Override
     public void xdrEncode(XdrEncodingStream xdr) {
-        super.xdrEncode(xdr);
-        /*
-         * supêr fait
-        xdr.xdrEncodeInt(_xid);
         xdr.xdrEncodeInt(_type);
-        */
+        xdr.xdrEncodeInt(_xid);
     }
 }

@@ -151,11 +151,11 @@ public class VirRpcMessageParserTCPTest {
             xdr.beginEncoding();
 
             VirRpcMessage rpcMessage = new VirRpcMessage(xid, RpcMessageType.CALL);
-            rpcMessage.xdrEncode(xdr);
             //xdr.xdrEncodeInt(rpcvers);
             xdr.xdrEncodeInt(prog);
             xdr.xdrEncodeInt(vers);
             xdr.xdrEncodeInt(proc);
+            rpcMessage.xdrEncode(xdr);
             //auth.xdrEncode(xdr);
             args.xdrEncode(xdr);
 

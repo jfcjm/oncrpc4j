@@ -214,9 +214,8 @@ public class TestLibvirt {
 		thrown.expect(VirRpcRejectedException.class);
 		thrown.expectMessage(JUnitMatchers.containsString("authentication required"));
 		InetAddress localhost = InetAddress.getByName("127.0.0.1");
-		int tcp = IpProtocolType.TCP;
 		int port = 16509;
-		OncRpcClient client = new VirOncRpcClient(localhost,tcp,port);
+		OncRpcClient client = new VirOncRpcClient(localhost,port);
 		assertNotNull(client);
 		XdrTransport transport = client.connect();
 		assertNotNull(transport);
@@ -237,7 +236,7 @@ public class TestLibvirt {
 		InetAddress localhost = InetAddress.getByName("127.0.0.1");
 		int tcp = IpProtocolType.TCP;
 		int port = 16509;
-		OncRpcClient client = new VirOncRpcClient(localhost,tcp,port);
+		OncRpcClient client = new VirOncRpcClient(localhost,port);
 		assertNotNull(client);
 		XdrTransport transport = client.connect();
 		assertNotNull(transport);

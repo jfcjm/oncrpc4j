@@ -35,7 +35,7 @@ public class VirOncRpcSvc extends OncRpcSvc {
         }
         if (_publish){
             _log.warn("Libvirt does not publish its service through a portmapper");
-            _publish=false;
+            throw new RuntimeException("Libvirt does not publish its service through a portmapper");
         }
         for (Transport t : _transports) {
             if ( !( t instanceof TCPNIOTransport)){
