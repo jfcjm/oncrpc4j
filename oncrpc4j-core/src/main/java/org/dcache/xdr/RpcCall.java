@@ -154,7 +154,7 @@ public class RpcCall {
      */
     private List<CompletionHandler<Integer, InetSocketAddress>> _sendOnceListeners;
 
-    private final CompletionHandler<Integer, InetSocketAddress> _sendNotificationHandler
+    protected final CompletionHandler<Integer, InetSocketAddress> _sendNotificationHandler
             = new NotifyListenersCompletionHandler();
 
     public RpcCall(int prog, int ver, RpcAuth cred, XdrTransport transport) {

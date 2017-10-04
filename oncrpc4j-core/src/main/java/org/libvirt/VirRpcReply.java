@@ -112,6 +112,11 @@ public class VirRpcReply extends RpcReply{
     public remote_error getError(){
         return _error;
     }
+    
+    
+    
+    
+    
     /*
     @Override
     public String toString() {

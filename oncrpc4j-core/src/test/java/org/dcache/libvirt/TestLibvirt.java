@@ -246,9 +246,7 @@ public class TestLibvirt {
 		CompletionHandler handler = null;
 		int PROGNUM = 1;
 		int PROGVER = 1;
-			
-		RpcAuth auth = null;
-		VirRpcCall virClient = new VirRpcCall(PROGNUM,PROGVER,auth,transport);
+		VirRpcCall virClient = new VirRpcCall(PROGNUM,PROGVER,transport);
 		XdrString s = new XdrString("hello");
 		XdrVoid reply = new XdrVoid();
 		virClient.call(0, s, reply);

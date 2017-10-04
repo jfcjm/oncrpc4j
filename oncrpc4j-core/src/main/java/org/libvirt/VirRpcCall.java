@@ -63,11 +63,11 @@ public class VirRpcCall extends RpcCall{
 
     private final static Logger _log = LoggerFactory.getLogger(VirRpcCall.class);
 
-    public VirRpcCall(int prog, int ver, RpcAuth cred, XdrTransport transport) {
-        this(prog, ver, cred, new Xdr(Xdr.INITIAL_XDR_SIZE), transport);
+    public VirRpcCall(int prog, int ver,  XdrTransport transport) {
+        this(prog, ver,  new Xdr(Xdr.INITIAL_XDR_SIZE), transport);
     }
 
-    public VirRpcCall(int prog, int ver, RpcAuth cred, Xdr xdr, XdrTransport transport) {
+    public VirRpcCall(int prog, int ver,  Xdr xdr, XdrTransport transport) {
         super(prog,ver,null,xdr,transport);
         
     }
@@ -76,7 +76,7 @@ public class VirRpcCall extends RpcCall{
         super(xid,xdr,transport);
     }
 
-    public VirRpcCall(int xid, int prog, int ver, int proc, RpcAuth cred, Xdr xdr, XdrTransport transport) {
+    public VirRpcCall(int xid, int prog, int ver, int proc, Xdr xdr, XdrTransport transport) {
         super(xid,prog,ver,proc,null,xdr,transport);
     }
     
@@ -96,8 +96,8 @@ public class VirRpcCall extends RpcCall{
     protected int callInternal(int procedure, XdrAble args, CompletionHandler<RpcReply, XdrTransport> callback,
                              long timeoutValue, TimeUnit timeoutUnits, RpcAuth auth)
             throws IOException {
-
         int xid = nextXid();
+        _log.debug("calling procedure {} with args {} (xid: {})",procedure,args.toString(),xid);
         
         Xdr xdr = new Xdr(Xdr.INITIAL_XDR_SIZE);
         xdr.beginEncoding();
@@ -107,11 +107,6 @@ public class VirRpcCall extends RpcCall{
         xdr.xdrEncodeInt(getProgram());
         xdr.xdrEncodeInt(getProgramVersion());
         xdr.xdrEncodeInt(procedure);
-        if (auth != null) {
-            auth.xdrEncode(xdr);
-        } else {
-            //_cred.xdrEncode(xdr);
-        }
         xdr.xdrEncodeInt(0); //type
         xdr.xdrEncodeInt(xid);//serial
         xdr.xdrEncodeInt(0);//status
@@ -125,11 +120,6 @@ public class VirRpcCall extends RpcCall{
         */
         _log.debug("extended :xid {}", xid);
         System.out.println("wrote " + xdr.asBuffer().limit() + "bytes");
-        System.out.println("remaining " + xdr.asBuffer().remaining() + "bytes");
-        System.out.println("first " + xdr.asBuffer().array()[0]);
-        System.out.println("first " + xdr.asBuffer().array()[1]);
-        System.out.println("first " + xdr.asBuffer().array()[2]);
-        System.out.println("first " + xdr.asBuffer().array()[3]);
         
         
         XdrTransport _transport = getTransport();
@@ -164,10 +154,53 @@ public class VirRpcCall extends RpcCall{
            throw new RpcMismatchReply(_rpcvers, 2);
         }
         */
+        _log.debug("Before remaining {} ",_xdr.asBuffer().remaining());
        _prog = _xdr.xdrDecodeInt();
        _version = _xdr.xdrDecodeInt();
        _proc = _xdr.xdrDecodeInt();
+       //fake Read of type and xid
+       _xdr.xdrDecodeInt();//type
+       _xdr.xdrDecodeInt();//xid
+       // We need to also read one more Integer (status)
+       _xdr.xdrDecodeInt();//xid
+       
+       _log.debug("Accepted call for prog {}, version {} and proc {}",_prog,_version,_proc);
+       _log.debug("remaining {} ",_xdr.asBuffer().remaining());
        //_cred = RpcCredential.decode(_xdr);
     }
-    
+    @Override
+    public void acceptedReply(int state, XdrAble reply) {
+        _log.debug("Construct a reply for state {} and reply <{}> (program {}, version {}, proc {})", state,reply,getProgram(),getProgramVersion(),getProcedure());
+        XdrEncodingStream xdr = _xdr;
+        try {
+            RpcMessage replyMessage = new VirRpcMessage(getXid(), RpcMessageType.REPLY);
+            xdr.beginEncoding();
+            xdr.xdrEncodeInt(getProgram());
+            xdr.xdrEncodeInt(getProgramVersion());
+            xdr.xdrEncodeInt(getProcedure());
+            replyMessage.xdrEncode(_xdr);
+            xdr.xdrEncodeInt(RpcReplyStatus.MSG_ACCEPTED);
+            /**
+             * no credentials in libvirt
+             
+            _cred.getVerifier().xdrEncode(xdr);
+            */
+            // No state for libvirt replies xdr.xdrEncodeInt(state);
+            reply.xdrEncode(xdr);
+            xdr.endEncoding();
+            {
+                XdrTransport _transport = getTransport();
+                _transport.send((Xdr)xdr, _transport.getRemoteSocketAddress(), _sendNotificationHandler);
+            }
+
+        } catch (VirRpcException e) {
+            _log.warn("Xdr exception: ", e);
+        } catch (IOException e) {
+            _log.error("Failed send reply: ", e);
+        }
+    }
+    @Override
+    public String toString() {
+        return String.format("LibVirtRPC call: program=%d, version=%d, procedure=%d,arg length %d", _prog, _version, _proc,_xdr.asBuffer().remaining());
+    }
 }

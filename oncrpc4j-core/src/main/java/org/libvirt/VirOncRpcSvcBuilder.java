@@ -4,6 +4,11 @@ import org.dcache.xdr.OncRpcSvcBuilder;
 
 public class VirOncRpcSvcBuilder extends OncRpcSvcBuilder {
 
+    public VirOncRpcSvcBuilder(){
+        super();
+        this.withoutAutoPublishInternal();
+    }
+
     @Override
     protected VirOncRpcSvc getNewOncRpcSvc(){
         return new VirOncRpcSvc(this);
@@ -18,6 +23,10 @@ public class VirOncRpcSvcBuilder extends OncRpcSvcBuilder {
     public OncRpcSvcBuilder withoutAutoPublish() {
         throw new RuntimeException("Libvirt does not publish its service through a portmapper");
     }
+
     
+    private void withoutAutoPublishInternal() {
+        super.withoutAutoPublish();
+    }
     
 }
