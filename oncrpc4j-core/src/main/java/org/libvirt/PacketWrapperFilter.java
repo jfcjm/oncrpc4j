@@ -16,13 +16,9 @@ import org.slf4j.LoggerFactory;
 
 public class PacketWrapperFilter extends BaseFilter {
 	private final static Logger _log = LoggerFactory.getLogger(PacketWrapperFilter.class);
-	private  RpcPacketWrapper _packetWrapper;
-    private SASLPacketWrapper _nextWritePacketWrapper;
+	private  RpcPacketWrapper _packetWrapper           = null;
+    private SASLPacketWrapper _nextWritePacketWrapper   = null;
 	
-	public PacketWrapperFilter(){
-		_packetWrapper = null;
-		_nextWritePacketWrapper = null;
-	}
 	public synchronized void  setPacketWrapper(RpcPacketWrapper packetWrapper){
 		_log.debug(this+" setting packetwrapper");
 		_packetWrapper = packetWrapper;
@@ -82,11 +78,6 @@ public class PacketWrapperFilter extends BaseFilter {
 			_log.debug("out, " + output.position());
 			_log.debug("out, " + output.limit());
 			_log.debug("out, " + output.remaining());
-			output.dumpHex(System.out);
-			_log.debug("compo, " + composite.position());
-			_log.debug("sompo, " + composite.limit());
-			_log.debug("sompo, " + composite.remaining());
-			composite.dumpHex(System.out);
 			ctx.setMessage(composite);
 			
 			
