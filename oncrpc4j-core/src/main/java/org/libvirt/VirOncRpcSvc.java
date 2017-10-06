@@ -8,7 +8,6 @@ import java.util.Map.Entry;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.OncRpcSvc;
 import org.dcache.xdr.ReplyQueue;
-import org.dcache.xdr.RpcMessageParserTCP;
 import org.dcache.xdr.RpcProtocolFilter;
 import org.glassfish.grizzly.Transport;
 import org.glassfish.grizzly.filterchain.Filter;

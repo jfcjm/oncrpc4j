@@ -19,42 +19,27 @@
  */
 package org.libvirt;
 
-import com.google.common.base.Throwables;
 import java.io.EOFException;
 
-import org.dcache.xdr.MismatchInfo;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.ReplyQueue;
-import org.dcache.xdr.RpcAccepsStatus;
 import org.dcache.xdr.RpcAuth;
 import org.dcache.xdr.RpcCall;
-import org.dcache.xdr.RpcCredential;
 import org.dcache.xdr.RpcMessage;
 import org.dcache.xdr.RpcMessageType;
-import org.dcache.xdr.RpcMismatchReply;
 import org.dcache.xdr.RpcReply;
 import org.dcache.xdr.RpcReplyStatus;
 import org.dcache.xdr.Xdr;
 import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrEncodingStream;
 import org.dcache.xdr.XdrTransport;
-import org.dcache.xdr.XdrVoid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InterruptedIOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.CompletionHandler;
-import java.util.Random;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
 /*
  * Apdaptation of rpcCall for libvirt ! does not use rpcvers nor
  * rpcauth

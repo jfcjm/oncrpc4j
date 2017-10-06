@@ -23,7 +23,6 @@ import java.io.IOException;
 
 import org.dcache.xdr.BadXdrOncRpcException;
 import org.dcache.xdr.ReplyQueue;
-import org.dcache.xdr.RpcMessage;
 import org.dcache.xdr.Xdr;
 import org.glassfish.grizzly.Connection;
 import org.glassfish.grizzly.filterchain.Filter;

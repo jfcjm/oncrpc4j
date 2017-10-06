@@ -3,11 +3,7 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.channels.CompletionHandler;
-
 import org.dcache.xdr.OncRpcSvc;
-import org.dcache.xdr.RpcReply;
-import org.dcache.xdr.Xdr;
 import org.dcache.xdr.XdrInt;
 import org.dcache.xdr.XdrTransport;
 import org.dcache.xdr.XdrVoid;

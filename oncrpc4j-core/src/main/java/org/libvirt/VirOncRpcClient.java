@@ -1,8 +1,6 @@
 package org.libvirt;
 
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
-
 import org.dcache.xdr.IoStrategy;
 import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcClient;

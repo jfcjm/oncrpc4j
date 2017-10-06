@@ -22,16 +22,10 @@ package org.libvirt;
 import java.io.IOException;
 
 import org.dcache.xdr.BadXdrOncRpcException;
-import org.dcache.xdr.MismatchInfo;
 import org.dcache.xdr.OncRpcException;
-import org.dcache.xdr.RpcAccepsStatus;
-import org.dcache.xdr.RpcAuthStat;
-import org.dcache.xdr.RpcAuthVerifier;
-import org.dcache.xdr.RpcRejectStatus;
 import org.dcache.xdr.RpcReply;
 import org.dcache.xdr.RpcReplyStatus;
 import org.dcache.xdr.Xdr;
-import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

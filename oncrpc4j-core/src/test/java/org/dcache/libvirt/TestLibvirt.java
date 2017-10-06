@@ -15,7 +15,6 @@ import java.nio.channels.CompletionHandler;
 
 import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcClient;
-import org.dcache.xdr.OncRpcRejectedException;
 import org.dcache.xdr.RpcAuth;
 import org.dcache.xdr.Xdr;
 import org.dcache.xdr.XdrString;

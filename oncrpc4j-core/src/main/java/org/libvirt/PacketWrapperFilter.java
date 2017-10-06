@@ -1,7 +1,6 @@
 package org.libvirt;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import org.dcache.xdr.GrizzlyMemoryManager;
@@ -9,8 +8,6 @@ import org.glassfish.grizzly.Buffer;
 import org.glassfish.grizzly.filterchain.BaseFilter;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.filterchain.NextAction;
-import org.glassfish.grizzly.memory.BuffersBuffer;
-import org.glassfish.grizzly.memory.ByteBufferArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

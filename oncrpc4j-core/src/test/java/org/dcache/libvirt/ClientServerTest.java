@@ -1,5 +1,9 @@
 package org.dcache.libvirt;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.channels.CompletionHandler;
@@ -15,11 +19,8 @@ import org.dcache.xdr.XdrVoid;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.libvirt.VirOncRpcSvc;
 import org.libvirt.VirOncRpcSvcBuilder;
 import org.libvirt.VirRpcCall;
-
-import static org.junit.Assert.*;
 
 /**
  *

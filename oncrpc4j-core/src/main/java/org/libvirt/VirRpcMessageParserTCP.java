@@ -27,7 +27,6 @@ import org.dcache.xdr.GrizzlyMemoryManager;
 import org.dcache.xdr.RpcMessageParserTCP;
 import org.dcache.xdr.Xdr;
 import org.glassfish.grizzly.Buffer;
-import org.glassfish.grizzly.filterchain.BaseFilter;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.filterchain.NextAction;
 import org.glassfish.grizzly.memory.BuffersBuffer;

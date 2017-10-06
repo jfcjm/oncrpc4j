@@ -1,14 +1,9 @@
 package org.dcache.libvirt;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.nio.channels.CompletionHandler;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,19 +16,16 @@ import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslServer;
 
-import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.OncRpcProgram;
 import org.dcache.xdr.OncRpcSvc;
 import org.dcache.xdr.RpcCall;
 import org.dcache.xdr.RpcDispatchable;
-import org.dcache.xdr.Xdr;
 import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrDecodingStream;
 import org.dcache.xdr.XdrEncodingStream;
 import org.dcache.xdr.XdrInt;
 import org.dcache.xdr.XdrString;
-import org.dcache.xdr.XdrTransport;
 import org.dcache.xdr.XdrVoid;
 import org.junit.After;
 import org.junit.Before;
