@@ -16,16 +16,23 @@ import org.slf4j.LoggerFactory;
 
 public class PacketWrapperFilter extends BaseFilter {
 	private final static Logger _log = LoggerFactory.getLogger(PacketWrapperFilter.class);
-	RpcPacketWrapper _packetWrapper;
+	private  RpcPacketWrapper _packetWrapper;
+    private SASLPacketWrapper _nextWritePacketWrapper;
 	
 	public PacketWrapperFilter(){
 		_packetWrapper = null;
+		_nextWritePacketWrapper = null;
 	}
 	public synchronized void  setPacketWrapper(RpcPacketWrapper packetWrapper){
 		_log.debug(this+" setting packetwrapper");
 		_packetWrapper = packetWrapper;
 		_log.debug("now active ?"+isActive());
 	}
+
+    public synchronized void setPacketWrapperAfterNextWrite(SASLPacketWrapper pw) {
+        _log.debug(this+" will install packetwrapper after nex write");
+        _nextWritePacketWrapper = pw;
+    }
 	@Override
 	public NextAction handleRead(FilterChainContext ctx) throws IOException {
 		_log.debug(this+" HandleRead isActive: " + isActive());
@@ -86,12 +93,21 @@ public class PacketWrapperFilter extends BaseFilter {
 			return ctx.getInvokeAction();
 		} else {
 			_log.debug("not atctive");
+            
+            if (isPacketWrapperWaiting()){
+                
+                _packetWrapper = _nextWritePacketWrapper;
+                _nextWritePacketWrapper = null;
+            }
 			return ctx.getInvokeAction();
 		}
 	}
 	
 	
-	private boolean isActive() {
+	private boolean isPacketWrapperWaiting() {
+        return (null != _nextWritePacketWrapper);
+    }
+    private boolean isActive() {
 		return (null != _packetWrapper);
 	}
 

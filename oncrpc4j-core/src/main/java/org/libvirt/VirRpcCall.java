@@ -62,7 +62,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class VirRpcCall extends RpcCall{
 
     private final static Logger _log = LoggerFactory.getLogger(VirRpcCall.class);
-
+    /**
+     * Construit un RPC libvirt
+     * @param prog      numero du programme
+     * @param ver       veriosn du programme
+     * @param transport XdrTransport to use
+     */
     public VirRpcCall(int prog, int ver,  XdrTransport transport) {
         this(prog, ver,  new Xdr(Xdr.INITIAL_XDR_SIZE), transport);
     }
