@@ -224,7 +224,7 @@ public class TestLibvirt {
 		int PROGVER = 1;
 			
 		RpcAuth auth = null;
-		VirRpcCall virClient = new VirRpcCall(PROGNUM,PROGVER,auth,transport);
+		VirRpcCall virClient = new VirRpcCall(PROGNUM,PROGVER,transport);
 		XdrString s = new XdrString("hello");
 		XdrVoid reply = new XdrVoid();
 		virClient.call(1, s, reply);
