@@ -123,7 +123,7 @@ public class TestAuthLibvirt {
 		   
 		   //assertEquals("FINEST",prop);
 		CallbackHandler callbackHandler = new ClientHandler();
-		Map<String, String> props = new TreeMap();
+		Map<String, String> props = new TreeMap<>();
 		props.put(Sasl.QOP,"auth-conf");
 		
 		SaslClient sc = Sasl.createSaslClient(mechanisms, mkUserName(), "libvirt", 
