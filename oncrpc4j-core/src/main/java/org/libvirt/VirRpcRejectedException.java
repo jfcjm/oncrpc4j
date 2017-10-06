@@ -13,7 +13,7 @@ public class VirRpcRejectedException extends OncRpcException {
     }
 
     public VirRpcRejectedException(remote_error error) {
-        this(error.code,error.message);
+        this(error.getCode(),error.getMessage());
     }
 
     public VirRpcRejectedException(int code, remote_string message) {

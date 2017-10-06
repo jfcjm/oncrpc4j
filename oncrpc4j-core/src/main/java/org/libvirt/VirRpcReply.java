@@ -33,7 +33,6 @@ import org.dcache.xdr.RpcReplyStatus;
 import org.dcache.xdr.Xdr;
 import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrTransport;
-import org.libvirt.remote_error;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

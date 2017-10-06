@@ -175,7 +175,7 @@ public class VirRpcCall extends RpcCall{
     }
     @Override
     public void acceptedReply(int state, XdrAble reply) {
-        _log.debug("Construct a reply for state {} and reply <{}> (program {}, version {}, proc {})", state,reply,getProgram(),getProgramVersion(),getProcedure());
+        _log.info("Construct a reply for state {} and reply <{}> (program {}, version {}, proc {})", state,reply,getProgram(),getProgramVersion(),getProcedure());
         XdrEncodingStream xdr = _xdr;
         try {
             RpcMessage replyMessage = new VirRpcMessage(getXid(), RpcMessageType.REPLY);

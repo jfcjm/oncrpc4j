@@ -8,9 +8,12 @@
  */
 package org.libvirt;
 import org.dcache.xdr.*;
+import org.libvirt.types.remote_domain;
+import org.libvirt.types.remote_network;
+
 import java.io.IOException;
 
-public class remote_error implements XdrAble, java.io.Serializable {
+class remote_error implements XdrAble, java.io.Serializable {
     @Override
 	public String toString() {
 		return "remote_error [code=" + code + ", domain=" + domain + ", message=" + message + ", level=" + level

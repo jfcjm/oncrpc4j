@@ -6,37 +6,42 @@
  * This version of jrpcgen adopted by dCache project
  * See http://www.dCache.ORG for details
  */
-package org.libvirt;
+package org.libvirt.types;
 import org.dcache.xdr.*;
 import java.io.IOException;
 
-public class remote_uuid implements XdrAble, java.io.Serializable {
+public class remote_nonnull_string implements XdrAble, java.io.Serializable {
 
-    public byte [] value;
+    @Override
+	public String toString() {
+		return "remote_nonnull_string [value=" + value + "]";
+	}
 
-    private static final long serialVersionUID = 8041053161017178530L;
-    private static final int VIR_UUID_BUFLEN = 16;
-    public remote_uuid() {
+	public String value;
+
+    private static final long serialVersionUID = 3961247821118954855L;
+
+    public remote_nonnull_string() {
     }
 
-    public remote_uuid(byte [] value) {
+    public remote_nonnull_string(String value) {
         this.value = value;
     }
 
-    public remote_uuid(XdrDecodingStream xdr)
+    public remote_nonnull_string(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
 
     public void xdrEncode(XdrEncodingStream xdr)
            throws OncRpcException, IOException {
-        xdr.xdrEncodeOpaque(value, VIR_UUID_BUFLEN);
+        xdr.xdrEncodeString(value);
     }
 
     public void xdrDecode(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
-        value = xdr.xdrDecodeOpaque(VIR_UUID_BUFLEN);
+        value = xdr.xdrDecodeString();
     }
 
 }
-// End of remote_uuid.java
+// End of remote_nonnull_string.java

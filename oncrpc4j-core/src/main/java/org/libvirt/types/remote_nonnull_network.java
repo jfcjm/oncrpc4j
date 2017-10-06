@@ -6,7 +6,7 @@
  * This version of jrpcgen adopted by dCache project
  * See http://www.dCache.ORG for details
  */
-package org.libvirt;
+package org.libvirt.types;
 import org.dcache.xdr.*;
 import java.io.IOException;
 

@@ -6,24 +6,24 @@
  * This version of jrpcgen adopted by dCache project
  * See http://www.dCache.ORG for details
  */
-package org.libvirt;
+package org.libvirt.types;
 import org.dcache.xdr.*;
 import java.io.IOException;
 
-public class remote_network implements XdrAble, java.io.Serializable {
+public class remote_domain implements XdrAble, java.io.Serializable {
 
-    public remote_nonnull_network value;
+    public remote_nonnull_domain value;
 
-    private static final long serialVersionUID = 4753534018212085662L;
+    private static final long serialVersionUID = -2897765320240169805L;
 
-    public remote_network() {
+    public remote_domain() {
     }
 
-    public remote_network(remote_nonnull_network value) {
+    public remote_domain(remote_nonnull_domain value) {
         this.value = value;
     }
 
-    public remote_network(XdrDecodingStream xdr)
+    public remote_domain(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
         xdrDecode(xdr);
     }
@@ -35,8 +35,8 @@ public class remote_network implements XdrAble, java.io.Serializable {
 
     public void xdrDecode(XdrDecodingStream xdr)
            throws OncRpcException, IOException {
-        value = xdr.xdrDecodeBoolean() ? new remote_nonnull_network(xdr) : null;
+        value = xdr.xdrDecodeBoolean() ? new remote_nonnull_domain(xdr) : null;
     }
 
 }
-// End of remote_network.java
+// End of remote_domain.java

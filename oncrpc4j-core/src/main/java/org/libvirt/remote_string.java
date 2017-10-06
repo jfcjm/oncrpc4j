@@ -8,9 +8,11 @@
  */
 package org.libvirt;
 import org.dcache.xdr.*;
+import org.libvirt.types.remote_nonnull_string;
+
 import java.io.IOException;
 
-public class remote_string implements XdrAble, java.io.Serializable {
+class remote_string implements XdrAble, java.io.Serializable {
 
     @Override
 	public String toString() {
