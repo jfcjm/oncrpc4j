@@ -1,4 +1,4 @@
-package org.dcache.libvirt.libvirtnedded;
+package org.dcache.libvirt.libvirtneeded;
 
 import static org.junit.Assert.*;
 
