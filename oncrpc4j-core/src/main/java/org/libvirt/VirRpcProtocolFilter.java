@@ -49,19 +49,19 @@ public class VirRpcProtocolFilter extends RpcProtocolFilter {
 
     @Override
     public NextAction handleRead(FilterChainContext ctx) throws IOException {
-        _log.info("VirRpcProtocolFilter handle read");
+        _log.debug("VirRpcProtocolFilter handle read");
 
         Xdr xdr = ctx.getMessage();
-        _log.info("Got an xdr message");
+        _log.debug("Got an xdr message");
         if (xdr == null) {
             _log.error("Parser returns bad XDR");
             return ctx.getStopAction();
         }
 
         xdr.beginDecoding();
-        _log.info("will create a message");
+        _log.debug("will create a message");
         RpcMessage message = new VirRpcMessage(xdr);
-        _log.info("new message created" + message);
+        _log.debug("new message created" + message);
         /**
          * In case of UDP grizzly does not populates connection with correct destination address.
          * We have to get peer address from the request context, which will contain SocketAddress where from
@@ -94,15 +94,15 @@ public class VirRpcProtocolFilter extends RpcProtocolFilter {
                     _log.debug("Rpc reply is {}",reply);
                     CompletionHandler<RpcReply, XdrTransport> callback = _replyQueue.get(message.xid());
                     if (callback != null) {
-                    	_log.debug("Processing callback");
+                    	_log.debug("Processing callback" + callback);
                         if (!reply.isAccepted()) {
-                        	_log.debug("Reply is not accepted");
+                        	_log.warn("Reply is not accepted"+reply);
                             callback.failed(new VirRpcRejectedException(reply.getError()), transport);
                         } else if (reply.getAcceptStatus() != RpcAccepsStatus.SUCCESS) {
-                        	_log.debug("Accept status failed");
+                        	_log.warn("Accept status failed");
                             callback.failed(new VirRpcAcceptedException(reply.getAcceptStatus()), transport);
                         } else {
-                        	_log.debug("Callback completed");
+                        	_log.warn("Callback completed");
                             callback.completed(reply, transport);
                         }
                     } else {

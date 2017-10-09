@@ -1,7 +1,10 @@
-package org.dcache.libvirt;
+package org.dcache.libvirt.libvirtnedded;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.OncRpcProgram;
 import org.dcache.xdr.OncRpcSvc;
@@ -21,15 +24,10 @@ import org.libvirt.VirRpcCall;
 import static org.junit.Assert.*;
 
 /**
- * This testsuite emulate a simple libvirtd process, the tool "virsh" 
- * have to be available
+ * The tool "virsh" have to be available on the test machine
  * 
  * THis test create a fake libvirt server able to answer to the virsh
  * "hostname" command.
- * 
- * There is avuallt a problem as a stranger integer is present in the 
- * argument. So each replay process must read a fake integer before real args
- * decoding. 
  * 
  */
 public class ServerIntegration {
@@ -42,7 +40,7 @@ public class ServerIntegration {
 
     @Before
     public void setUp() throws IOException {
-
+        List<Integer>  features = Arrays.asList(10,14,15);
         RpcDispatchable fakeLibvirtd = (RpcCall aCall) -> {
             assertTrue(aCall instanceof VirRpcCall);
             VirRpcCall call = (VirRpcCall) aCall;
@@ -88,7 +86,11 @@ public class ServerIntegration {
                     break;
                 }
                 case 60 : { //features : args int
-                    XdrInt res = new XdrInt(0);
+                    
+                    XdrInt res = new XdrInt();
+                    call.retrieveCall(res);
+                    assertTrue("unknown feature " + res.intValue(),features.contains(res.intValue()));
+                    res = new XdrInt(0);
                     call.reply(res);
                     break;
                 }
@@ -146,7 +148,7 @@ public class ServerIntegration {
     @Test
     public void callVirshAuthList() throws IOException{
         
-        ProcessBuilder pb = new ProcessBuilder("virsh", "--connect", "test+tcp://localhost:20000/default","hostname");
+        ProcessBuilder pb = new ProcessBuilder("virsh1", "--connect", "test+tcp://localhost:20000/default","hostname");
         Process process = pb.start();
         DataInputStream err = new DataInputStream(process.getErrorStream());
         String errResult = err.readLine();

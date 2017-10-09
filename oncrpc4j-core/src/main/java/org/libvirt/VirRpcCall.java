@@ -22,6 +22,7 @@ package org.libvirt;
 import java.io.EOFException;
 
 import org.dcache.xdr.OncRpcException;
+import org.dcache.xdr.OncRpcRejectedException;
 import org.dcache.xdr.ReplyQueue;
 import org.dcache.xdr.RpcAuth;
 import org.dcache.xdr.RpcCall;
@@ -36,10 +37,16 @@ import org.dcache.xdr.XdrTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Throwables;
+
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.CompletionHandler;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 /*
  * Apdaptation of rpcCall for libvirt ! does not use rpcvers nor
  * rpcauth
@@ -47,6 +54,7 @@ import java.util.concurrent.TimeUnit;
 public class VirRpcCall extends RpcCall{
 
     private final static Logger _log = LoggerFactory.getLogger(VirRpcCall.class);
+    private int _status;
     /**
      * Construit un RPC libvirt
      * @param prog      numero du programme
@@ -69,7 +77,27 @@ public class VirRpcCall extends RpcCall{
     public VirRpcCall(int xid, int prog, int ver, int proc, Xdr xdr, XdrTransport transport) {
         super(xid,prog,ver,proc,null,xdr,transport);
     }
-    
+    public void call(int procedure, XdrAble args, XdrAble result, long timeoutValue, TimeUnit timeoutUnits, RpcAuth auth)
+            throws IOException, TimeoutException {
+        try {
+            Future<XdrAble> future = getCallFuture(procedure, args, result, timeoutValue, timeoutUnits, auth);
+            future.get();
+        } catch (InterruptedException e) {
+            // workaround missing chained constructor
+            IOException ioe = new InterruptedIOException(e.getMessage());
+            ioe.initCause(e);
+            throw ioe;
+        } catch (ExecutionException e) {
+            Throwable t = Throwables.getRootCause(e);
+            System.out.println("error " + t);
+            /*
+            Throwables.throwIfInstanceOf(t, OncRpcException.class);
+            Throwables.throwIfInstanceOf(t, IOException.class);
+            Throwables.throwIfInstanceOf(t, TimeoutException.class);
+            */
+            throw new IOException(t);
+        }
+    }
     /**
      * executes an RPC. returns the (internally generated) xid for the call
      * @param procedure The number of the procedure.
@@ -152,9 +180,9 @@ public class VirRpcCall extends RpcCall{
        _xdr.xdrDecodeInt();//type
        _xdr.xdrDecodeInt();//xid
        // We need to also read one more Integer (status)
-       _xdr.xdrDecodeInt();//xid
-       
-       _log.debug("Accepted call for prog {}, version {} and proc {}",_prog,_version,_proc);
+       _status = _xdr.xdrDecodeInt();//xid
+       if (0 != _status) throw new  VirRpcException("status should be equal to 0 see https://github.com/libvirt/libvirt/blob/master/src/rpc/virnetprotocol.x");
+       _log.info("Accepted call for prog {}, version {} and proc {}, status {}",_prog,_version,_proc,_status);
        _log.debug("remaining {} ",_xdr.asBuffer().remaining());
        //_cred = RpcCredential.decode(_xdr);
     }
@@ -164,6 +192,8 @@ public class VirRpcCall extends RpcCall{
         XdrEncodingStream xdr = _xdr;
         try {
             RpcMessage replyMessage = new VirRpcMessage(getXid(), RpcMessageType.REPLY);
+
+            _log.info("::::::before transport buf limit is {}",_xdr.asBuffer().limit());
             xdr.beginEncoding();
             xdr.xdrEncodeInt(getProgram());
             xdr.xdrEncodeInt(getProgramVersion());
@@ -178,6 +208,7 @@ public class VirRpcCall extends RpcCall{
             // No state for libvirt replies xdr.xdrEncodeInt(state);
             reply.xdrEncode(xdr);
             xdr.endEncoding();
+            _log.info(":::::before transport buf limit is {}",_xdr.asBuffer().limit());
             {
                 XdrTransport _transport = getTransport();
                 _transport.send((Xdr)xdr, _transport.getRemoteSocketAddress(), _sendNotificationHandler);

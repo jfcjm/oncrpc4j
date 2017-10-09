@@ -577,7 +577,7 @@ public class RpcCall {
         }
     }
 
-    private <T extends XdrAble> Future<T> getCallFuture(int procedure, XdrAble args, final T result, long timeoutValue, TimeUnit timeoutUnits, RpcAuth auth)
+    protected <T extends XdrAble> Future<T> getCallFuture(int procedure, XdrAble args, final T result, long timeoutValue, TimeUnit timeoutUnits, RpcAuth auth)
             throws IOException {
 
         final CompletableFuture<T> future = new CompletableFuture<>();

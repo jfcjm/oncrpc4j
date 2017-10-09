@@ -86,9 +86,8 @@ public class VirRpcReply extends RpcReply{
         int proc = xdr.xdrDecodeInt();//procedure
         int t = xdr.xdrDecodeInt(); // type
         int s = xdr.xdrDecodeInt(); // serial
-        _log.debug("p {}, v {} , proc {}, t {}; s {}, ", p,v,proc,t,s);
         int result = xdr.xdrDecodeInt();
-        _log.debug("got a resul {}", result);
+        _log.debug("p {}, v {} , proc {}, t {}; s {}, status {}", p,v,proc,t,s,result);
         return result;
     }
 

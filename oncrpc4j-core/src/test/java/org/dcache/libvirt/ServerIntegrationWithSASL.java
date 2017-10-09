@@ -44,10 +44,6 @@ import static org.junit.Assert.*;
  * THis test create a fake libvirt server able to answer to the virsh
  * "hostname" command.
  * 
- * There is avuallt a problem as a stranger integer is present in the 
- * argument. So each replay process must read a fake integer before real args
- * decoding. 
- * 
  */
 public class ServerIntegrationWithSASL {
 
@@ -108,7 +104,7 @@ public class ServerIntegrationWithSASL {
                         int flags;
                         @Override
                         public void xdrDecode(XdrDecodingStream xdr) throws OncRpcException, IOException {
-                            xdr.xdrDecodeInt();
+                            xdr.xdrDecodeBoolean();
                             name=xdr.xdrDecodeString();
                             flags = xdr.xdrDecodeInt();
                             assertEquals("test:///default",name);
@@ -130,6 +126,16 @@ public class ServerIntegrationWithSASL {
                 case 2: {
                     //svc.stop();
                     call.reply(XdrVoid.XDR_VOID);
+                    break;
+                }
+                case 60 : { //features : args int
+                    XdrInt res = new XdrInt(0);
+                    call.reply(res);
+                    break;
+                }
+                case 59 : { 
+                    XdrString res = new XdrString("fakelibvirthost");
+                    call.reply(res);
                     break;
                 }
                 case 66 : { 
@@ -154,16 +160,6 @@ public class ServerIntegrationWithSASL {
                     call.reply(res);
                     break;
                 }
-                case 60 : { //features : args int
-                    XdrInt res = new XdrInt(0);
-                    call.reply(res);
-                    break;
-                }
-                case 59 : { 
-                    XdrString res = new XdrString("fakelibvirthost");
-                    call.reply(res);
-                    break;
-                }
                 case 67 : { 
                     XdrString res = new XdrString("DIGEST-MD5");
                     call.reply(res);
@@ -176,7 +172,7 @@ public class ServerIntegrationWithSASL {
                         @Override
                         public void xdrDecode(XdrDecodingStream xdr) throws OncRpcException, IOException {
                             assertEquals("DIGEST-MD5",xdr.xdrDecodeString());
-                            xdr.xdrDecodeInt(); // nil
+                            xdr.xdrDecodeBoolean ();
                             assertEquals(0,xdr.xdrDecodeInt());
                             data = xdr.xdrDecodeByteVector();
                             assertEquals(0,data.length);
@@ -290,10 +286,8 @@ public class ServerIntegrationWithSASL {
             clnt.stop();
         }
     }
-    @Test
-    public void runServer()  throws IOException, InterruptedException{
-        Thread.sleep(100000);
-    }
+    
+    
     @Test
     public void callVirshAuthList() throws IOException, InterruptedException{
         

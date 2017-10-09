@@ -23,9 +23,10 @@ import org.libvirt.VirOncRpcSvcBuilder;
 import org.libvirt.VirRpcCall;
 
 /**
- *
+ * These tests use both a virrpc serer and client. It is adapted
+ * oncprcServerTest
  */
-public class ClientServerTest {
+public class ClientServerTVirRpcest {
 
     private static final int PROGNUM = 100017;
     private static final int PROGVER = 1;

@@ -22,8 +22,10 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import tests.credentials.TestCredentials4Libvirt;
+
 public class TestLibvirtClientConnectOpen {
-	private static final String TARHET_HOST = "127.0.0.1";
+	private static final String TARHET_HOST = TestCredentials4Libvirt.TARHET_HOST;
 	final static Logger logger = LoggerFactory.getLogger(TestLibvirtClientConnectOpen.class);
 	private LibvirtProtocolClient client;
 	
@@ -34,14 +36,18 @@ public class TestLibvirtClientConnectOpen {
 		client = new LibvirtProtocolClient(InetAddress.getByName(TARHET_HOST), 16509);
 		logger.info("new client");
 		assertNotNull(client);
+		System.out.println("************************ Connect OPen *************************" +client);
+		remote_connect_open_args arg1 = new remote_connect_open_args();
+		
+		
 	}
 	@Test
 	public void test() throws OncRpcException, UnknownHostException, IOException, TimeoutException {
 		
 		
-		System.out.println(client);
+		System.out.println("************************ starting tests *************************" +client);
 		
-		remote_connect_open_args arg1 = new remote_connect_open_args();
+		
 		
 		remote_string s = new remote_string();
 		remote_nonnull_string s1 = new remote_nonnull_string();
@@ -53,6 +59,7 @@ public class TestLibvirtClientConnectOpen {
 		RpcAuth _auth = null;
 		client.ConnectOpen_1(arg1, _timeoutValue, _timeoutUnit, _auth);
 		logger.info("connected open");
+		
 		remote_connect_num_of_defined_domains_ret res = client.ConnectNumOfDefinedDomains_1(_timeoutValue, _timeoutUnit, _auth);
 		assertEquals(0,res.getNum());
 		
@@ -74,6 +81,10 @@ public class TestLibvirtClientConnectOpen {
 		
 		
 	}
+	
+	
+	
+	
 	@Test
 	public void testWothError() throws OncRpcException, UnknownHostException, IOException, TimeoutException {
 		System.out.println(client);
