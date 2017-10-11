@@ -29,8 +29,14 @@ import org.dcache.xdr.XdrTransport;
 import org.dcache.xdr.XdrVoid;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.experimental.categories.Categories;
+import org.junit.experimental.categories.Categories.ExcludeCategory;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite.SuiteClasses;
 import org.libvirt.VirOncRpcSvcBuilder;
 import org.libvirt.VirRpcCall;
+import org.libvirt.VirRpcRejectedException;
 /**
  * 
  * Basic tests agains a running libvirtd.
@@ -41,6 +47,8 @@ import org.libvirt.VirRpcCall;
  * @author jmk
  *
  */
+
+
 public class ClientIntegrationBaseTest {
 
     private static final String LIBVIRT_HOST    = "localhost";
@@ -49,9 +57,8 @@ public class ClientIntegrationBaseTest {
     private static final int PROGNUM            = 536903814;
     private static final int PROGVER            = 1;
     private VirRpcCall clntCall;
-    
+
     @Before
-    
     public void prepare() throws IOException {
         OncRpcSvc clnt = new VirOncRpcSvcBuilder()
                 .withTCP()
@@ -65,7 +72,7 @@ public class ClientIntegrationBaseTest {
         
         
     }
-    @Test
+    @Test(timeout=3000)
     public void testGetFeature() throws IOException{
         XdrInt reply = new XdrInt();
         XdrInt askedFeature = new XdrInt(10);
@@ -73,7 +80,7 @@ public class ClientIntegrationBaseTest {
         assertEquals(1,reply.intValue());
     }
     
-    @Test(expected=IOException.class)
+    @Test(expected=IOException.class,timeout=3000)
     public void testBadRPCNumber() throws IOException{
         XdrInt reply = new XdrInt();
         XdrInt askedFeature = new XdrInt(10);
@@ -81,17 +88,17 @@ public class ClientIntegrationBaseTest {
         assertEquals(1,reply.intValue());
     }
     
-    @Test(expected=IOException.class)
+    @Test(expected=IOException.class,timeout=3000)
     public void testBadArgs() throws IOException{
         XdrInt reply = new XdrInt();
         XdrAble askedFeature = XdrVoid.XDR_VOID;
         clntCall.call(1660, askedFeature, reply);
     }
     
-    @Test//(expected=IOException.class)
+    @Test(expected=IOException.class)
     public void testBadReply() throws IOException{
         XdrAble reply = new XdrLong();
         XdrAble askedFeature = new XdrInt(10);
-        clntCall.call(60, askedFeature, reply);
+        clntCall.call(60000, askedFeature, reply);
     }
 }

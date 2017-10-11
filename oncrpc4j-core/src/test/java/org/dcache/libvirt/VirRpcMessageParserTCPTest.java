@@ -97,7 +97,7 @@ public class VirRpcMessageParserTCPTest {
         mockedContext.setMessage(b);
 
         assertEquals(INVOKE, tcpParser.handleRead(mockedContext).type());
-        assertEquals(INVOKE, rpc.handleRead(mockedContext).type());
+        assertEquals(STOP, rpc.handleRead(mockedContext).type());
     }
 
     private class XdrStreamBuilder {

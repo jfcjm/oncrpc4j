@@ -165,7 +165,7 @@ public class ServerIntegration {
         Thread.sleep(100000);
     }
     */
-    @Test
+    @Test(timeout=3000)
     public void callVirshAuthList() throws IOException{
         
         ProcessBuilder pb = new ProcessBuilder("virsh", "--connect", "test+tcp://localhost:20000/default","hostname");

@@ -87,13 +87,14 @@ public class VirRpcCall extends RpcCall{
             throw ioe;
         } catch (ExecutionException e) {
             Throwable t = Throwables.getRootCause(e);
-            System.out.println("error " + t);
+            _log.warn("error " + t);
             /*
             Throwables.throwIfInstanceOf(t, OncRpcException.class);
             Throwables.throwIfInstanceOf(t, IOException.class);
             Throwables.throwIfInstanceOf(t, TimeoutException.class);
             */
-            if (t instanceof EOFException){
+            {
+           
                 Throwable clientException;
                 try {
                     clientException = t.getClass().newInstance();
@@ -105,10 +106,6 @@ public class VirRpcCall extends RpcCall{
                 } catch (InstantiationException | IllegalAccessException inner) {
                     throw new IOException(inner);
                 } 
-            }
-            if (t instanceof OncRpcException){
-                
-                
             }
             throw new IOException(t);
         }

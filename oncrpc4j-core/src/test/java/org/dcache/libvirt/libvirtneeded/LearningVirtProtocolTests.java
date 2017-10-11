@@ -39,18 +39,23 @@ import org.dcache.xdr.XdrString;
 import org.dcache.xdr.XdrTransport;
 import org.dcache.xdr.XdrVoid;
 import org.glassfish.grizzly.Buffer;
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+
+import static org.hamcrest.CoreMatchers.isA;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.matchers.JUnitMatchers;
 import org.junit.rules.ExpectedException;
 import org.libvirt.VirOncRpcClient;
 import org.libvirt.VirRpcCall;
 import org.libvirt.VirRpcRejectedException;
-
 public class LearningVirtProtocolTests {
 	
 	
-	
+	@Category(NoNeedForExternalComponent.class)
 	@Test
 	public void testEncode () throws UnknownHostException, IOException, InterruptedException {
 		Xdr xdr = new Xdr(1000);
@@ -71,7 +76,6 @@ public class LearningVirtProtocolTests {
 
         
         
-        Buffer buffer = xdr.asBuffer();
         Xdr bufXdr = new Xdr(1000);
         ByteBuffer byteBuffer = xdr.asBuffer().toByteBuffer();
         assertEquals(60,byteBuffer.position());
@@ -84,7 +88,7 @@ public class LearningVirtProtocolTests {
         assertEquals(length+4,bufXdr.asBuffer().limit());
 	}
 	
-	@Test
+	@Test(timeout=3000)
 	public void testProtocol() throws UnknownHostException, IOException, InterruptedException {
 		try (Socket sock = new Socket(InetAddress.getByName("127.0.0.1"), 16509)) {
 		
@@ -150,7 +154,7 @@ public class LearningVirtProtocolTests {
 		}
 	}
 	
-	@Test
+	@Test(timeout=3000)
 	public void testOpen() throws UnknownHostException, IOException, InterruptedException {
 		Socket sock = new Socket(InetAddress.getByName("127.0.0.1"), 16509);
 		//SocketChannel out = sock.getChannel();
@@ -184,17 +188,18 @@ public class LearningVirtProtocolTests {
         inFromServer.read(respBuff.array(),0,1000);
         xdr.beginDecoding();
         int respLength = xdrResp.xdrDecodeInt();
-        assertEquals(136,respLength);
+        assertEquals(28,respLength);
         assertEquals("20008086",Integer.toHexString(xdrResp.xdrDecodeInt()));
         assertEquals(1,xdrResp.xdrDecodeInt()); // version
         assertEquals(1,xdrResp.xdrDecodeInt()); //proc
         assertEquals(1,xdrResp.xdrDecodeInt()); //type
         assertEquals(1,xdrResp.xdrDecodeInt()); //serial
-        assertEquals(1,xdrResp.xdrDecodeInt()); //status
+        assertEquals(0,xdrResp.xdrDecodeInt()); //status
+        
         xdrResp.xdrDecodeInt();
         xdrResp.xdrDecodeInt();
         xdrResp.xdrDecodeInt();
-        assertEquals("authentication required",xdrResp.xdrDecodeString());
+        assertEquals("Cannot find program",xdrResp.xdrDecodeString());
         xdr.endDecoding();
         
         xdr = new Xdr(1000);
@@ -226,7 +231,7 @@ public class LearningVirtProtocolTests {
 	}
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
-	@Test
+	@Test(timeout=3000)
 	public void testVirRPcRaisesExceptionAuth() throws IOException {
 		thrown.expect(VirRpcRejectedException.class);
 		thrown.expectMessage(JUnitMatchers.containsString("authentication required"));
@@ -246,10 +251,26 @@ public class LearningVirtProtocolTests {
 		XdrVoid reply = new XdrVoid();
 		virClient.call(1, s, reply);
 	}
-	@Test
+	@Test(timeout=3000)
 	public void testVirRPcRaisesExceptionBadProgram() throws IOException {
 		thrown.expect(VirRpcRejectedException.class);
-		thrown.expectMessage(JUnitMatchers.containsString("Cannot find program"));
+		//thrown.expectCause(isA(VirRpcRejectedException.class));
+		
+        thrown.expectCause(new BaseMatcher<VirRpcRejectedException>(){
+
+            @Override
+            public boolean matches(Object item) {
+                return (item instanceof VirRpcRejectedException) && 
+                        ((VirRpcRejectedException) item).getMessage().contains("Cannot find program");
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                // TODO Auto-generated method stub
+                
+            }
+            
+        });
 		InetAddress localhost = InetAddress.getByName("127.0.0.1");
 		int tcp = IpProtocolType.TCP;
 		int port = 16509;

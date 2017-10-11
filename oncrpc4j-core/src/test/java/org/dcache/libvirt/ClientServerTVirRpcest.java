@@ -82,6 +82,7 @@ public class ClientServerTVirRpcest {
                     RpcCall cb = new VirRpcCall(PROGNUM, PROGVER, null, call.getTransport());
                     XdrString s = new XdrString();
                     call.retrieveCall(s);
+                    assertEquals("hello",s.stringValue());
                     cb.call(ECHO, s, s);
                     call.reply(s);
                     break;
@@ -149,7 +150,7 @@ public class ClientServerTVirRpcest {
         assertEquals("reply mismatch", s.stringValue().toUpperCase(), reply.stringValue());
     }
 
-    @Test //(expected = EOFException.class, timeout = 5000)
+    @Test(expected = EOFException.class, timeout = 5000)
     public void shouldFailClientCallWhenServerStopped() throws IOException, InterruptedException {
         XdrString s = new XdrString("hello");
 

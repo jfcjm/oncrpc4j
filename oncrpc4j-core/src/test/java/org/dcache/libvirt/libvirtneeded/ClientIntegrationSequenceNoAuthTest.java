@@ -86,7 +86,7 @@ public class ClientIntegrationSequenceNoAuthTest {
         clntCall = new VirRpcCall(PROGNUM, PROGVER, null, t);
     }
 
-    @Test
+    @Test(timeout=3000)
     public void testGetAuthLList() throws IOException {
         
         {

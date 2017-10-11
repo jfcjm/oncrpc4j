@@ -25,6 +25,10 @@ public class VirRpcRejectedException extends OncRpcException {
     private static final long serialVersionUID = 8947480749178768718L;
     private int _status;
 
+    public VirRpcRejectedException(){
+        super("No message, see Cause exception");
+    }
+    
     public VirRpcRejectedException(int rejectStatus) {
         super(Integer.toString(rejectStatus));
         _status = rejectStatus;
