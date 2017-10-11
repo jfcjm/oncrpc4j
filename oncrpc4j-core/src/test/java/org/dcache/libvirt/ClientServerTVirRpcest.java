@@ -63,7 +63,6 @@ public class ClientServerTVirRpcest {
         RpcDispatchable echo = (RpcCall aCall) -> {
             assertTrue(aCall instanceof VirRpcCall);
             VirRpcCall call = (VirRpcCall) aCall;
-            assertEquals(16,call.getXdr().asBuffer().remaining());
             call.getXdr().asBuffer().mark();
             assertEquals(0,call.getXdr().asBuffer().get());
             assertEquals(0,call.getXdr().asBuffer().get());

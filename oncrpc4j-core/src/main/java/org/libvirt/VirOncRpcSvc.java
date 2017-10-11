@@ -40,7 +40,6 @@ public class VirOncRpcSvc extends OncRpcSvc {
     
     public VirOncRpcSvc(VirOncRpcSvcBuilder virOncRpcSvcBuilder) {
         super(virOncRpcSvcBuilder);
-        _log.info("Creating a new VirOncRpcSvc");
     }
     @Override
     public void start() throws IOException {
@@ -85,11 +84,6 @@ public class VirOncRpcSvc extends OncRpcSvc {
     
     
     public synchronized void setPacketWrapper(SASLPacketWrapper sc) throws OncRpcException {
-        /*
-        if (! _isClient){
-            throw new OncRpcException("Unimplemented server Operation"){
-            };
-        }*/
         for (Entry<Transport, PacketWrapperFilter> wrapper : _transport2wrapper.entrySet()){
             _log.debug("setting packet wrapper for" + wrapper.getValue());
             wrapper.getValue().setPacketWrapper(sc);

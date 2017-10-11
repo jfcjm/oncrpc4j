@@ -121,26 +121,19 @@ public class VirRpcMessageParserTCP extends  RpcMessageParserTCP{
 
         boolean messageComplete;
         do {
-        	logger.debug("Message is not complete");
-        	logger.debug("msgBufferClass "+messageBuffer.getClass().getName());
             int messageMarker = messageBuffer.getInt();
-            logger.debug("mitan reassemble 1");
 
             int size = getMessageSize(messageMarker);
-            logger.debug("mitan reassemble 2");
             messageComplete = isLastFragment(messageMarker);
-            logger.debug("mitan reassemble 3");
 
             int pos = messageBuffer.position();
-            logger.debug("limit {}, pos {}, size {}, pos+zize {} ",messageBuffer.limit(),pos,size,pos+size);
+            logger.debug("processing msg in reassemble loop: size {} limit {}, pos {}, pos+zize {} ",size,messageBuffer.limit(),pos,pos+size);
             try {
             currentFragment = messageBuffer.slice(pos, pos + size);
             } catch (Exception e){
             	e.printStackTrace();
             }
-            logger.debug("mitan reassemble 5");
             currentFragment.limit(size);
-            logger.debug("mitan reassemble");
             messageBuffer.position(pos + size);
             if (!messageComplete & multipleFragments == null) {
                 /*
@@ -153,7 +146,7 @@ public class VirRpcMessageParserTCP extends  RpcMessageParserTCP{
             if (multipleFragments != null) {
                 multipleFragments.append(currentFragment);
             }
-            logger.debug("end reassemble");
+            logger.debug("Reassemble loop: is message complete : {}", messageComplete);
         } while (!messageComplete);
 
         return new Xdr(multipleFragments == null ? currentFragment : multipleFragments);

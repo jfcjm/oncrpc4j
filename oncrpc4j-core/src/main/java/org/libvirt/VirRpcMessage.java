@@ -30,7 +30,6 @@ public class VirRpcMessage extends RpcMessage {
 
     VirRpcMessage(XdrDecodingStream xdr) throws BadXdrOncRpcException {
         super(xdr);
-        _log.info("Created a new VirRpcMessage");
     }
 
     public VirRpcMessage(int xid, int type) {
@@ -40,11 +39,10 @@ public class VirRpcMessage extends RpcMessage {
     public void xdrDecode(XdrDecodingStream xdr) throws BadXdrOncRpcException {
     	// in virt rpc xid and type are not at the first position,
         // we skip the first three int and then we'll rewind the buffer
-        _log.debug("decoding");
         int _program = xdr.xdrDecodeInt();
         int _version = xdr.xdrDecodeInt();
         int _procedure = xdr.xdrDecodeInt();
-        _log.debug("program {}, version {}, procedure {}",_program,_version,_procedure);
+        _log.debug("deconding program {}, version {}, procedure {}",_program,_version,_procedure);
 
         _type = xdr.xdrDecodeInt();
         _xid = xdr.xdrDecodeInt();

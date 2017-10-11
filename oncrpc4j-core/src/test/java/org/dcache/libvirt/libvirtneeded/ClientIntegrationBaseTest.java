@@ -91,7 +91,7 @@ public class ClientIntegrationBaseTest {
     @Test//(expected=IOException.class)
     public void testBadReply() throws IOException{
         XdrAble reply = new XdrLong();
-        XdrAble askedFeature = XdrVoid.XDR_VOID;
+        XdrAble askedFeature = new XdrInt(10);
         clntCall.call(60, askedFeature, reply);
     }
 }

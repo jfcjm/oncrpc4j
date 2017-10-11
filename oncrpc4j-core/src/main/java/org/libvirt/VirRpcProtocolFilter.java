@@ -43,7 +43,6 @@ public class VirRpcProtocolFilter extends RpcProtocolFilter {
 
     public VirRpcProtocolFilter(ReplyQueue replyQueue) {
         super(replyQueue);
-        _log.info("Creating a new VirRpcProtocolFilter");
     }
 
     @Override
@@ -53,22 +52,19 @@ public class VirRpcProtocolFilter extends RpcProtocolFilter {
         Xdr xdr = ctx.getMessage();
         _log.debug("Got an xdr message");
         if (xdr == null) {
-            _log.error("Parser returns bad XDR");
+            _log.error("Xdr message should not be null");
             return ctx.getStopAction();
         }
 
         xdr.beginDecoding();
-        _log.debug("will create a message");
         RpcMessage message = new VirRpcMessage(xdr);
-        _log.debug("new message created" + message);
+        _log.debug("created a new VirRpcMessage message {},{} " + message.type(),message.xid());
         /**
          * In case of UDP grizzly does not populates connection with correct destination address.
          * We have to get peer address from the request context, which will contain SocketAddress where from
          * request was coming.
          */
-        _log.info("Creating transport");
         XdrTransport transport = new GrizzlyXdrTransport(ctx.getConnection(), (InetSocketAddress)ctx.getAddress(), _replyQueue);
-        _log.info("transport created");
         switch (message.type()) {
             case RpcMessageType.CALL:
             	_log.debug("Received a CALL message");
@@ -101,7 +97,7 @@ public class VirRpcProtocolFilter extends RpcProtocolFilter {
                         	_log.warn("Accept status failed");
                             callback.failed(new VirRpcAcceptedException(reply.getAcceptStatus()), transport);
                         } else {
-                        	_log.warn("Callback completed");
+                        	_log.debug("Callback completed");
                             callback.completed(reply, transport);
                         }
                     } else {

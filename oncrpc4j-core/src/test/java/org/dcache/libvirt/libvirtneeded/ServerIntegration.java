@@ -159,14 +159,16 @@ public class ServerIntegration {
             clnt.stop();
         }
     }
+    /*
     @Test
     public void runServer()  throws IOException, InterruptedException{
         Thread.sleep(100000);
     }
+    */
     @Test
     public void callVirshAuthList() throws IOException{
         
-        ProcessBuilder pb = new ProcessBuilder("virsh1", "--connect", "test+tcp://localhost:20000/default","hostname");
+        ProcessBuilder pb = new ProcessBuilder("virsh", "--connect", "test+tcp://localhost:20000/default","hostname");
         Process process = pb.start();
         DataInputStream err = new DataInputStream(process.getErrorStream());
         String errResult = err.readLine();

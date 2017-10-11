@@ -117,16 +117,15 @@ public class VirRpcCall extends RpcCall{
         _log.debug("calling procedure {} with args {} (xid: {})",procedure,args.toString(),xid);
         
         Xdr xdr = new Xdr(Xdr.INITIAL_XDR_SIZE);
+        RpcMessage rpcMessage = new VirRpcMessage(xid,RpcMessageType.CALL);
         xdr.beginEncoding();
-        //RpcMessage rpcMessage = new RpcMessage(xid, RpcMessageType.CALL);
-        //rpcMessage.xdrEncode(xdr);
-        //xdr.xdrEncodeInt(RPCVERS);
         xdr.xdrEncodeInt(getProgram());
         xdr.xdrEncodeInt(getProgramVersion());
         xdr.xdrEncodeInt(procedure);
         xdr.xdrEncodeInt(0); //type
         xdr.xdrEncodeInt(xid);//serial
         xdr.xdrEncodeInt(0);//status
+        rpcMessage.xdrEncode(xdr);
         args.xdrEncode(xdr);
         xdr.endEncoding();
         /*
@@ -182,8 +181,7 @@ public class VirRpcCall extends RpcCall{
        _status = _xdr.xdrDecodeInt();//xid
        if (0 != _status) throw new  VirRpcException("status should be equal to 0 see https://github.com/libvirt/libvirt/blob/master/src/rpc/virnetprotocol.x");
        _log.info("Accepted call for prog {}, version {} and proc {}, status {}",_prog,_version,_proc,_status);
-       _log.debug("remaining {} ",_xdr.asBuffer().remaining());
-       //_cred = RpcCredential.decode(_xdr);
+       _log.debug("{} byte(s) are remaining in the buffer",_xdr.asBuffer().remaining());
     }
     @Override
     public void acceptedReply(int state, XdrAble reply) {
@@ -191,23 +189,16 @@ public class VirRpcCall extends RpcCall{
         XdrEncodingStream xdr = _xdr;
         try {
             RpcMessage replyMessage = new VirRpcMessage(getXid(), RpcMessageType.REPLY);
-
-            _log.info("::::::before transport buf limit is {}",_xdr.asBuffer().limit());
             xdr.beginEncoding();
             xdr.xdrEncodeInt(getProgram());
             xdr.xdrEncodeInt(getProgramVersion());
             xdr.xdrEncodeInt(getProcedure());
             replyMessage.xdrEncode(_xdr);
             xdr.xdrEncodeInt(RpcReplyStatus.MSG_ACCEPTED);
-            /**
-             * no credentials in libvirt
-             
-            _cred.getVerifier().xdrEncode(xdr);
-            */
+            
             // No state for libvirt replies xdr.xdrEncodeInt(state);
             reply.xdrEncode(xdr);
             xdr.endEncoding();
-            _log.info(":::::before transport buf limit is {}",_xdr.asBuffer().limit());
             {
                 XdrTransport _transport = getTransport();
                 _transport.send((Xdr)xdr, _transport.getRemoteSocketAddress(), _sendNotificationHandler);
