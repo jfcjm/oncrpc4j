@@ -170,7 +170,6 @@ public class ClientServerLibvirtInteractions {
             
         };
         clntCall.call(1,connectArgs ,  XdrVoid.XDR_VOID);
-        
     }
     
 

@@ -21,7 +21,6 @@ package org.libvirt;
 import java.io.EOFException;
 
 import org.dcache.xdr.OncRpcException;
-import org.dcache.xdr.OncRpcRejectedException;
 import org.dcache.xdr.ReplyQueue;
 import org.dcache.xdr.RpcAuth;
 import org.dcache.xdr.RpcCall;
@@ -94,6 +93,23 @@ public class VirRpcCall extends RpcCall{
             Throwables.throwIfInstanceOf(t, IOException.class);
             Throwables.throwIfInstanceOf(t, TimeoutException.class);
             */
+            if (t instanceof EOFException){
+                Throwable clientException;
+                try {
+                    clientException = t.getClass().newInstance();
+                    clientException.initCause(t);
+                    if (t instanceof OncRpcException) throw (OncRpcException) clientException;
+                    if (t instanceof IOException) throw (IOException) clientException;
+                    if (t instanceof TimeoutException) throw (TimeoutException) clientException;
+                   
+                } catch (InstantiationException | IllegalAccessException inner) {
+                    throw new IOException(inner);
+                } 
+            }
+            if (t instanceof OncRpcException){
+                
+                
+            }
             throw new IOException(t);
         }
     }
@@ -122,18 +138,10 @@ public class VirRpcCall extends RpcCall{
         xdr.xdrEncodeInt(getProgram());
         xdr.xdrEncodeInt(getProgramVersion());
         xdr.xdrEncodeInt(procedure);
-        xdr.xdrEncodeInt(0); //type
-        xdr.xdrEncodeInt(xid);//serial
-        xdr.xdrEncodeInt(0);//status
         rpcMessage.xdrEncode(xdr);
+        xdr.xdrEncodeInt(0);//status
         args.xdrEncode(xdr);
         xdr.endEncoding();
-        /*
-        traité par filtre sur les connection (rpcmessageparszeer/rpcprotocolfilter
-        Buffer buf = xdr.asBuffer();
-        xdr.xdrEncodeInt(xdr.asBuffer().remaining());
-        buf.rewind();
-        */
         _log.debug("extended :xid {}", xid);
         System.out.println("wrote " + xdr.asBuffer().limit() + "bytes");
         
@@ -165,21 +173,20 @@ public class VirRpcCall extends RpcCall{
     }
     @Override
     public void accept() throws IOException, OncRpcException {
-        /*_rpcvers = _xdr.xdrDecodeInt();
-        if (_rpcvers != RPCVERS) {
-           throw new RpcMismatchReply(_rpcvers, 2);
-        }
-        */
         _log.debug("Before remaining {} ",_xdr.asBuffer().remaining());
        _prog = _xdr.xdrDecodeInt();
        _version = _xdr.xdrDecodeInt();
        _proc = _xdr.xdrDecodeInt();
-       //fake Read of type and xid
-       _xdr.xdrDecodeInt();//type
-       _xdr.xdrDecodeInt();//xid
-       // We need to also read one more Integer (status)
-       _status = _xdr.xdrDecodeInt();//xid
-       if (0 != _status) throw new  VirRpcException("status should be equal to 0 see https://github.com/libvirt/libvirt/blob/master/src/rpc/virnetprotocol.x");
+       {
+           //fake Read of type and xid
+           _xdr.xdrDecodeInt();//type
+           _xdr.xdrDecodeInt();//xid
+       }
+       _status = _xdr.xdrDecodeInt();//status
+       if (0 != _status) {
+           _log.warn("status is not equal to zero : {}",_status);
+           throw new  VirRpcException("status should be equal to 0 see https://github.com/libvirt/libvirt/blob/master/src/rpc/virnetprotocol.x");
+       }
        _log.info("Accepted call for prog {}, version {} and proc {}, status {}",_prog,_version,_proc,_status);
        _log.debug("{} byte(s) are remaining in the buffer",_xdr.asBuffer().remaining());
     }
