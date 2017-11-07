@@ -13,12 +13,12 @@
   <name>ONCRPC4J parent project</name>
   <packaging>pom</packaging>
 
-  <url>http://www.dCache.ORG</url>
+  <url>https://sourcesup.renater.fr/projects/virrpc4j/</url>
 
     <scm>
-        <url>https://github.com/dCache/oncrpc4j.git</url>
-        <connection>scm:git:https://github.com/dCache/oncrpc4j.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/dCache/oncrpc4j.git</developerConnection>
+        <url>https://sourcesup.renater.fr/scm/browser.php?group_id=3609</url>
+        <connection>scm:git:https://git.renater.fr/virrpc4j.git</connection>
+        <developerConnection>scm:git:ssh:git@git.renater.fr:2222/virrpc4j.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
 
@@ -211,16 +211,18 @@
   </repositories>
 
     <!--
-                 MAVEN DEPLOYMENT REPOSITORY
+        MAVEN DEPLOYMENT REPOSITORY
+	These repository are not accessed securely. They
+	should only be used by jenkins from within sourcesup
     -->
   <distributionManagement>
       <repository>
-          <id>dcache.org</id>
-          <url>https://download.dcache.org/nexus/content/repositories/releases</url>
+          <id>sourcesup</id>
+          <url>http://sourcesup.renater.fr/nexus/content/repositories/virrpc4j-releases</url>
       </repository>
       <snapshotRepository>
-          <id>dcache.org-snapshot</id>
-          <url>https://download.dcache.org/nexus/content/repositories/snapshots</url>
+          <id>sourcesup</id>
+          <url>http://sourcesup.renater.fr/nexus/content/repositories/oncrpcmonitor-snapshots</url>
       </snapshotRepository>
   </distributionManagement>
 
