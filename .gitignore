@@ -2,3 +2,10 @@
 *.iml
 target
 dependency-reduced-pom.xml
+*~
+.target/
+.project
+.classpath
+.settings/
+*err*.log
+oncrpc4j-rpcgen/spooned/
