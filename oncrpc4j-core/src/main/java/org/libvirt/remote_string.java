@@ -12,7 +12,7 @@ import org.libvirt.types.remote_nonnull_string;
 
 import java.io.IOException;
 
-class remote_string implements XdrAble, java.io.Serializable {
+public class remote_string implements XdrAble, java.io.Serializable {
 
     @Override
 	public String toString() {

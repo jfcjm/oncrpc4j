@@ -35,14 +35,14 @@ import org.glassfish.grizzly.filterchain.NextAction;
 
 import static java.util.Objects.requireNonNull;
 
-public class RpcDispatcher extends BaseFilter {
+public class GenRpcDispatcher<SVC_T extends GenRpcSvc<SVC_T>> extends BaseFilter {
 
-    private final static Logger _log = LoggerFactory.getLogger(RpcDispatcher.class);
+    private final static Logger _log = LoggerFactory.getLogger(GenRpcDispatcher.class);
     /**
      * List of registered RPC services
      *
      */
-    private final Map<OncRpcProgram, RpcDispatchable> _programs;
+    private final Map<OncRpcProgram, GenRpcDispatchable<SVC_T>> _programs;
 
     /**
      * {@link ExecutorService} used for request processing
@@ -65,8 +65,8 @@ public class RpcDispatcher extends BaseFilter {
      *
      * @throws NullPointerException if executor or program is null
      */
-    public RpcDispatcher(ExecutorService executor, Map<OncRpcProgram,
-            RpcDispatchable> programs, boolean withSubjectPropagation)
+    public GenRpcDispatcher(ExecutorService executor, Map<OncRpcProgram,
+            GenRpcDispatchable<SVC_T>> programs, boolean withSubjectPropagation)
             throws NullPointerException {
 
         _programs = requireNonNull(programs, "Programs is NULL");
@@ -77,14 +77,14 @@ public class RpcDispatcher extends BaseFilter {
     @Override
     public NextAction handleRead(final FilterChainContext ctx) throws IOException {
 
-        final RpcCall call = ctx.getMessage();
+        final GenRpcCall<SVC_T> call = ctx.getMessage();
         final int prog = call.getProgram();
         final int vers = call.getProgramVersion();
         final int proc = call.getProcedure();
 
         _log.debug("processing request {}", call);
 
-        final RpcDispatchable program = _programs.get(new OncRpcProgram(prog, vers));
+        final GenRpcDispatchable<SVC_T> program = _programs.get(new OncRpcProgram(prog, vers));
         if (program == null) {
             _log.debug("no propgram found, call is of type {}", call.getClass());
             call.failProgramUnavailable();

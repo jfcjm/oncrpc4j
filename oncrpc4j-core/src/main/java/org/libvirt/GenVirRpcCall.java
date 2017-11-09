@@ -20,19 +20,17 @@ package org.libvirt;
 
 import java.io.EOFException;
 
+import org.dcache.xdr.GenReplyQueue;
+import org.dcache.xdr.GenRpcCall;
+import org.dcache.xdr.GenXdrTransport;
 import org.dcache.xdr.OncRpcException;
-import org.dcache.xdr.ReplyQueue;
 import org.dcache.xdr.RpcAuth;
-import org.dcache.xdr.RpcCall;
 import org.dcache.xdr.RpcMessage;
 import org.dcache.xdr.RpcMessageType;
-import org.dcache.xdr.RpcReply;
-import org.dcache.xdr.RpcReplyStatus;
+import org.dcache.xdr.GenRpcReply;
 import org.dcache.xdr.Xdr;
 import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrEncodingStream;
-import org.dcache.xdr.XdrTransport;
-import org.dcache.xdr.XdrVoid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,9 +48,9 @@ import java.util.concurrent.TimeoutException;
  * Apdaptation of rpcCall for libvirt ! does not use rpcvers nor
  * rpcauth
  */
-public class VirRpcCall extends RpcCall{
+public class GenVirRpcCall extends GenRpcCall<GenVirOncRpcSvc>{
 
-    private final static Logger _log = LoggerFactory.getLogger(VirRpcCall.class);
+    private final static Logger _log = LoggerFactory.getLogger(GenVirRpcCall.class);
     private int _status;
     /**
      * Construit un RPC libvirt
@@ -60,20 +58,20 @@ public class VirRpcCall extends RpcCall{
      * @param ver       veriosn du programme
      * @param transport XdrTransport to use
      */
-    public VirRpcCall(int prog, int ver,  XdrTransport transport) {
+    public GenVirRpcCall(int prog, int ver,  GenXdrTransport<GenVirOncRpcSvc> transport) {
         this(prog, ver,  new Xdr(Xdr.INITIAL_XDR_SIZE), transport);
     }
 
-    public VirRpcCall(int prog, int ver,  Xdr xdr, XdrTransport transport) {
+    public GenVirRpcCall(int prog, int ver,  Xdr xdr, GenXdrTransport<GenVirOncRpcSvc> transport) {
         super(prog,ver,null,xdr,transport);
         
     }
 
-    public VirRpcCall(int xid, Xdr xdr, XdrTransport transport) {
+    public GenVirRpcCall(int xid, Xdr xdr, GenXdrTransport<GenVirOncRpcSvc> transport) {
         super(xid,xdr,transport);
     }
 
-    public VirRpcCall(int xid, int prog, int ver, int proc, Xdr xdr, XdrTransport transport) {
+    public GenVirRpcCall(int xid, int prog, int ver, int proc, Xdr xdr, GenXdrTransport<GenVirOncRpcSvc> transport) {
         super(xid,prog,ver,proc,null,xdr,transport);
     }
     public void call(int procedure, XdrAble args, XdrAble result, long timeoutValue, TimeUnit timeoutUnits, RpcAuth auth)
@@ -125,7 +123,8 @@ public class VirRpcCall extends RpcCall{
      * @throws IOException
      */
     @Override
-    protected int callInternal(int procedure, XdrAble args, CompletionHandler<RpcReply, XdrTransport> callback,
+    protected int callInternal(int procedure, XdrAble args, 
+            CompletionHandler<GenRpcReply<GenVirOncRpcSvc>, GenXdrTransport<GenVirOncRpcSvc>> callback,
                              long timeoutValue, TimeUnit timeoutUnits, RpcAuth auth)
             throws IOException {
         int xid = nextXid();
@@ -145,9 +144,9 @@ public class VirRpcCall extends RpcCall{
         System.out.println("wrote " + xdr.asBuffer().limit() + "bytes");
         
         
-        XdrTransport _transport = getTransport();
+        GenXdrTransport<GenVirOncRpcSvc> _transport = getTransport();
         
-        ReplyQueue replyQueue = _transport.getReplyQueue();
+        GenReplyQueue<GenVirOncRpcSvc> replyQueue = _transport.getReplyQueue();
         if (callback != null) {
             replyQueue.registerKey(xid, _transport.getLocalSocketAddress(), callback, timeoutValue, timeoutUnits);
         } else {
@@ -206,7 +205,7 @@ public class VirRpcCall extends RpcCall{
             reply.xdrEncode(xdr);
             xdr.endEncoding();
             {
-                XdrTransport _transport = getTransport();
+                GenXdrTransport<GenVirOncRpcSvc> _transport = getTransport();
                 _transport.send((Xdr)xdr, _transport.getRemoteSocketAddress(), _sendNotificationHandler);
             }
 
@@ -218,19 +217,19 @@ public class VirRpcCall extends RpcCall{
     }
     @Override
     public  void failProgramUnavailable(){
-        acceptedReply(VirRpcAcceptStatus.ERROR, VirError.createProgramUnavailable(this));
+        acceptedReply(VirRpcAcceptStatus.ERROR, GenVirError.createProgramUnavailable(this));
     }
     /**
      * Reply to client with error procedure unavailable.
      */
     public void failProcedureUnavailable() {
-        acceptedReply(VirRpcAcceptStatus.ERROR, VirError.createProgramUnavailable(this));
+        acceptedReply(VirRpcAcceptStatus.ERROR, GenVirError.createProgramUnavailable(this));
     }
 
 
 
     public void failRuntimeError(Exception e) {
-        acceptedReply(VirRpcAcceptStatus.ERROR,VirError.createRuntimeError(this,e));
+        acceptedReply(VirRpcAcceptStatus.ERROR,GenVirError.createRuntimeError(this,e));
     }
     
     @Override

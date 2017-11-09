@@ -13,7 +13,7 @@ import org.libvirt.types.remote_network;
 
 import java.io.IOException;
 
-class remote_error implements XdrAble, java.io.Serializable {
+public class remote_error implements XdrAble, java.io.Serializable {
     @Override
 	public String toString() {
 		return "remote_error [code=" + code + ", domain=" + domain + ", message=" + message + ", level=" + level

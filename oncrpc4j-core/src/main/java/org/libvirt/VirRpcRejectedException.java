@@ -18,13 +18,38 @@
 
 package org.libvirt;
 
+import org.dcache.xdr.OncRpcAcceptedException;
 import org.dcache.xdr.OncRpcException;
+import org.dcache.xdr.OncRpcRejectedException;
 
-public class VirRpcRejectedException extends OncRpcException {
+public class VirRpcRejectedException extends OncRpcAcceptedException {
     
     private static final long serialVersionUID = 8947480749178768718L;
     private int _status;
+    private remote_error _error;
 
+    
+    public VirRpcRejectedException() {
+        super(0);
+    }
+    public VirRpcRejectedException(remote_error error) {
+        super(error.getCode());
+        _error = error;
+    }
+    @Override
+    public String getMessage(){
+        if (null != _error){
+            if (null !=_error.getMessage()){
+                return _error.getMessage().value.value;
+            } else {
+                return "No String message in error. Error Code is " +_error.getCode();
+            }
+        } else {
+            return "An error occured without associated remote error";
+        }
+        
+    }
+    /*
     public VirRpcRejectedException(){
         super("No message, see Cause exception");
     }
@@ -33,14 +58,12 @@ public class VirRpcRejectedException extends OncRpcException {
         super(Integer.toString(rejectStatus));
         _status = rejectStatus;
     }
-
-    public VirRpcRejectedException(remote_error error) {
-        this(error.getCode(),error.getMessage());
-    }
+    
 
     public VirRpcRejectedException(int code, remote_string message) {
         super(message.value.value + ";Error code "+Integer.toString(code));
         _status= code;
     }
+    */
 
 }

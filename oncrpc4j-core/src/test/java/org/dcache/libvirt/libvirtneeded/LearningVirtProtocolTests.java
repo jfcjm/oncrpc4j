@@ -52,6 +52,7 @@ import org.junit.rules.ExpectedException;
 import org.libvirt.VirOncRpcClient;
 import org.libvirt.VirRpcCall;
 import org.libvirt.VirRpcRejectedException;
+import org.libvirt.remote_error;
 public class LearningVirtProtocolTests {
 	
 	
@@ -145,12 +146,21 @@ public class LearningVirtProtocolTests {
         int status =  xdrResp.xdrDecodeInt();
         assertEquals(1,status);
         }
+        remote_error errorResponse = new remote_error();
+        errorResponse.xdrDecode(xdrResp);
+        assertEquals("Cannot find program 1801807216 version 1",errorResponse.getMessage().value.value); 
+        System.out.println(errorResponse);
+        //System.out.println(errorResponse.getDom().value.getId());
+        //System.out.println(errorResponse.getDom().value.getName());
+        System.out.println(errorResponse.getDom().value);
+        /*
         xdrResp.xdrDecodeInt();
         xdrResp.xdrDecodeInt();
         xdrResp.xdrDecodeInt();
         String message =  xdrResp.xdrDecodeString();
         assertEquals("Cannot find program 1801807216 version 1",message); 
         xdr.endDecoding();
+        */
 		}
 	}
 	

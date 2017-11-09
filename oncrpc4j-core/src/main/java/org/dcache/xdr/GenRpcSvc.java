@@ -44,6 +44,7 @@ import org.glassfish.grizzly.nio.transport.UDPNIOTransport;
 import org.glassfish.grizzly.nio.transport.UDPNIOTransportBuilder;
 import org.glassfish.grizzly.strategies.SameThreadIOStrategy;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
+import org.libvirt.GenVirOncRpcSvcBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,12 +68,12 @@ import java.util.concurrent.TimeoutException;
 import static com.google.common.base.Throwables.getRootCause;
 import static com.google.common.base.Throwables.propagateIfPossible;
 import java.net.SocketAddress;
-import static org.dcache.xdr.GrizzlyUtils.getSelectorPoolCfg;
 import static org.dcache.xdr.GrizzlyUtils.transportFor;
+import static org.dcache.xdr.GrizzlyUtils.getSelectorPoolCfg;
 
-public class OncRpcSvc {
+public class GenRpcSvc<SVC_T extends GenRpcSvc<SVC_T>> {
 
-    private final static Logger _log = LoggerFactory.getLogger(OncRpcSvc.class);
+    private final static Logger _log = LoggerFactory.getLogger(GenRpcSvc.class);
 
     private final int _backlog;
     protected boolean _publish;
@@ -84,7 +85,7 @@ public class OncRpcSvc {
             new HashSet<>();
     protected final ExecutorService _requestExecutor;
 
-    protected final ReplyQueue _replyQueue = new ReplyQueue();
+    protected final GenReplyQueue<SVC_T> _replyQueue = new GenReplyQueue<>();
 
     protected final boolean _withSubjectPropagation;
     /**
@@ -95,14 +96,14 @@ public class OncRpcSvc {
     /**
      * mapping of registered programs.
      */
-    protected final Map<OncRpcProgram, RpcDispatchable> _programs =
+    protected final Map<OncRpcProgram, GenRpcDispatchable<SVC_T>> _programs =
             new ConcurrentHashMap<>();
-
+    
     /**
      * Create new RPC service with defined configuration.
      * @param builder to build this service
      */
-    public OncRpcSvc(OncRpcSvcBuilder builder) {
+    public  GenRpcSvc(GenOncRpcSvcBuilder<SVC_T> builder) {
         _publish = builder.isAutoPublish();
         final int protocol = builder.getProtocol();
 
@@ -162,7 +163,7 @@ public class OncRpcSvc {
      * @param prog program number
      * @param handler RPC requests handler.
      */
-    public void register(OncRpcProgram prog, RpcDispatchable handler) {
+    public void register(OncRpcProgram prog, GenRpcDispatchable<SVC_T> handler) {
         _log.info("Registering new program {} : {}", prog, handler);
         _programs.put(prog, handler);
     }
@@ -183,7 +184,7 @@ public class OncRpcSvc {
      * @deprecated use {@link OncRpcSvcBuilder#withRpcService} instead.
      */
     @Deprecated
-    public void setPrograms(Map<OncRpcProgram, RpcDispatchable> services) {
+    public void setPrograms(Map<OncRpcProgram, GenRpcDispatchable<SVC_T>> services) {
         _programs.putAll(services);
     }
 
@@ -294,7 +295,7 @@ public class OncRpcSvc {
             if (_gssSessionManager != null) {
                 filterChain.add(new GssProtocolFilter(_gssSessionManager));
             }
-            filterChain.add(new RpcDispatcher(_requestExecutor, _programs, _withSubjectPropagation));
+            filterChain.add(new GenRpcDispatcher<SVC_T>(_requestExecutor, _programs, _withSubjectPropagation));
             final FilterChain filters = filterChain.build();
 
             t.setProcessor(filters);
@@ -337,8 +338,8 @@ public class OncRpcSvc {
         throw new RuntimeException("Unsupported transport: " + t.getClass().getName());
     }
 
-    protected Filter getRpcProtocolFilter(ReplyQueue replyQueue) {
-        return new RpcProtocolFilter(replyQueue);
+    protected Filter getRpcProtocolFilter(GenReplyQueue<SVC_T> replyQueue) {
+        return new GenRpcProtocolFilter<>(replyQueue);
     }
 
     protected void addPostTransportProtocolFilters(FilterChainBuilder filterChain, Transport t) {
@@ -383,11 +384,11 @@ public class OncRpcSvc {
         _requestExecutor.shutdown();
     }
 
-    public XdrTransport connect(InetSocketAddress socketAddress) throws IOException {
+    public  GenXdrTransport<SVC_T> connect(InetSocketAddress socketAddress) throws IOException {
         return connect(socketAddress, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
 
-    public XdrTransport connect(InetSocketAddress socketAddress, long timeout, TimeUnit timeUnit) throws IOException {
+    public  GenXdrTransport<SVC_T>  connect(InetSocketAddress socketAddress, long timeout, TimeUnit timeUnit) throws IOException {
 
         // in client mode only one transport is defined
         NIOTransport transport = _transports.get(0);
@@ -403,7 +404,7 @@ public class OncRpcSvc {
         try {
             //noinspection unchecked
             Connection<InetSocketAddress> connection = connectFuture.get(timeout, timeUnit);
-            return new GrizzlyXdrTransport(connection, _replyQueue);
+            return new GenGrizzlyXdrTransport<SVC_T>(connection, _replyQueue);
         } catch (ExecutionException e) {
             Throwable t = getRootCause(e);
             propagateIfPossible(t, IOException.class);
