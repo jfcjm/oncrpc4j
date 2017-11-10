@@ -35,6 +35,7 @@ import org.dcache.xdr.XdrInt;
 import org.dcache.xdr.XdrString;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.libvirt.VirOncRpcSvcBuilder;
 import org.libvirt.VirRpcCall;
@@ -48,6 +49,7 @@ import static org.junit.Assert.*;
  * "hostname" command.
  * 
  */
+@Ignore
 public class ServerIntegration {
 
     private static final int PROGNUM = 536903814;

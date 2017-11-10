@@ -31,7 +31,7 @@ import org.dcache.xdr.OncRpcSvcBuilder;
  * @author jmk
  *
  */
-
+@Deprecated
 public class VirOncRpcClient extends OncRpcClient {
     final static int libvirtTransportProtocol = IpProtocolType.TCP;
     

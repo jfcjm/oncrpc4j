@@ -23,28 +23,32 @@ import java.net.InetSocketAddress;
 import java.nio.channels.CompletionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.dcache.xdr.GenGrizzlyXdrTransport;
-import org.dcache.xdr.GenReplyQueue;
-import org.dcache.xdr.GenRpcProtocolFilter;
-import org.dcache.xdr.GenRpcReply;
-import org.dcache.xdr.GenXdrTransport;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcAccepsStatus;
 import org.dcache.xdr.RpcException;
-import org.dcache.xdr.RpcMessage;
 import org.dcache.xdr.RpcMessageType;
 import org.dcache.xdr.Xdr;
+import org.dcache.xdr.model.impl.GenGrizzlyXdrTransport;
+import org.dcache.xdr.model.itf.GenItfReplyQueue;
+import org.dcache.xdr.model.itf.GenItfRpcReply;
+import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.itf.GenXdrTransport;
+import org.dcache.xdr.model.root.GenAbstractRpcProtocolFilter;
+import org.dcache.xdr.model.root.RpcMessage;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.filterchain.NextAction;
 
-public class GenVirRpcProtocolFilter extends GenRpcProtocolFilter<GenVirOncRpcSvc> {
+public final class GenVirRpcProtocolFilter  extends GenAbstractRpcProtocolFilter<GenVirOncRpcSvc> implements GenItfVirRpcProtcolFilter {
 
     private final static Logger _log = LoggerFactory.getLogger(GenVirRpcProtocolFilter.class);
 
-    public GenVirRpcProtocolFilter(GenReplyQueue<GenVirOncRpcSvc> replyQueue) {
+    public GenVirRpcProtocolFilter(GenItfReplyQueue<GenVirOncRpcSvc> replyQueue) {
         super(replyQueue);
     }
 
+    /* (non-Javadoc)
+     * @see org.libvirt.GenItfVirRpcProtcolFilter#handleRead(org.glassfish.grizzly.filterchain.FilterChainContext)
+     */
     @Override
     public NextAction handleRead(FilterChainContext ctx) throws IOException {
         _log.debug("VirRpcProtocolFilter handle read");
@@ -58,7 +62,7 @@ public class GenVirRpcProtocolFilter extends GenRpcProtocolFilter<GenVirOncRpcSv
 
         xdr.beginDecoding();
         RpcMessage message = new VirRpcMessage(xdr);
-        _log.debug("created a new VirRpcMessage message {},{} " + message.type(),message.xid());
+        _log.debug("created a new VirRpcMessage message {},{} " + message.xid() + message.type());
         /**
          * In case of UDP grizzly does not populates connection with correct destination address.
          * We have to get peer address from the request context, which will contain SocketAddress where from
@@ -85,9 +89,9 @@ public class GenVirRpcProtocolFilter extends GenRpcProtocolFilter<GenVirOncRpcSv
             case RpcMessageType.REPLY:
             	_log.debug("Received a Reply message with xid {}",message.xid());
                 try {
-                    GenVirRpcReply reply = new GenVirRpcReply(message.xid(), xdr, transport);
+                    final GenItfRpcReply<GenVirOncRpcSvc> reply = createReply(xdr, message, transport);
                     _log.debug("Rpc reply is {}",reply);
-                     CompletionHandler<GenRpcReply<GenVirOncRpcSvc>, GenXdrTransport<GenVirOncRpcSvc>> callback = _replyQueue.get(message.xid());
+                       CompletionHandler<GenItfRpcReply<GenVirOncRpcSvc>, GenItfXdrTransport<GenVirOncRpcSvc>> callback = _replyQueue.get(message.xid());
                     if (callback != null) {
                     	_log.debug("Processing callback" + callback);
                         if (!reply.isAccepted()) {
@@ -112,5 +116,12 @@ public class GenVirRpcProtocolFilter extends GenRpcProtocolFilter<GenVirOncRpcSv
                 _log.warn("unknown message.type" + message.type());
                 return ctx.getStopAction();
         }
+    }
+
+
+    @Override
+    protected GenItfRpcReply<GenVirOncRpcSvc> createReply(Xdr xdr, RpcMessage message,
+            GenItfXdrTransport<GenVirOncRpcSvc> transport) throws OncRpcException, IOException {
+        return  new GenVirRpcReply(message.xid(), xdr, transport);
     }
 }

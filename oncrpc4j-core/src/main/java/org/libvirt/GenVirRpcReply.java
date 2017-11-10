@@ -22,23 +22,19 @@ import java.io.IOException;
 
 import org.dcache.xdr.BadXdrOncRpcException;
 import org.dcache.xdr.OncRpcException;
-import org.dcache.xdr.GenRpcReply;
-import org.dcache.xdr.GenXdrTransport;
 import org.dcache.xdr.RpcReplyStatus;
 import org.dcache.xdr.Xdr;
+import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.root.GenAbstractRpcReply;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GenVirRpcReply extends GenRpcReply<GenVirOncRpcSvc>{
-
-    private final static Logger _log = LoggerFactory.getLogger(GenVirRpcReply.class);
-    
-    private int _errorDomain;
-    private String _errorString;
+public final class GenVirRpcReply extends GenAbstractRpcReply<GenVirOncRpcSvc> implements GenItfVirRpcReply{
+    private static final Logger _log = LoggerFactory.getLogger(GenVirRpcReply.class);
     private remote_error _error;
    
 
-    public GenVirRpcReply(int xid, Xdr xdr, GenXdrTransport<GenVirOncRpcSvc> transport) throws OncRpcException, IOException {
+    public GenVirRpcReply(int xid, Xdr xdr, GenItfXdrTransport<GenVirOncRpcSvc> transport) throws OncRpcException, IOException {
         super(xid,xdr,transport);
         _log.debug("reply status: {}",_replyStatus);
     }
@@ -91,6 +87,9 @@ public class GenVirRpcReply extends GenRpcReply<GenVirOncRpcSvc>{
     }
 
 
+    /* (non-Javadoc)
+     * @see org.libvirt.GenItfVirRpcReply#getRejectStatus()
+     */
     @Override
     public int getRejectStatus(){
         _log.warn(_error.toString());
@@ -100,34 +99,11 @@ public class GenVirRpcReply extends GenRpcReply<GenVirOncRpcSvc>{
         return _error.getCode();
     }
     
+    /* (non-Javadoc)
+     * @see org.libvirt.GenItfVirRpcReply#getError()
+     */
+    @Override
     public remote_error getError(){
         return _error;
     }
-    
-    
-    
-    
-    
-    /*
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("xid: ").append(_xid);
-        sb.append(" Status: ").append(RpcReplyStatus.toString(_replyStatus));
-        if( _replyStatus == RpcReplyStatus.MSG_ACCEPTED) {
-            sb.append(" AccespStatus: ").append(RpcAccepsStatus.toString(_acceptedStatus));
-            if(_acceptedStatus == RpcAccepsStatus.PROG_MISMATCH) {
-                sb.append(" :").append(_mismatchInfo);
-            }
-        }else{
-            sb.append(" RejectStatus: ").append(RpcRejectStatus.toString(_rejectStatus));
-            if(_rejectStatus == RpcRejectStatus.AUTH_ERROR){
-                sb.append(" AuthError: ").append(RpcAuthStat.toString(_authStatus));
-            }
-
-        }
-
-        return sb.toString();
-    }*/
 }

@@ -33,6 +33,7 @@ import org.dcache.xdr.XdrString;
 import org.dcache.xdr.XdrTransport;
 import org.dcache.xdr.XdrVoid;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.libvirt.VirOncRpcSvcBuilder;
 import org.libvirt.VirRpcCall;
@@ -63,6 +64,7 @@ import tests.credentials.TestCredentials4Libvirt;
  * @author jmk
  *
  */
+@Ignore
 public class ClientIntegrationSequenceNoAuthTest {
 
     private static final String LIBVIRTD_HOSTNAME   = TestCredentials4Libvirt.LIBVIRTD_INTEGRATION_HOSTNAME;

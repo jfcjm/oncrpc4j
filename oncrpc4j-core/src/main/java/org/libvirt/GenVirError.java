@@ -44,7 +44,7 @@ public class GenVirError {
     }
 
 
-    public static XdrAble createRuntimeError(GenVirRpcCall virRpcCall, Exception e) {
+    public static XdrAble createRuntimeError(GenItfVirtRpcCall virRpcCall, Exception e) {
         remote_error error = new remote_error();
         error.setCode(1);
         error.setDomain(0);;

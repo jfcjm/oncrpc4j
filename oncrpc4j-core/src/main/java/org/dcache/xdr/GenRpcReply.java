@@ -21,59 +21,23 @@ package org.dcache.xdr;
 
 import java.io.IOException;
 
+import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.root.GenAbstractRpcReply;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GenRpcReply<SVC_T extends GenRpcSvc<SVC_T>> {
+public final class GenRpcReply extends GenAbstractRpcReply<GenOncRpcSvc>  {
 
-    private final static Logger _log = LoggerFactory.getLogger(GenRpcReply.class);
-    /**
-     * XID of corresponding request
+    private static final Logger _log = LoggerFactory.getLogger(GenRpcReply.class);
+
+    public GenRpcReply(int xid, Xdr xdr, GenItfXdrTransport<GenOncRpcSvc> transport) throws OncRpcException, IOException {
+        super(xid,xdr,transport);
+    }
+
+    /* (non-Javadoc)
+     * @see org.dcache.xdr.GenItfRpcReply#getRejectStatus()
      */
-    private final int _xid;
-    /**
-     * XDR message
-     */
-    private final Xdr _xdr;
-    protected int _replyStatus;
-    private int _acceptedStatus;
-    private int _rejectStatus;
-    private MismatchInfo _mismatchInfo;
-    private int _authStatus;
-
-    private RpcAuthVerifier _verf;
-    private final GenXdrTransport<SVC_T> _transport;
-
-    public GenRpcReply(int xid, Xdr xdr, GenXdrTransport<SVC_T> transport) throws OncRpcException, IOException {
-        _xid = xid;
-        _xdr = xdr;
-        _transport = transport;
-
-        // decode
-        _replyStatus = getReplyStatus(xdr);
-        processReplyStatus(_replyStatus,xdr);
-    }
-
-    public boolean isAccepted() {
-        return _replyStatus == RpcReplyStatus.MSG_ACCEPTED;
-    }
-
-    public int getAcceptStatus() {
-        if (!isAccepted()) {
-            throw new IllegalStateException("Message in not accepted");
-        }
-
-        return _acceptedStatus;
-    }
-
-    public MismatchInfo getMismatchInfo() {
-        return _mismatchInfo;
-    }
-
-    public int getAuthStatus() {
-        return _authStatus;
-    }
-
+    @Override
     public int getRejectStatus() {
         if (isAccepted()) {
             throw new IllegalStateException("Message is accepted");
@@ -81,34 +45,7 @@ public class GenRpcReply<SVC_T extends GenRpcSvc<SVC_T>> {
         return _rejectStatus;
     }
 
-    public void getReplyResult(XdrAble result) throws OncRpcException, IOException {  	
-        _log.debug("decoding result class {}", result.getClass().getName());
-        result.xdrDecode(_xdr);
-        _xdr.endDecoding();
-    }
-
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("xid: ").append(_xid);
-        sb.append(" Status: ").append(RpcReplyStatus.toString(_replyStatus));
-        if( _replyStatus == RpcReplyStatus.MSG_ACCEPTED) {
-            sb.append(" AccespStatus: ").append(RpcAccepsStatus.toString(_acceptedStatus));
-            if(_acceptedStatus == RpcAccepsStatus.PROG_MISMATCH) {
-                sb.append(" :").append(_mismatchInfo);
-            }
-        }else{
-            sb.append(" RejectStatus: ").append(RpcRejectStatus.toString(_rejectStatus));
-            if(_rejectStatus == RpcRejectStatus.AUTH_ERROR){
-                sb.append(" AuthError: ").append(RpcAuthStat.toString(_authStatus));
-            }
-
-        }
-
-        return sb.toString();
-    }
-
     protected void processReplyStatus(int _replyStatus, Xdr xdr) throws OncRpcException, IOException {
         switch (_replyStatus) {
         case RpcReplyStatus.MSG_ACCEPTED:
@@ -139,8 +76,14 @@ public class GenRpcReply<SVC_T extends GenRpcSvc<SVC_T>> {
         
     }
 
+    @Override
     protected int getReplyStatus(Xdr xdr) throws BadXdrOncRpcException {
         return xdr.xdrDecodeInt();
+    }
+
+    @Override
+    public  Integer getError() {
+        return null;
     }
     
 }

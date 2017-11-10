@@ -17,18 +17,31 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.xdr;
+package org.dcache.xdr.model.root;
 
+import org.dcache.xdr.BadXdrOncRpcException;
+import org.dcache.xdr.XdrAble;
+import org.dcache.xdr.XdrDecodingStream;
+import org.dcache.xdr.XdrEncodingStream;
+@Deprecated
 public class RpcMessage implements XdrAble {
 
     protected int _xid;
     protected int _type;
-
-    protected RpcMessage(XdrDecodingStream xdr) throws BadXdrOncRpcException {
+    /**
+     * transformé de private en public
+     * @param xdr
+     * @throws BadXdrOncRpcException
+     */
+    public RpcMessage(XdrDecodingStream xdr) throws BadXdrOncRpcException {
         this.xdrDecode(xdr);
     }
-
-    protected RpcMessage(int xid, int type) {
+    /**
+     * Transformé de private en public
+     * @param xid
+     * @param type
+     */
+    public RpcMessage(int xid, int type) {
         _xid = xid;
         _type = type;
     }

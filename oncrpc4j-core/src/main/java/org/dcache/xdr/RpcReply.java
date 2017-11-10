@@ -23,7 +23,7 @@ import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+@Deprecated
 public class RpcReply {
 
     private final static Logger _log = LoggerFactory.getLogger(RpcReply.class);

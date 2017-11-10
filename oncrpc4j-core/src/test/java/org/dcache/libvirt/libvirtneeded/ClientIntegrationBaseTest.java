@@ -28,6 +28,7 @@ import org.dcache.xdr.XdrLong;
 import org.dcache.xdr.XdrTransport;
 import org.dcache.xdr.XdrVoid;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.experimental.categories.Categories;
@@ -48,7 +49,7 @@ import org.libvirt.VirRpcRejectedException;
  *
  */
 
-
+@Ignore
 public class ClientIntegrationBaseTest {
 
     private static final String LIBVIRT_HOST    = "localhost";

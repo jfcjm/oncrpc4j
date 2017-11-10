@@ -20,6 +20,7 @@ package org.dcache.libvirt.libvirtneeded;
 
 import static org.junit.Assert.*;
 
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
@@ -44,6 +45,8 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 
 import static org.hamcrest.CoreMatchers.isA;
+
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -53,6 +56,9 @@ import org.libvirt.VirOncRpcClient;
 import org.libvirt.VirRpcCall;
 import org.libvirt.VirRpcRejectedException;
 import org.libvirt.remote_error;
+
+
+@Ignore
 public class LearningVirtProtocolTests {
 	
 	

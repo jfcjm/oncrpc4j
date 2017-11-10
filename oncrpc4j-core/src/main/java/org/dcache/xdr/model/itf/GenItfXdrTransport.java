@@ -1,33 +1,11 @@
-/*
- * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
- * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
- *
- * This library is free software; you can redistribute it and/or modify
- * it under the terms of the GNU Library General Public License as
- * published by the Free Software Foundation; either version 2 of the
- * License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Library General Public License for more details.
- *
- * You should have received a copy of the GNU Library General Public
- * License along with this program (see the file COPYING.LIB for more
- * details); if not, write to the Free Software Foundation, Inc.,
- * 675 Mass Ave, Cambridge, MA 02139, USA.
- */
-package org.dcache.xdr;
+package org.dcache.xdr.model.itf;
 
 import java.net.InetSocketAddress;
 import java.nio.channels.CompletionHandler;
 
-/**
- *
- * Abstraction for sending reply to clients
- *
- */
-public interface GenXdrTransport<SVC_T extends GenRpcSvc<SVC_T>> {
+import org.dcache.xdr.Xdr;
+
+public interface GenItfXdrTransport<SVC_T extends GenItfRpcSvc<SVC_T>> {
 
     /**
      * Send data to remote end point. The handler parameter is a completion
@@ -39,9 +17,9 @@ public interface GenXdrTransport<SVC_T extends GenRpcSvc<SVC_T>> {
      * @param attachment the object to attach to the I/O operation; can be null
      * @param handler the handler for consuming the result.
      */
-    <A> void send(Xdr xdr, A attachment,  CompletionHandler<Integer, ? super A> handler);
+    <A> void send(Xdr xdr, A attachment, CompletionHandler<Integer, ? super A> handler);
 
-    GenReplyQueue<SVC_T> getReplyQueue();
+    GenItfReplyQueue<SVC_T> getReplyQueue();
 
     /**
      * Returns is this transport is open and ready.
@@ -72,5 +50,6 @@ public interface GenXdrTransport<SVC_T extends GenRpcSvc<SVC_T>> {
      *
      * @return
      */
-    public GenXdrTransport<SVC_T> getPeerTransport();
+    GenItfXdrTransport<SVC_T> getPeerTransport();
+
 }

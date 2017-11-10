@@ -8,19 +8,20 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.dcache.xdr.GenOncRpcSvcBuilder;
-import org.dcache.xdr.GenRpcCall;
-import org.dcache.xdr.GenRpcSvc;
-import org.dcache.xdr.GenXdrTransport;
 import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.OncRpcProgram;
-import org.dcache.xdr.GenRpcDispatchable;
 import org.dcache.xdr.XdrVoid;
+import org.dcache.xdr.model.itf.GenItfOncRpcSvcBuilder;
+import org.dcache.xdr.model.itf.GenItfRpcCall;
+import org.dcache.xdr.model.itf.GenItfRpcSvc;
+import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.itf.GenRpcDispatchable;
+import org.dcache.xdr.model.itf.GenXdrTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class EmbeddedGenericServer<SVC_T extends GenRpcSvc<SVC_T>>   
+public abstract class EmbeddedGenericServer<SVC_T extends GenItfRpcSvc<SVC_T>>   
     implements Closeable{
     
     private final static Logger _log = LoggerFactory.getLogger(EmbeddedGenericServer.class);
@@ -32,19 +33,19 @@ public abstract class EmbeddedGenericServer<SVC_T extends GenRpcSvc<SVC_T>>
     private final GenRpcDispatchable<SVC_T> unexpectedFailingAction = new GenRpcDispatchable<SVC_T>(){
 
         @Override
-        public void dispatchOncRpcCall(GenRpcCall<SVC_T> call) throws OncRpcException, IOException {
+        public void dispatchOncRpcCall(GenItfRpcCall<SVC_T> call) throws OncRpcException, IOException {
             fail();
         }
     };
 
-    protected abstract GenRpcCall<SVC_T> createRpcCaller(int prognum, int progver, GenXdrTransport<SVC_T> t) ;
-    protected abstract GenOncRpcSvcBuilder<SVC_T> createOncSvcBuilder();
+    protected abstract GenItfRpcCall<SVC_T> createRpcCaller(int prognum, int progver, GenItfXdrTransport<SVC_T> t) ;
+    protected abstract GenItfOncRpcSvcBuilder<SVC_T> createOncSvcBuilder();
     
     
     
     Map<Integer,GenRpcDispatchable<SVC_T>> srcActions = new ConcurrentHashMap<>();
 
-    GenRpcDispatchable<SVC_T> fakeSrvActions = (GenRpcCall<SVC_T> call) ->
+    GenRpcDispatchable<SVC_T> fakeSrvActions = (GenItfRpcCall<SVC_T> call) ->
     {
         GenRpcDispatchable<SVC_T> action = srcActions.get(call.getProcedure());
         if (null != action){
@@ -70,16 +71,17 @@ public abstract class EmbeddedGenericServer<SVC_T extends GenRpcSvc<SVC_T>>
     public EmbeddedGenericServer() throws IOException{
         this(LIBVIRT_PORT);
     }
-    protected void processHighLevelException(GenRpcCall<SVC_T> call, Exception e){
+    protected void processHighLevelException(GenItfRpcCall<SVC_T> call, Exception e){
        throw new RuntimeException(e);
     }
     public EmbeddedGenericServer(int port) throws IOException {
 
-        add(0,(GenRpcCall<SVC_T> call)-> call.reply(XdrVoid.XDR_VOID));
+        add(0,(GenItfRpcCall<SVC_T> call)-> call.reply(XdrVoid.XDR_VOID));
         svc = createOncSvcBuilder()
                 .withTCP()
                 .withPort(port)
                 .withWorkerThreadIoStrategy()
+                .withoutAutoPublish()
                 .withRpcService(new OncRpcProgram(PROGNUM, PROGVER), fakeSrvActions)
                 .build();
         System.out.println(svc.getClass());
@@ -89,7 +91,6 @@ public abstract class EmbeddedGenericServer<SVC_T extends GenRpcSvc<SVC_T>>
     private void add(int procNumber, GenRpcDispatchable<SVC_T> action) {
         srcActions.put(procNumber,action );
         System.out.println(srcActions.size());
-        assertEquals("",1,srcActions.size());
     }
     private InetSocketAddress getAddress() {
         return svc.getInetSocketAddress(IpProtocolType.TCP);
@@ -98,24 +99,25 @@ public abstract class EmbeddedGenericServer<SVC_T extends GenRpcSvc<SVC_T>>
         return svc.getInetSocketAddress(IpProtocolType.TCP).getPort();
     }
     
-    public GenXdrTransport<SVC_T> getTransport() throws IOException {
+    public GenItfXdrTransport<SVC_T> getTransport() throws IOException {
         return svc.connect(getAddress());
         
     }
 
-    public GenRpcCall<SVC_T> getClientCall() throws IOException {
+    public GenItfRpcCall<SVC_T> getClientCall() throws IOException {
         if (null != client) throw new UnexpectedException("A client already exists");
         return createClient(PROGNUM,PROGVER);
     }
 
-    private GenRpcCall<SVC_T> createClient(int prognum, int progver) throws IOException {
+    private GenItfRpcCall<SVC_T> createClient(int prognum, int progver) throws IOException {
         client = createOncSvcBuilder()
                 .withTCP()
                 .withClientMode()
+                .withAutoPublish()
                 .withWorkerThreadIoStrategy()
                 .build();
         client.start();
-        GenXdrTransport<SVC_T> t = client.connect(svc.getInetSocketAddress(IpProtocolType.TCP));
+        GenItfXdrTransport<SVC_T> t = client.connect(svc.getInetSocketAddress(IpProtocolType.TCP));
         return createRpcCaller(prognum, progver, t);
     }
     
@@ -149,7 +151,7 @@ public abstract class EmbeddedGenericServer<SVC_T extends GenRpcSvc<SVC_T>>
         return numberProc;
     }
     
-    public GenRpcCall<SVC_T> getBadProgClientCall() throws IOException {
+    public GenItfRpcCall<SVC_T> getBadProgClientCall() throws IOException {
         if (null != client) throw new UnexpectedException("A client already exists");
         return createClient(PROGNUM+12,PROGVER);
     }
@@ -158,7 +160,7 @@ public abstract class EmbeddedGenericServer<SVC_T extends GenRpcSvc<SVC_T>>
         return Integer.MAX_VALUE;
     }
 
-    public GenRpcCall<SVC_T> getBadVersionClientCall() throws IOException {
+    public GenItfRpcCall<SVC_T> getBadVersionClientCall() throws IOException {
         if (null != client) throw new UnexpectedException("A client already exists");
         return createClient(PROGNUM,PROGVER+12);
     }

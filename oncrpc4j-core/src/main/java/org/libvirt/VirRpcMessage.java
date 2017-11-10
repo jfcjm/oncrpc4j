@@ -19,9 +19,9 @@
 package org.libvirt;
 
 import org.dcache.xdr.BadXdrOncRpcException;
-import org.dcache.xdr.RpcMessage;
 import org.dcache.xdr.XdrDecodingStream;
 import org.dcache.xdr.XdrEncodingStream;
+import org.dcache.xdr.model.root.RpcMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

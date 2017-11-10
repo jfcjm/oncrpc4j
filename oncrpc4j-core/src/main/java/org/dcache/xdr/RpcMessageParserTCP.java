@@ -28,6 +28,7 @@ import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.filterchain.NextAction;
 import org.glassfish.grizzly.memory.BuffersBuffer;
 
+@Deprecated
 public class RpcMessageParserTCP extends BaseFilter {
 
     /**

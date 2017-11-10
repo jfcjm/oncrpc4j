@@ -8,10 +8,11 @@ import org.dcache.xdr.XdrInt;
 import org.dcache.xdr.XdrVoid;
 import org.junit.Test;
 import org.libvirt.VirRpcCall;
+import org.libvirt.VirRpcRejectedException;
 
 public class runEmbeddedServerTest {
 
-    @Test(timeout=10000)
+    @Test(timeout=10000,expected=VirRpcRejectedException.class)
     public void testProcUnavailable() throws IOException {
         try ( EmbeddedVirtServer srv = new EmbeddedVirtServer(0)){
             assertTrue("Server should listen on a port != 0",srv.getListeningPort()>0);
@@ -25,7 +26,7 @@ public class runEmbeddedServerTest {
     }
 
 
-    @Test(timeout=10000)
+    @Test(timeout=10000,expected=VirRpcRejectedException.class)
     public void testVersionUnavailable() throws IOException {
         try ( EmbeddedVirtServer srv = new EmbeddedVirtServer(0)){
             assertTrue("Server should listen on a port != 0",srv.getListeningPort()>0);
@@ -41,7 +42,7 @@ public class runEmbeddedServerTest {
     }
 
 
-    @Test(timeout=10000)
+    @Test(timeout=10000,expected=VirRpcRejectedException.class)
     public void testProgUnavailable() throws IOException {
         try ( EmbeddedVirtServer srv = new EmbeddedVirtServer(0)){
             assertTrue("Server should listen on a port != 0",srv.getListeningPort()>0);

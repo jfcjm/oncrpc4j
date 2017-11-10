@@ -20,17 +20,17 @@ package org.libvirt;
 
 import java.io.EOFException;
 
-import org.dcache.xdr.GenReplyQueue;
-import org.dcache.xdr.GenRpcCall;
-import org.dcache.xdr.GenXdrTransport;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcAuth;
-import org.dcache.xdr.RpcMessage;
 import org.dcache.xdr.RpcMessageType;
-import org.dcache.xdr.GenRpcReply;
 import org.dcache.xdr.Xdr;
 import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrEncodingStream;
+import org.dcache.xdr.model.itf.GenItfReplyQueue;
+import org.dcache.xdr.model.itf.GenItfRpcReply;
+import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.root.GenAbstractRpcCall;
+import org.dcache.xdr.model.root.RpcMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +48,7 @@ import java.util.concurrent.TimeoutException;
  * Apdaptation of rpcCall for libvirt ! does not use rpcvers nor
  * rpcauth
  */
-public class GenVirRpcCall extends GenRpcCall<GenVirOncRpcSvc>{
+public final class GenVirRpcCall extends GenAbstractRpcCall<GenVirOncRpcSvc> implements GenItfVirtRpcCall{
 
     private final static Logger _log = LoggerFactory.getLogger(GenVirRpcCall.class);
     private int _status;
@@ -58,22 +58,26 @@ public class GenVirRpcCall extends GenRpcCall<GenVirOncRpcSvc>{
      * @param ver       veriosn du programme
      * @param transport XdrTransport to use
      */
-    public GenVirRpcCall(int prog, int ver,  GenXdrTransport<GenVirOncRpcSvc> transport) {
+    public GenVirRpcCall(int prog, int ver,  GenItfXdrTransport<GenVirOncRpcSvc> transport) {
         this(prog, ver,  new Xdr(Xdr.INITIAL_XDR_SIZE), transport);
     }
 
-    public GenVirRpcCall(int prog, int ver,  Xdr xdr, GenXdrTransport<GenVirOncRpcSvc> transport) {
+    public GenVirRpcCall(int prog, int ver,  Xdr xdr, GenItfXdrTransport<GenVirOncRpcSvc> transport) {
         super(prog,ver,null,xdr,transport);
         
     }
 
-    public GenVirRpcCall(int xid, Xdr xdr, GenXdrTransport<GenVirOncRpcSvc> transport) {
+    public GenVirRpcCall(int xid, Xdr xdr, GenItfXdrTransport<GenVirOncRpcSvc> transport) {
         super(xid,xdr,transport);
     }
 
-    public GenVirRpcCall(int xid, int prog, int ver, int proc, Xdr xdr, GenXdrTransport<GenVirOncRpcSvc> transport) {
+    public GenVirRpcCall(int xid, int prog, int ver, int proc, Xdr xdr, GenItfXdrTransport<GenVirOncRpcSvc> transport) {
         super(xid,prog,ver,proc,null,xdr,transport);
     }
+    /* (non-Javadoc)
+     * @see org.libvirt.GenItfVirtRpcCall#call(int, org.dcache.xdr.XdrAble, org.dcache.xdr.XdrAble, long, java.util.concurrent.TimeUnit, org.dcache.xdr.RpcAuth)
+     */
+    @Override
     public void call(int procedure, XdrAble args, XdrAble result, long timeoutValue, TimeUnit timeoutUnits, RpcAuth auth)
             throws IOException, TimeoutException {
         try {
@@ -124,7 +128,7 @@ public class GenVirRpcCall extends GenRpcCall<GenVirOncRpcSvc>{
      */
     @Override
     protected int callInternal(int procedure, XdrAble args, 
-            CompletionHandler<GenRpcReply<GenVirOncRpcSvc>, GenXdrTransport<GenVirOncRpcSvc>> callback,
+            CompletionHandler<GenItfRpcReply<GenVirOncRpcSvc>, GenItfXdrTransport<GenVirOncRpcSvc>> callback,
                              long timeoutValue, TimeUnit timeoutUnits, RpcAuth auth)
             throws IOException {
         int xid = nextXid();
@@ -144,9 +148,9 @@ public class GenVirRpcCall extends GenRpcCall<GenVirOncRpcSvc>{
         System.out.println("wrote " + xdr.asBuffer().limit() + "bytes");
         
         
-        GenXdrTransport<GenVirOncRpcSvc> _transport = getTransport();
+        GenItfXdrTransport<GenVirOncRpcSvc> _transport = getTransport();
         
-        GenReplyQueue<GenVirOncRpcSvc> replyQueue = _transport.getReplyQueue();
+        GenItfReplyQueue<GenVirOncRpcSvc> replyQueue = _transport.getReplyQueue();
         if (callback != null) {
             replyQueue.registerKey(xid, _transport.getLocalSocketAddress(), callback, timeoutValue, timeoutUnits);
         } else {
@@ -169,6 +173,9 @@ public class GenVirRpcCall extends GenRpcCall<GenVirOncRpcSvc>{
         });
         return xid;
     }
+    /* (non-Javadoc)
+     * @see org.libvirt.GenItfVirtRpcCall#accept()
+     */
     @Override
     public void accept() throws IOException, OncRpcException {
         _log.debug("Before remaining {} ",_xdr.asBuffer().remaining());
@@ -188,6 +195,9 @@ public class GenVirRpcCall extends GenRpcCall<GenVirOncRpcSvc>{
        _log.info("Accepted call for prog {}, version {} and proc {}, status {}",_prog,_version,_proc,_status);
        _log.debug("{} byte(s) are remaining in the buffer",_xdr.asBuffer().remaining());
     }
+    /* (non-Javadoc)
+     * @see org.libvirt.GenItfVirtRpcCall#acceptedReply(int, org.dcache.xdr.XdrAble)
+     */
     @Override
     public void acceptedReply(int state, XdrAble reply) {
         _log.info("Construct a reply for state {} and reply <{}> (program {}, version {}, proc {})", state,reply,getProgram(),getProgramVersion(),getProcedure());
@@ -205,7 +215,7 @@ public class GenVirRpcCall extends GenRpcCall<GenVirOncRpcSvc>{
             reply.xdrEncode(xdr);
             xdr.endEncoding();
             {
-                GenXdrTransport<GenVirOncRpcSvc> _transport = getTransport();
+                GenItfXdrTransport<GenVirOncRpcSvc> _transport = getTransport();
                 _transport.send((Xdr)xdr, _transport.getRemoteSocketAddress(), _sendNotificationHandler);
             }
 
@@ -215,25 +225,41 @@ public class GenVirRpcCall extends GenRpcCall<GenVirOncRpcSvc>{
             _log.error("Failed send reply: ", e);
         }
     }
+    /* (non-Javadoc)
+     * @see org.libvirt.GenItfVirtRpcCall#failProgramUnavailable()
+     */
     @Override
     public  void failProgramUnavailable(){
         acceptedReply(VirRpcAcceptStatus.ERROR, GenVirError.createProgramUnavailable(this));
     }
-    /**
-     * Reply to client with error procedure unavailable.
+    /* (non-Javadoc)
+     * @see org.libvirt.GenItfVirtRpcCall#failProcedureUnavailable()
      */
+    @Override
     public void failProcedureUnavailable() {
         acceptedReply(VirRpcAcceptStatus.ERROR, GenVirError.createProgramUnavailable(this));
     }
 
 
 
+    /* (non-Javadoc)
+     * @see org.libvirt.GenItfVirtRpcCall#failRuntimeError(java.lang.Exception)
+     */
+    @Override
     public void failRuntimeError(Exception e) {
         acceptedReply(VirRpcAcceptStatus.ERROR,GenVirError.createRuntimeError(this,e));
     }
     
+    /* (non-Javadoc)
+     * @see org.libvirt.GenItfVirtRpcCall#toString()
+     */
     @Override
     public String toString() {
         return String.format("LibVirtRPC call: program=%d, version=%d, procedure=%d,arg length %d", _prog, _version, _proc,_xdr.asBuffer().remaining());
+    }
+
+    @Override
+    public void failProgramMismatch(int min, int max) {
+        failProcedureUnavailable();
     }
 }

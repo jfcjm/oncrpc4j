@@ -17,7 +17,7 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.xdr;
+package org.dcache.xdr.model.impl;
 
 import java.io.EOFException;
 import java.net.SocketAddress;
@@ -32,7 +32,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class GenReplyQueue<SVC_T extends GenRpcSvc<SVC_T>> {
+import org.dcache.xdr.model.itf.GenItfReplyQueue;
+import org.dcache.xdr.model.itf.GenItfRpcReply;
+import org.dcache.xdr.model.itf.GenItfRpcSvc;
+import org.dcache.xdr.model.itf.GenItfXdrTransport;
+
+public final class GenReplyQueue<SVC_T extends GenItfRpcSvc<SVC_T>> implements GenItfReplyQueue<SVC_T> {
 
     private final ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(1, new ThreadFactory() {
         private final AtomicInteger counter = new AtomicInteger();
@@ -46,37 +51,23 @@ public class GenReplyQueue<SVC_T extends GenRpcSvc<SVC_T>> {
     });
     private final ConcurrentMap<Integer, PendingRequest> _queue = new ConcurrentHashMap<>();
 
-    /**
-     * Register callback handler for a given xid. The Callback is called when
-     * client receives reply from the server, request failed of expired.
-     *
-     * @param xid xid of RPC request.
-     * @param addr socket address of remote endpoint.
-     * @param callback completion handler which will be used when request execution is
-     * finished.
-     * @throws EOFException if disconnected
+    /* (non-Javadoc)
+     * @see org.dcache.xdr.GenItfReplyQueue#registerKey(int, java.net.SocketAddress, java.nio.channels.CompletionHandler)
      */
-    public void registerKey(int xid, SocketAddress addr, CompletionHandler<GenRpcReply<SVC_T>, GenXdrTransport<SVC_T>> callback) throws EOFException {
+    @Override
+    public void registerKey(int xid, SocketAddress addr, CompletionHandler<GenItfRpcReply<SVC_T>, GenItfXdrTransport<SVC_T>> callback) throws EOFException {
         registerKey(xid, addr, callback, 0, null);
     }
 
-    /**
-     * Register callback handler for a given xid. The Callback is called when
-     * client receives reply from the server, request failed of expired.
-     *
-     * @param xid xid of RPC request.
-     * @param addr socket address of remote endpoint.
-     * @param callback completion handler which will be used when request execution is
-     * finished.
-     * @param timeout how long client is interested in the reply.
-     * @param timeoutUnits units in which timeout value is expressed.
-     * @throws EOFException if disconnected
+    /* (non-Javadoc)
+     * @see org.dcache.xdr.GenItfReplyQueue#registerKey(int, java.net.SocketAddress, java.nio.channels.CompletionHandler, long, java.util.concurrent.TimeUnit)
      */
-    public void registerKey(int xid, SocketAddress addr, CompletionHandler<GenRpcReply<SVC_T>, GenXdrTransport<SVC_T>> callback, final long timeout, final TimeUnit timeoutUnits) throws EOFException {
+    @Override
+    public void registerKey(int xid, SocketAddress addr, CompletionHandler<GenItfRpcReply<SVC_T>, GenItfXdrTransport<SVC_T>> callback, final long timeout, final TimeUnit timeoutUnits) throws EOFException {
         ScheduledFuture<?> scheduledTimeout = null;
         if (timeout > 0 && timeoutUnits != null) {
             scheduledTimeout = executorService.schedule(() -> {
-                CompletionHandler<GenRpcReply<SVC_T>, GenXdrTransport<SVC_T>> handler = get(xid);
+                CompletionHandler<GenItfRpcReply<SVC_T>, GenItfXdrTransport<SVC_T>> handler = get(xid);
                 if (handler != null) { //means we're 1st, no response yet
                     handler.failed(new TimeoutException("did not get a response within " + timeout + " " + timeoutUnits), null);
                 }
@@ -85,6 +76,10 @@ public class GenReplyQueue<SVC_T extends GenRpcSvc<SVC_T>> {
         _queue.put(xid, new PendingRequest(addr, callback, scheduledTimeout));
     }
 
+    /* (non-Javadoc)
+     * @see org.dcache.xdr.GenItfReplyQueue#handleDisconnect(java.net.SocketAddress)
+     */
+    @Override
     public void handleDisconnect(SocketAddress addr) {
         EOFException eofException = new EOFException("Disconnected");
 
@@ -96,14 +91,11 @@ public class GenReplyQueue<SVC_T extends GenRpcSvc<SVC_T>> {
                 });
     }
 
-    /**
-     * Get {@link CompletionHandler} for the provided xid.
-     * On completion key will be unregistered.
-     *
-     * @param xid of rpc request.
-     * @return completion handler for given xid or {@code null} if xid is unknown.
+    /* (non-Javadoc)
+     * @see org.dcache.xdr.GenItfReplyQueue#get(int)
      */
-    public CompletionHandler<GenRpcReply<SVC_T>, GenXdrTransport<SVC_T>> get(int xid) {
+    @Override
+    public CompletionHandler<GenItfRpcReply<SVC_T>, GenItfXdrTransport<SVC_T>> get(int xid) {
         PendingRequest request = _queue.remove(xid);
         if (request != null) { //means we're first. call off any pending timeouts
             request.cancelTimeout();
@@ -114,11 +106,11 @@ public class GenReplyQueue<SVC_T extends GenRpcSvc<SVC_T>> {
     }
 
     private  class PendingRequest {
-        private final CompletionHandler<GenRpcReply<SVC_T>, GenXdrTransport<SVC_T>> handler;
+        private final CompletionHandler<GenItfRpcReply<SVC_T>, GenItfXdrTransport<SVC_T>> handler;
         private final ScheduledFuture<?> scheduledTimeout;
         private final SocketAddress addr;
 
-        public PendingRequest(SocketAddress addr, CompletionHandler<GenRpcReply<SVC_T>, GenXdrTransport<SVC_T>> handler, ScheduledFuture<?> scheduledTimeout) {
+        public PendingRequest(SocketAddress addr, CompletionHandler<GenItfRpcReply<SVC_T>, GenItfXdrTransport<SVC_T>> handler, ScheduledFuture<?> scheduledTimeout) {
             this.handler = handler;
             this.scheduledTimeout = scheduledTimeout;
             this.addr = addr;
@@ -136,9 +128,10 @@ public class GenReplyQueue<SVC_T extends GenRpcSvc<SVC_T>> {
         }
     }
 
-    /**
-     * Shutdown all background activity, if any.
+    /* (non-Javadoc)
+     * @see org.dcache.xdr.GenItfReplyQueue#shutdown()
      */
+    @Override
     public void shutdown() {
         executorService.shutdown();
     }

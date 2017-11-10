@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
-
+@Deprecated
 public class OncRpcClient implements AutoCloseable {
 
     private static final String DEFAULT_SERVICE_NAME = null;

@@ -31,7 +31,7 @@ import org.glassfish.grizzly.filterchain.FilterChainBuilder;
 import org.glassfish.grizzly.nio.transport.TCPNIOTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+@Deprecated
 public class VirOncRpcSvc extends OncRpcSvc {
     private final static Logger _log = LoggerFactory.getLogger(VirOncRpcSvc.class);
     

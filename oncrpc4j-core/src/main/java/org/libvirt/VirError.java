@@ -11,6 +11,7 @@ import org.libvirt.types.remote_uuid;
  * @author jmk
  *
  */
+@Deprecated
 public class VirError {
 
     private static final remote_nonnull_domain voidDomain = new remote_nonnull_domain();

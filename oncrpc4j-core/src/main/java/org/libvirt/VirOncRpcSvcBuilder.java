@@ -17,7 +17,7 @@
  ******************************************************************************/package org.libvirt;
 
 import org.dcache.xdr.OncRpcSvcBuilder;
-
+@Deprecated
 public class VirOncRpcSvcBuilder extends OncRpcSvcBuilder {
 
     public VirOncRpcSvcBuilder(){

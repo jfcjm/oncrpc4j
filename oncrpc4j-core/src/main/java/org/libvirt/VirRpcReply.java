@@ -28,7 +28,7 @@ import org.dcache.xdr.Xdr;
 import org.dcache.xdr.XdrTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+@Deprecated
 public class VirRpcReply extends RpcReply{
 
     private final static Logger _log = LoggerFactory.getLogger(VirRpcReply.class);

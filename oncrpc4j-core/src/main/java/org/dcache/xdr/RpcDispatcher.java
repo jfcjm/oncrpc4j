@@ -34,7 +34,7 @@ import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.filterchain.NextAction;
 
 import static java.util.Objects.requireNonNull;
-
+@Deprecated
 public class RpcDispatcher extends BaseFilter {
 
     private final static Logger _log = LoggerFactory.getLogger(RpcDispatcher.class);

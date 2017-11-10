@@ -31,7 +31,7 @@ import org.glassfish.grizzly.WriteResult;
 import org.glassfish.grizzly.asyncqueue.WritableMessage;
 
 import static java.util.Objects.requireNonNull;
-
+@Deprecated
 public class GrizzlyXdrTransport implements XdrTransport {
 
     private final Connection<InetSocketAddress> _connection;

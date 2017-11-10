@@ -21,6 +21,8 @@ package org.dcache.xdr;
 
 import com.google.common.base.Throwables;
 import java.io.EOFException;
+
+import org.dcache.xdr.model.root.RpcMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +40,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
-
+@Deprecated
 public class RpcCall {
 
     private final static Logger _log = LoggerFactory.getLogger(RpcCall.class);

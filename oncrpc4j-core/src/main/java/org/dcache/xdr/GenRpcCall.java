@@ -19,179 +19,45 @@
  */
 package org.dcache.xdr;
 
-import com.google.common.base.Throwables;
 import java.io.EOFException;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.nio.channels.CompletionHandler;
+import java.util.concurrent.TimeUnit;
+
+import org.dcache.xdr.model.itf.GenItfReplyQueue;
+import org.dcache.xdr.model.itf.GenItfRpcReply;
+import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.itf.GenXdrTransport;
+import org.dcache.xdr.model.root.GenAbstractRpcCall;
+import org.dcache.xdr.model.root.RpcMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.lang.reflect.InvocationTargetException;
-import java.net.InetSocketAddress;
-import java.nio.channels.CompletionHandler;
-import java.util.Random;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
+public final class GenRpcCall extends GenAbstractRpcCall<GenOncRpcSvc>  {
+    final static Logger _log = LoggerFactory.getLogger(GenRpcCall.class);
+    
 
-public class GenRpcCall<SVC_T extends GenRpcSvc<SVC_T>> {
-
-    private final static Logger _log = LoggerFactory.getLogger(GenRpcCall.class);
-
-    private final static Random RND = new Random();
-
-    /**
-     * XID number generator
-     */
-    private final AtomicInteger xidGenerator = new AtomicInteger(RND.nextInt());
-
-    private int _xid;
-
-    /**
-     * Supported RPC protocol version
-     */
-    private final static int RPCVERS = 2;
-
-    /**
-     * RPC program number
-     */
-    protected int _prog;
-
-    /**
-     * RPC program version number
-     */
-    protected int _version;
-
-    /**
-     * RPC program procedure number
-     */
-    protected int _proc;
-
-    /**
-     *  RPC protocol version number
-     */
-    private int _rpcvers;
-
-    /**
-     * Authentication credential.
-     */
-    private RpcAuth _cred;
-
-    /**
-     * RPC call transport.
-     */
-    private final GenXdrTransport<SVC_T> _transport;
-
-    /**
-     * Call body.
-     */
-    protected final Xdr _xdr;
-
-    /**
-     * Object used to synchronize access to sendListeners.
-     */
-    private final Object _listenerLock = new Object();
-
-    /**
-     * The {link CompletionHandler} which is used to notify all registered
-     * completion listeners.
-     */
-    protected class NotifyListenersCompletionHandler implements CompletionHandler<Integer, InetSocketAddress> {
-
-        @Override
-        public void completed(Integer result, InetSocketAddress attachment) {
-            synchronized (_listenerLock) {
-                if (_sendListeners != null) {
-                    _sendListeners
-                            .parallelStream()
-                            .forEach(l -> l.completed(result, attachment));
-                }
-
-                if (_sendOnceListeners != null) {
-                    _sendOnceListeners
-                            .parallelStream()
-                            .forEach(l -> l.completed(result, attachment));
-                    _sendOnceListeners = null;
-                }
-            }
-        }
-
-        @Override
-        public void failed(Throwable t, InetSocketAddress attachment) {
-            _log.error("Failed to send RPC to {} : {}", attachment, t.getMessage());
-            synchronized (_listenerLock) {
-                if (_sendListeners != null) {
-                    _sendListeners
-                            .parallelStream()
-                            .forEach(l -> l.failed(t, attachment));
-                }
-
-                if (_sendOnceListeners != null) {
-                    _sendOnceListeners
-                            .parallelStream()
-                            .forEach(l -> l.failed(t, attachment));
-                    _sendOnceListeners = null;
-                }
-            }
-        }
+    public GenRpcCall(int prog, int ver, RpcAuth cred, GenItfXdrTransport<GenOncRpcSvc> transport) {
+        super(prog, ver, cred, new Xdr(Xdr.INITIAL_XDR_SIZE), transport);
     }
 
-    /**
-     * A {@link List} of registered {@link CompletionHandler} to be notified when
-     * send request complete.
+    public GenRpcCall(int prog, int ver, RpcAuth cred, Xdr xdr, GenXdrTransport<GenOncRpcSvc> transport) {
+        super(prog, ver, cred, xdr, transport);
+    }
+
+    public GenRpcCall(int xid, Xdr xdr, GenXdrTransport<GenOncRpcSvc> transport) {
+        super(xid,xdr,transport);
+    }
+
+    public GenRpcCall(int xid, int prog, int ver, int proc, RpcAuth cred, Xdr xdr, GenXdrTransport<GenOncRpcSvc> transport) {
+        super(xid,prog,ver,proc,cred,xdr,transport);
+    }
+
+    /* (non-Javadoc)
+     * @see org.dcache.xdr.GenItfRpcCall#accept()
      */
-    private List<CompletionHandler<Integer, InetSocketAddress>> _sendListeners;
-
-    /**
-     * A {@link List} of registered {@link CompletionHandler} to be notified
-     * when send request complete. The listeners will be removed from the list
-     * after notification.
-     */
-    private List<CompletionHandler<Integer, InetSocketAddress>> _sendOnceListeners;
-
-    protected final CompletionHandler<Integer, InetSocketAddress> _sendNotificationHandler
-            = new NotifyListenersCompletionHandler();
-
-    public GenRpcCall(int prog, int ver, RpcAuth cred, GenXdrTransport<SVC_T> transport) {
-        this(prog, ver, cred, new Xdr(Xdr.INITIAL_XDR_SIZE), transport);
-    }
-
-    public GenRpcCall(int prog, int ver, RpcAuth cred, Xdr xdr, GenXdrTransport<SVC_T> transport) {
-        _prog = prog;
-        _version = ver;
-        _cred = cred;
-        _transport = transport;
-        _xdr = xdr;
-        _proc = 0;
-    }
-
-    public GenRpcCall(int xid, Xdr xdr, GenXdrTransport<SVC_T> transport) {
-        _xid = xid;
-        _xdr = xdr;
-        _transport = transport;
-    }
-
-    public GenRpcCall(int xid, int prog, int ver, int proc, RpcAuth cred, Xdr xdr, GenXdrTransport<SVC_T> transport) {
-        _xid = xid;
-        _prog = prog;
-        _version = ver;
-        _proc = proc;
-        _cred = cred;
-        _xdr = xdr;
-        _transport = transport;
-        _rpcvers = RPCVERS;
-    }
-
-    /**
-     * Accept message. Have to be called prior processing RPC call.
-     * @throws IOException
-     * @throws OncRpcException
-     */
+    @Override
     public void accept() throws IOException, OncRpcException {
          _rpcvers = _xdr.xdrDecodeInt();
          if (_rpcvers != RPCVERS) {
@@ -204,105 +70,24 @@ public class GenRpcCall<SVC_T extends GenRpcSvc<SVC_T>> {
         _cred = RpcCredential.decode(_xdr);
      }
 
-    /**
-     * Get RPC call program number.
-     *
-     * @return version number
+    /* (non-Javadoc)
+     * @see org.dcache.xdr.GenItfRpcCall#toString()
      */
-    public int getProgram() {
-        return _prog;
-    }
-
-    /**
-     * @return the RPC call program version
-     */
-    public int getProgramVersion() {
-        return _version;
-    }
-
-    /**
-     * @return the RPC call program procedure
-     */
-    public int getProcedure() {
-        return _proc;
-    }
-
-    public RpcAuth getCredential() {
-        return _cred;
-    }
-
-    /**
-     * Get RPC {@XdrTransport} used by this call.
-     * @return transport
-     */
-    public GenXdrTransport<SVC_T> getTransport() {
-        return _transport;
-    }
-
-    /**
-     * Get xid associated with this rpc message.
-     */
-    public int getXid() {
-        return _xid;
-    }
-
-    /**
-     * Get {@link Xdr} stream used by this message.
-     * @return xdr stream
-     */
-    public Xdr getXdr() {
-        return _xdr;
-    }
-
     @Override
     public String toString() {
         return String.format("RPCv%d call: program=%d, version=%d, procedure=%d",
                 _rpcvers, _prog, _version, _proc);
     }
 
-    /**
-     * Reject the request with given status. The call can be rejected for two
-     * reasons: either the server is not running a compatible version of the
-     * RPC protocol (RPC_MISMATCH), or the server rejects the identity of the
-     * caller (AUTH_ERROR).
-     *
-     * @see RpcRejectStatus
-     * @param status
-     * @param reason
+    /* (non-Javadoc)
+     * @see org.dcache.xdr.GenItfRpcCall#acceptedReply(int, org.dcache.xdr.XdrAble)
      */
-    public void reject(int status, XdrAble reason) {
-        XdrEncodingStream xdr = _xdr;
-        try {
-            RpcMessage replyMessage = new RpcMessage(_xid, RpcMessageType.REPLY);
-            xdr.beginEncoding();
-            replyMessage.xdrEncode(_xdr);
-            xdr.xdrEncodeInt(RpcReplyStatus.MSG_DENIED);
-            xdr.xdrEncodeInt(status);
-            reason.xdrEncode(_xdr);
-            xdr.endEncoding();
-
-            _transport.send((Xdr)xdr, _transport.getRemoteSocketAddress(), _sendNotificationHandler);
-
-        } catch (OncRpcException e) {
-            _log.warn("Xdr exception: ", e);
-        } catch (IOException e) {
-            _log.error("Failed send reply: ", e);
-        }
-    }
-    /**
-     * Send accepted reply to the client.
-     *
-     * @param reply
-     */
-    public void reply(XdrAble reply) {
-        acceptedReply(RpcAccepsStatus.SUCCESS, reply);
-    }
-
+    @Override
     public void acceptedReply(int state, XdrAble reply) {
 
         XdrEncodingStream xdr = _xdr;
         try {
-            RpcMessage replyMessage = new RpcMessage(_xid, RpcMessageType.REPLY);
+            RpcMessage replyMessage = new RpcMessage(_xid,RpcMessageType.REPLY);
             xdr.beginEncoding();
             replyMessage.xdrEncode(_xdr);
             xdr.xdrEncodeInt(RpcReplyStatus.MSG_ACCEPTED);
@@ -320,102 +105,28 @@ public class GenRpcCall<SVC_T extends GenRpcSvc<SVC_T>> {
         }
     }
 
-    /**
-     * Retrieves the parameters sent within an ONC/RPC call message.
-     *
-     * @param args the call argument do decode
-     * @throws OncRpcException
+    /* (non-Javadoc)
+     * @see org.dcache.xdr.GenItfRpcCall#failProgramMismatch(int, int)
      */
-    public void retrieveCall(XdrAble args) throws OncRpcException, IOException {
-        args.xdrDecode(_xdr);
-        _xdr.endDecoding();
-    }
-
-    /**
-     * Reply to client with error program version mismatch.
-     * Accepted message sent.
-     *
-     * @param min minimal supported version
-     * @param max maximal supported version
-     */
+    @Override
     public void failProgramMismatch(int min, int max) {
         acceptedReply(RpcAccepsStatus.PROG_MISMATCH, new MismatchInfo(min, max));
     }
 
-    /**
-     * Reply to client with error program unavailable.
-     * Accepted message sent.
+    /* (non-Javadoc)
+     * @see org.dcache.xdr.GenItfRpcCall#failProgramUnavailable()
      */
+    @Override
     public void failProgramUnavailable() {
         acceptedReply(RpcAccepsStatus.PROG_UNAVAIL, XdrVoid.XDR_VOID);
     }
 
-    /**
-     * Reply to client with error procedure unavailable.
+    /* (non-Javadoc)
+     * @see org.dcache.xdr.GenItfRpcCall#failProcedureUnavailable()
      */
+    @Override
     public void failProcedureUnavailable() {
         acceptedReply(RpcAccepsStatus.PROC_UNAVAIL, XdrVoid.XDR_VOID);
-    }
-
-    /**
-     * Reply to client with error garbage args.
-     */
-    public void failRpcGarbage() {
-        acceptedReply(RpcAccepsStatus.GARBAGE_ARGS, XdrVoid.XDR_VOID);
-    }
-
-    /**
-     * Reply to client with error system error.
-     */
-    public void failRpcSystem() {
-        acceptedReply(RpcAccepsStatus.SYSTEM, XdrVoid.XDR_VOID);
-    }
-
-    /**
-     * Send asynchronous RPC request to a remove server.
-     *
-     * This method initiates an asynchronous RPC request. The handler parameter
-     * is a completion handler that is invoked when the RPC operation completes
-     * (or fails/times-out). The result passed to the completion handler is the
-     * RPC result returned by server.
-     *
-     * @param procedure The number of the procedure.
-     * @param args The argument of the procedure.
-     * @param callback The completion handler.
-     * @param timeoutValue timeout value. 0 means no timeout
-     * @param timeoutUnits units for timeout value
-     * @param auth auth to use for the call
-     * @throws OncRpcException
-     * @throws IOException
-     * @since 2.4.0
-     */
-    public void call(int procedure, XdrAble args, CompletionHandler<GenRpcReply<SVC_T>, GenXdrTransport<SVC_T>> callback, long timeoutValue, TimeUnit timeoutUnits, RpcAuth auth)
-            throws IOException {
-        callInternal(procedure, args, callback, timeoutValue, timeoutUnits, auth);
-    }
-
-    /**
-     * convenience version of {@link #call(int, XdrAble, CompletionHandler, long, TimeUnit, RpcAuth)} with no auth
-     */
-    public void call(int procedure, XdrAble args, CompletionHandler<GenRpcReply<SVC_T>, GenXdrTransport<SVC_T>> callback, long timeoutValue, TimeUnit timeoutUnits)
-            throws IOException {
-        callInternal(procedure, args, callback, timeoutValue, timeoutUnits, null);
-    }
-
-    /**
-     * convenience version of {@link #call(int, XdrAble, CompletionHandler, long, TimeUnit, RpcAuth)} with no timeout
-     */
-    public void call(int procedure, XdrAble args, CompletionHandler<GenRpcReply<SVC_T>, GenXdrTransport<SVC_T>> callback, RpcAuth auth)
-            throws IOException {
-        callInternal(procedure, args, callback, 0, null, auth);
-    }
-
-    /**
-     * convenience version of {@link #call(int, XdrAble, CompletionHandler, long, TimeUnit, RpcAuth)} with no timeout or auth
-     */
-    public void call(int procedure, XdrAble args, CompletionHandler<GenRpcReply<SVC_T>, GenXdrTransport<SVC_T>> callback)
-            throws IOException {
-        callInternal(procedure, args, callback, 0, null, null);
     }
 
     /**
@@ -430,8 +141,9 @@ public class GenRpcCall<SVC_T extends GenRpcSvc<SVC_T>> {
      * @throws OncRpcException
      * @throws IOException
      */
+    @Override
     protected int callInternal(int procedure, XdrAble args,
-            CompletionHandler<GenRpcReply<SVC_T>, GenXdrTransport<SVC_T>> callback,
+            CompletionHandler<GenItfRpcReply<GenOncRpcSvc>, GenItfXdrTransport<GenOncRpcSvc>> callback,
                              long timeoutValue, TimeUnit timeoutUnits, RpcAuth auth)
             throws IOException {
 
@@ -439,7 +151,7 @@ public class GenRpcCall<SVC_T extends GenRpcSvc<SVC_T>> {
 
         Xdr xdr = new Xdr(Xdr.INITIAL_XDR_SIZE);
         xdr.beginEncoding();
-        RpcMessage rpcMessage = new RpcMessage(xid, RpcMessageType.CALL);
+        RpcMessage rpcMessage = GenAbstractRpcCall.createMessage(xid, RpcMessageType.CALL);
         rpcMessage.xdrEncode(xdr);
         xdr.xdrEncodeInt(RPCVERS);
         xdr.xdrEncodeInt(_prog);
@@ -453,7 +165,7 @@ public class GenRpcCall<SVC_T extends GenRpcSvc<SVC_T>> {
         args.xdrEncode(xdr);
         xdr.endEncoding();
 
-        GenReplyQueue<SVC_T> replyQueue = _transport.getReplyQueue();
+        GenItfReplyQueue<GenOncRpcSvc> replyQueue = _transport.getReplyQueue();
         if (callback != null) {
             replyQueue.registerKey(xid, _transport.getLocalSocketAddress(), callback, timeoutValue, timeoutUnits);
         } else {
@@ -475,223 +187,5 @@ public class GenRpcCall<SVC_T extends GenRpcSvc<SVC_T>> {
             }
         });
         return xid;
-    }
-
-    /**
-     * Send asynchronous RPC request to a remove server.
-     *
-     * This method initiates an asynchronous RPC request. The method behaves in
-     * exactly the same manner as the {@link #call(int, XdrAble, CompletionHandler, long, TimeUnit)}
-     * method except that instead of specifying a completion handler, this method
-     * returns a Future representing the pending result. The Future's get method
-     * returns the RPC reply responded by server.
-     *
-     * @param <T> The result type of RPC call.
-     * @param procedure The number of the procedure.
-     * @param args The argument of the procedure.
-     * @param type The expected type of the reply
-     * @param auth auth to use for the call
-     * @return A Future representing the result of the operation.
-     * @throws OncRpcException
-     * @throws IOException
-     * @since 2.4.0
-     */
-    public <T extends XdrAble> Future<T> call(int procedure, XdrAble args, final Class<T> type, final RpcAuth auth)
-            throws IOException {
-        try {
-            T result = type.getDeclaredConstructor().newInstance();
-            return getCallFuture(procedure, args, result, 0, null, auth);
-        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-            // this exceptions point to bugs
-            throw new RuntimeException("Failed to create in instance of " + type, e);
-        }
-    }
-
-    /**
-     * convenience version of {@link #call(int, XdrAble, Class, RpcAuth)} with no auth
-     */
-    public <T extends XdrAble> Future<T> call(int procedure, XdrAble args, final Class<T> type)
-            throws IOException {
-        return call(procedure, args, type, null);
-    }
-
-    /**
-     * Send call to remove RPC server.
-     *
-     * @param procedure the number of the procedure.
-     * @param args the argument of the procedure.
-     * @param result the result of the procedure
-     * @param timeoutValue timeout value. 0 means no timeout
-     * @param timeoutUnits units for timeout value
-     * @param auth auth to use for the call
-     * @throws OncRpcException
-     * @throws IOException
-     */
-    public void call(int procedure, XdrAble args, XdrAble result, long timeoutValue, TimeUnit timeoutUnits, RpcAuth auth)
-            throws IOException, TimeoutException {
-        try {
-            Future<XdrAble> future = getCallFuture(procedure, args, result, timeoutValue, timeoutUnits, auth);
-            future.get();
-        } catch (InterruptedException e) {
-            // workaround missing chained constructor
-            IOException ioe = new InterruptedIOException(e.getMessage());
-            ioe.initCause(e);
-            throw ioe;
-        } catch (ExecutionException e) {
-            Throwable t = Throwables.getRootCause(e);
-            Throwables.throwIfInstanceOf(t, OncRpcException.class);
-            Throwables.throwIfInstanceOf(t, IOException.class);
-            Throwables.throwIfInstanceOf(t, TimeoutException.class);
-            throw new IOException(t);
-        }
-    }
-
-    /**
-     * convenience version of {@link #call(int, XdrAble, XdrAble, long, TimeUnit, RpcAuth)} with default auth
-     */
-    public void call(int procedure, XdrAble args, XdrAble result, long timeoutValue, TimeUnit timeoutUnits)
-            throws IOException, TimeoutException {
-        call(procedure, args, result, timeoutValue, timeoutUnits, null);
-    }
-
-    /**
-     * convenience version of {@link #call(int, XdrAble, XdrAble, long, TimeUnit, RpcAuth)} with no timeout
-     */
-    public void call(int procedure, XdrAble args, XdrAble result, RpcAuth auth)
-            throws IOException {
-        try {
-            call(procedure, args, result, 0, null, auth);
-        } catch (TimeoutException e) {
-            throw new IllegalStateException(e); //theoretically impossible
-        }
-    }
-
-    /**
-     * convenience version of {@link #call(int, XdrAble, XdrAble, long, TimeUnit, RpcAuth)} with no timeout or auth
-     */
-    public void call(int procedure, XdrAble args, XdrAble result)
-            throws IOException {
-        try {
-            call(procedure, args, result, 0, null, null);
-        } catch (TimeoutException e) {
-            throw new IllegalStateException(e); //theoretically impossible
-        }
-    }
-
-    protected <T extends XdrAble> Future<T> getCallFuture(int procedure, XdrAble args, final T result, long timeoutValue, TimeUnit timeoutUnits, RpcAuth auth)
-            throws IOException {
-
-        final CompletableFuture<T> future = new CompletableFuture<>();
-        CompletionHandler<GenRpcReply<SVC_T>, GenXdrTransport<SVC_T>> callback = new CompletionHandler<GenRpcReply<SVC_T>, GenXdrTransport<SVC_T>>() {
-
-            @Override
-            public void completed(GenRpcReply<SVC_T> reply, GenXdrTransport<SVC_T> attachment) {
-                try {
-                    reply.getReplyResult(result);
-                    future.complete(result);
-                } catch (IOException e) {
-                    failed(e, attachment);
-                }
-            }
-
-            @Override
-            public void failed(Throwable exc, GenXdrTransport<SVC_T> attachment) {
-                future.completeExceptionally(exc);
-            }
-        };
-
-        int xid = callInternal(procedure, args, callback, timeoutValue, timeoutUnits, auth);
-        //wrap the future if no timeout provided up-front to properly un-register
-        //the handler if a timeout is later provided to Future.get()
-        return timeoutValue > 0 ? future : new TimeoutAwareFuture<>(future, xid);
-    }
-
-    private class TimeoutAwareFuture<T> implements Future<T> {
-        private final Future<T> delegate;
-        private final int xid;
-
-        public TimeoutAwareFuture(Future<T> delegate, int xid) {
-            this.delegate = delegate;
-            this.xid = xid;
-        }
-
-        @Override
-        public boolean cancel(boolean mayInterruptIfRunning) {
-            try {
-                return delegate.cancel(mayInterruptIfRunning);
-            } finally {
-                if (mayInterruptIfRunning) {
-                    unregisterXid();
-                }
-            }
-        }
-
-        @Override
-        public boolean isCancelled() {
-            return delegate.isCancelled();
-        }
-
-        @Override
-        public boolean isDone() {
-            return delegate.isDone();
-        }
-
-        @Override
-        public T get() throws InterruptedException, ExecutionException {
-            try {
-                return delegate.get();
-            } finally {
-                unregisterXid();
-            }
-        }
-
-        @Override
-        public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-            try {
-                return delegate.get(timeout, unit);
-            } finally {
-                unregisterXid();
-            }
-        }
-
-        private void unregisterXid() {
-            _transport.getReplyQueue().get(xid); //make sure its removed from the reply queue
-        }
-    }
-
-
-    protected int nextXid() {
-        return xidGenerator.incrementAndGet();
-    }
-
-    /**
-     * Register {@link CompletionHandler} to receive notification when message
-     * send is complete. NOTICE: when processing rpc call on the server side
-     * the @{code registerSendListener} has the same effect as {@link #registerSendOnceListener}
-     * as a new instance of {@link GenRpcCall} is used to process the request.
-     * @param listener the message sent listener
-     */
-    public void registerSendListener(CompletionHandler<Integer, InetSocketAddress> listener) {
-        synchronized (_listenerLock) {
-            if (_sendListeners == null) {
-                _sendListeners = new ArrayList<>();
-            }
-            _sendListeners.add(listener);
-        }
-    }
-
-    /**
-     * Register {@link CompletionHandler} to receive notification when message
-     * send is complete. The listener will be removed after next send event.
-     *
-     * @param listener the message sent listener
-     */
-    public void registerSendOnceListener(CompletionHandler<Integer, InetSocketAddress> listener) {
-        synchronized (_listenerLock) {
-            if (_sendOnceListeners == null) {
-                _sendOnceListeners = new ArrayList<>();
-            }
-            _sendOnceListeners.add(listener);
-        }
     }
 }

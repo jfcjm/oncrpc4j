@@ -73,7 +73,7 @@ public class GrizzlyUtils {
         throw new RuntimeException("Unsupported protocol: " + protocol);
     }
 
-    static private int getSelectorPoolSize(IoStrategy ioStrategy) {
+    static private  int getSelectorPoolSize(IoStrategy ioStrategy) {
         return ioStrategy == WORKER_THREAD
                 ? Math.max(MIN_SELECTORS, CPUS / 4) : Math.max(MIN_WORKERS, CPUS);
     }
@@ -94,7 +94,7 @@ public class GrizzlyUtils {
      * @param poolSize thread pool size. If zero, default thread pool is used.
      * @return thread pool configuration.
      */
-    static ThreadPoolConfig getSelectorPoolCfg(IoStrategy ioStrategy, String serviceName, int poolSize) {
+    public static ThreadPoolConfig getSelectorPoolCfg(IoStrategy ioStrategy, String serviceName, int poolSize) {
 
         checkArgument(poolSize >= 0, "Negative  thread pool size");
 
@@ -120,7 +120,7 @@ public class GrizzlyUtils {
      * @return thread pool configuration or {@code null}, if ioStrategy don't
      * supports worker threads.
      */
-    static ThreadPoolConfig getWorkerPoolCfg(IoStrategy ioStrategy, String serviceName, int poolSize) {
+    public static ThreadPoolConfig getWorkerPoolCfg(IoStrategy ioStrategy, String serviceName, int poolSize) {
 
         if (ioStrategy == SAME_THREAD) {
             return null;

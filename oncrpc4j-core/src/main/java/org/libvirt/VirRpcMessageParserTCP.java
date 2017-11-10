@@ -31,7 +31,7 @@ import org.glassfish.grizzly.filterchain.NextAction;
 import org.glassfish.grizzly.memory.BuffersBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+@Deprecated
 public class VirRpcMessageParserTCP extends  RpcMessageParserTCP{
 	final static Logger logger = LoggerFactory.getLogger(VirRpcMessageParserTCP.class);
     /**

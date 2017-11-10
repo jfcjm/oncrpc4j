@@ -20,6 +20,8 @@
 package org.dcache.xdr;
 
 import java.io.IOException;
+
+import org.dcache.xdr.model.root.RpcMessage;
 import org.glassfish.grizzly.Connection;
 import org.glassfish.grizzly.filterchain.Filter;
 import org.glassfish.grizzly.filterchain.FilterChainContext;

@@ -24,10 +24,11 @@ import java.net.InetSocketAddress;
 import java.nio.channels.CompletionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.dcache.xdr.model.root.RpcMessage;
 import org.glassfish.grizzly.filterchain.BaseFilter;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.filterchain.NextAction;
-
+@Deprecated
 public class RpcProtocolFilter extends BaseFilter {
 
     private final static Logger _log = LoggerFactory.getLogger(RpcProtocolFilter.class);

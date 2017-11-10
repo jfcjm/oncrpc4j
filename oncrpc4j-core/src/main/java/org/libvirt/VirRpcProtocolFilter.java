@@ -28,15 +28,15 @@ import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.ReplyQueue;
 import org.dcache.xdr.RpcAccepsStatus;
 import org.dcache.xdr.RpcException;
-import org.dcache.xdr.RpcMessage;
 import org.dcache.xdr.RpcMessageType;
 import org.dcache.xdr.RpcProtocolFilter;
 import org.dcache.xdr.RpcReply;
 import org.dcache.xdr.Xdr;
 import org.dcache.xdr.XdrTransport;
+import org.dcache.xdr.model.root.RpcMessage;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.filterchain.NextAction;
-
+@Deprecated
 public class VirRpcProtocolFilter extends RpcProtocolFilter {
 
     private final static Logger _log = LoggerFactory.getLogger(VirRpcProtocolFilter.class);

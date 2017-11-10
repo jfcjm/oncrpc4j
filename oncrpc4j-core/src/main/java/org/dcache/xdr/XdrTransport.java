@@ -27,6 +27,7 @@ import java.nio.channels.CompletionHandler;
  * Abstraction for sending reply to clients
  *
  */
+@Deprecated
 public interface XdrTransport {
 
     /**

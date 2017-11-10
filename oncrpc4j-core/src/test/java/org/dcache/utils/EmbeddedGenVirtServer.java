@@ -2,9 +2,11 @@ package org.dcache.utils;
 
 import java.io.IOException;
 
-import org.dcache.xdr.GenOncRpcSvcBuilder;
-import org.dcache.xdr.GenRpcCall;
-import org.dcache.xdr.GenXdrTransport;
+import org.dcache.xdr.model.itf.GenItfOncRpcSvcBuilder;
+import org.dcache.xdr.model.itf.GenItfRpcCall;
+import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.itf.GenXdrTransport;
+import org.libvirt.GenItfVirtRpcCall;
 import org.libvirt.GenVirOncRpcSvc;
 import org.libvirt.GenVirOncRpcSvcBuilder;
 import org.libvirt.GenVirRpcCall;
@@ -15,26 +17,20 @@ public class EmbeddedGenVirtServer extends  EmbeddedGenericServer<GenVirOncRpcSv
         super(port);
     }
     @Override
-    protected void processHighLevelException(GenRpcCall<GenVirOncRpcSvc> call,Exception e){
-        ((GenVirRpcCall)call).failRuntimeError(e);
+    protected void processHighLevelException(GenItfRpcCall<GenVirOncRpcSvc> call,Exception e){
+        ((GenItfVirtRpcCall)call).failRuntimeError(e);
         
     }
 
     @Override
-    protected GenRpcCall<GenVirOncRpcSvc> createRpcCaller(int prognum, int progver,
-            GenXdrTransport<GenVirOncRpcSvc> t) {
+    protected GenItfRpcCall<GenVirOncRpcSvc> createRpcCaller(int prognum, int progver,
+            GenItfXdrTransport<GenVirOncRpcSvc> t) {
         return new GenVirRpcCall(prognum,progver,null,t);
     }
 
     @Override
-    protected GenOncRpcSvcBuilder<GenVirOncRpcSvc> createOncSvcBuilder() {
-        return new GenVirOncRpcSvcBuilder() {
-            
-            @Override
-            protected GenVirOncRpcSvc getNewOncRpcSvc() {
-                return new GenVirOncRpcSvc(this);
-            }
-        };
+    protected GenItfOncRpcSvcBuilder<GenVirOncRpcSvc> createOncSvcBuilder() {
+        return new GenVirOncRpcSvcBuilder();
     }
     
 }

@@ -69,7 +69,7 @@ import static com.google.common.base.Throwables.propagateIfPossible;
 import java.net.SocketAddress;
 import static org.dcache.xdr.GrizzlyUtils.getSelectorPoolCfg;
 import static org.dcache.xdr.GrizzlyUtils.transportFor;
-
+@Deprecated
 public class OncRpcSvc {
 
     private final static Logger _log = LoggerFactory.getLogger(OncRpcSvc.class);

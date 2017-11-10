@@ -16,34 +16,18 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  ******************************************************************************/package org.libvirt;
 
-import org.dcache.xdr.GenOncRpcSvcBuilder;
-import org.dcache.xdr.OncRpcSvcBuilder;
+import org.dcache.xdr.model.root.GenAbstractOncRpcSvcBuilder;
 
-public abstract class GenVirOncRpcSvcBuilder extends GenOncRpcSvcBuilder<GenVirOncRpcSvc> {
+public  class GenVirOncRpcSvcBuilder extends GenAbstractOncRpcSvcBuilder<GenVirOncRpcSvc> {
 
     public GenVirOncRpcSvcBuilder(){
         super();
         super.withoutAutoPublish();
     }
-    /*
+    
     @Override
-    protected VirOncRpcSvc getNewOncRpcSvc(){
-        return new VirOncRpcSvc(this);
+    protected GenVirOncRpcSvc getNewOncRpcSvc() {
+        return new GenVirOncRpcSvc(this);
     }
     
-
-    @Override
-    public GenVirOncRpcSvcBuilder withAutoPublish() {
-        throw new RuntimeException("Libvirt does not publish its service through a portmapper");
-    }
-    @Override
-    public OncRpcSvcBuilder withoutAutoPublish() {
-        throw new RuntimeException("Libvirt does not publish its service through a portmapper");
-    }
-
-    
-    private void withoutAutoPublishInternal() {
-        super.withoutAutoPublish();
-    }
-    */
 }

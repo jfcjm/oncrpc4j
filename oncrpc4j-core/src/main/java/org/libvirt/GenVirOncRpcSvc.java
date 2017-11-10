@@ -17,13 +17,15 @@
  ******************************************************************************/package org.libvirt;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.dcache.xdr.GenRpcSvc;
 import org.dcache.xdr.OncRpcException;
-import org.dcache.xdr.GenReplyQueue;
+import org.dcache.xdr.model.itf.GenItfReplyQueue;
+import org.dcache.xdr.model.root.GenAbstractOncRpcSvc;
+import org.glassfish.grizzly.Connection;
 import org.glassfish.grizzly.Transport;
 import org.glassfish.grizzly.filterchain.Filter;
 import org.glassfish.grizzly.filterchain.FilterChainBuilder;
@@ -31,8 +33,8 @@ import org.glassfish.grizzly.nio.transport.TCPNIOTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GenVirOncRpcSvc extends GenRpcSvc<GenVirOncRpcSvc> {
-    private final static Logger _log = LoggerFactory.getLogger(GenVirOncRpcSvc.class);
+public final class GenVirOncRpcSvc extends GenAbstractOncRpcSvc<GenVirOncRpcSvc> implements GenItfVirOncRpcSvc {
+    private static final Logger _log = LoggerFactory.getLogger(GenVirOncRpcSvc.class);
     
     private final Map<Transport, PacketWrapperFilter> _transport2wrapper = 
             new HashMap<Transport, PacketWrapperFilter>();
@@ -41,6 +43,9 @@ public class GenVirOncRpcSvc extends GenRpcSvc<GenVirOncRpcSvc> {
     public  GenVirOncRpcSvc(GenVirOncRpcSvcBuilder builder) {
         super(builder);
     }
+    /* (non-Javadoc)
+     * @see org.libvirt.GenItfVirOncRpcSvc#start()
+     */
     @Override
     public void start() throws IOException {
         /*
@@ -50,8 +55,10 @@ public class GenVirOncRpcSvc extends GenRpcSvc<GenVirOncRpcSvc> {
         }
         */
         if (_publish){
+            /*
             _log.warn("Libvirt does not publish its service through a portmapper");
             throw new RuntimeException("Libvirt does not publish its service through a portmapper");
+            */
         }
         for (Transport t : _transports) {
             if ( !( t instanceof TCPNIOTransport)){
@@ -62,7 +69,7 @@ public class GenVirOncRpcSvc extends GenRpcSvc<GenVirOncRpcSvc> {
         super.start();
     }
     @Override
-    protected GenVirRpcProtocolFilter getRpcProtocolFilter(GenReplyQueue<GenVirOncRpcSvc> replyQueue) {
+    protected GenVirRpcProtocolFilter getRpcProtocolFilter(GenItfReplyQueue<GenVirOncRpcSvc> replyQueue) {
         return new GenVirRpcProtocolFilter(replyQueue);
     }
 
@@ -76,13 +83,17 @@ public class GenVirOncRpcSvc extends GenRpcSvc<GenVirOncRpcSvc> {
     @Override
     protected Filter rpcMessageReceiverFor(Transport t) {
         if (t instanceof TCPNIOTransport) {
-            return new VirRpcMessageParserTCP();
+            return new GenVirRpcMessageParserTCP2();
         }
         throw new RuntimeException("Unsupported transport: " + t.getClass().getName());
     }
     
     
     
+    /* (non-Javadoc)
+     * @see org.libvirt.GenItfVirOncRpcSvc#setPacketWrapper(org.libvirt.SASLPacketWrapper)
+     */
+    @Override
     public synchronized void setPacketWrapper(SASLPacketWrapper sc) throws OncRpcException {
         for (Entry<Transport, PacketWrapperFilter> wrapper : _transport2wrapper.entrySet()){
             _log.debug("setting packet wrapper for" + wrapper.getValue());
@@ -90,10 +101,33 @@ public class GenVirOncRpcSvc extends GenRpcSvc<GenVirOncRpcSvc> {
         }
         
     }
+    /* (non-Javadoc)
+     * @see org.libvirt.GenItfVirOncRpcSvc#setPacketWrapperAfterNextWrite(org.libvirt.SASLPacketWrapper)
+     */
+    @Override
     public void setPacketWrapperAfterNextWrite(SASLPacketWrapper pw) {
         for (Entry<Transport, PacketWrapperFilter> wrapper : _transport2wrapper.entrySet()){
             _log.debug("setting packet wrapper for" + wrapper.getValue());
             wrapper.getValue().setPacketWrapperAfterNextWrite(pw);
         }
+    }
+    @Override
+    protected void doPostCreationServerActions(Connection<InetSocketAddress> connection) throws IOException {
+        // do nothing
+        
+    }
+    @Override
+    protected void doPreStopActions() throws IOException {
+        
+    }
+    @Override
+    protected void doBeforeStart() throws IOException {
+        // TODO Auto-generated method stub
+        
+    }
+    @Override
+    protected void addPostRpcProtocolFilter(FilterChainBuilder filterChain) {
+        // TODO Auto-generated method stub
+        
     }
 }

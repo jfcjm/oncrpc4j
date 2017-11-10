@@ -57,6 +57,7 @@ import static org.dcache.xdr.IpProtocolType.*;
  * </pre>
  * @since 2.0
  */
+@Deprecated
 public class OncRpcSvcBuilder {
 
     private int _protocol = 0;

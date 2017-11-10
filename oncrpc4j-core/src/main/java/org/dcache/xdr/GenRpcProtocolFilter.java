@@ -24,19 +24,29 @@ import java.net.InetSocketAddress;
 import java.nio.channels.CompletionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.glassfish.grizzly.filterchain.BaseFilter;
+import org.dcache.xdr.model.impl.GenGrizzlyXdrTransport;
+import org.dcache.xdr.model.itf.GenItfReplyQueue;
+import org.dcache.xdr.model.itf.GenItfRpcCall;
+import org.dcache.xdr.model.itf.GenItfRpcReply;
+import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.itf.GenXdrTransport;
+import org.dcache.xdr.model.root.GenAbstractRpcProtocolFilter;
+import org.dcache.xdr.model.root.RpcMessage;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.filterchain.NextAction;
 
-public class GenRpcProtocolFilter<SVC_T extends GenRpcSvc<SVC_T>> extends BaseFilter {
+@SuppressWarnings("deprecation")
+public final class GenRpcProtocolFilter extends GenAbstractRpcProtocolFilter<GenOncRpcSvc>  {
 
     private final static Logger _log = LoggerFactory.getLogger(GenRpcProtocolFilter.class);
-    protected final GenReplyQueue<SVC_T> _replyQueue;
 
-    public GenRpcProtocolFilter(GenReplyQueue<SVC_T> replyQueue) {
-        _replyQueue = replyQueue;
+    public GenRpcProtocolFilter(GenItfReplyQueue<GenOncRpcSvc> replyQueue) {
+        super(replyQueue);
     }
 
+    /* (non-Javadoc)
+     * @see org.dcache.xdr.GenItfRpcProtocolFilter#handleRead(org.glassfish.grizzly.filterchain.FilterChainContext)
+     */
     @Override
     public NextAction handleRead(FilterChainContext ctx) throws IOException {
 
@@ -48,18 +58,19 @@ public class GenRpcProtocolFilter<SVC_T extends GenRpcSvc<SVC_T>> extends BaseFi
 
         xdr.beginDecoding();
 
+        //TODO POst ABSTRACTION 
         RpcMessage message = new RpcMessage(xdr);
         /**
          * In case of UDP grizzly does not populates connection with correct destination address.
          * We have to get peer address from the request context, which will contain SocketAddress where from
          * request was coming.
          */
-        GenXdrTransport<SVC_T> transport = new GenGrizzlyXdrTransport<SVC_T>(ctx.getConnection(), (InetSocketAddress)ctx.getAddress(), _replyQueue);
+        GenXdrTransport transport = new GenGrizzlyXdrTransport<GenOncRpcSvc>(ctx.getConnection(), (InetSocketAddress)ctx.getAddress(), _replyQueue);
 
         switch (message.type()) {
             case RpcMessageType.CALL:
             	_log.debug("Received a CALL message");
-            	GenRpcCall<SVC_T> call = new GenRpcCall<SVC_T>(message.xid(), xdr, transport);
+            	GenItfRpcCall<GenOncRpcSvc> call = new GenRpcCall(message.xid(), xdr, transport);
                 try {
                     call.accept();
                     ctx.setMessage(call);
@@ -74,11 +85,12 @@ public class GenRpcProtocolFilter<SVC_T extends GenRpcSvc<SVC_T>> extends BaseFi
                 }
                 return ctx.getInvokeAction();
             case RpcMessageType.REPLY:
-            	_log.debug("Received a Reply message with xid {}",message.xid());
+            	_log.debug("Received a Reply message with xid {} ",message.xid());
                 try {
-                    GenRpcReply<SVC_T> reply = new GenRpcReply<SVC_T>(message.xid(), xdr, transport);
+                    GenRpcReply reply = new GenRpcReply(message.xid(), xdr, transport);
+                    _log.debug("Got a reply, status {}",reply.getAcceptStatus());
                     _log.debug("Rpc reply is {}",reply);
-                    CompletionHandler<GenRpcReply<SVC_T>, GenXdrTransport<SVC_T>> callback = _replyQueue.get(message.xid());
+                     CompletionHandler<GenItfRpcReply<GenOncRpcSvc>, GenItfXdrTransport<GenOncRpcSvc>> callback = _replyQueue.get(message.xid());
                     if (callback != null) {
                     	_log.debug("Processing callback");
                         if (!reply.isAccepted()) {
@@ -102,5 +114,12 @@ public class GenRpcProtocolFilter<SVC_T extends GenRpcSvc<SVC_T>> extends BaseFi
                 // bad XDR
                 return ctx.getStopAction();
         }
+    }
+
+
+    @Override
+    protected GenItfRpcReply<GenOncRpcSvc> createReply(Xdr xdr, RpcMessage message,
+            GenItfXdrTransport<GenOncRpcSvc> transport) throws OncRpcException, IOException {
+        return new GenRpcReply(message.xid(), xdr, transport);
     }
 }

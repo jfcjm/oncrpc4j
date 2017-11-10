@@ -4,34 +4,26 @@ import java.io.IOException;
 
 import org.dcache.xdr.GenOncRpcSvcBuilder;
 import org.dcache.xdr.GenRpcCall;
-import org.dcache.xdr.GenXdrTransport;
+import org.dcache.xdr.GenOncRpcSvc;
 import org.dcache.xdr.RpcAuthTypeNone;
+import org.dcache.xdr.model.itf.GenItfOncRpcSvcBuilder;
+import org.dcache.xdr.model.itf.GenItfRpcCall;
+import org.dcache.xdr.model.itf.GenItfXdrTransport;
 
-public class EmbeddedOncServer extends  EmbeddedGenericServer<FromGenOncRpcSvc> {
-
-    public EmbeddedOncServer() throws IOException {
-        super();
-    }
+public class EmbeddedOncServer extends  EmbeddedGenericServer<GenOncRpcSvc> {
 
     public EmbeddedOncServer(int i) throws IOException {
         super(i);
     }
 
     @Override
-    protected GenOncRpcSvcBuilder<FromGenOncRpcSvc> createOncSvcBuilder() {
-        return new GenOncRpcSvcBuilder<FromGenOncRpcSvc>(){
-
-            @Override
-            protected FromGenOncRpcSvc getNewOncRpcSvc() {
-                return new FromGenOncRpcSvc(this);
-            }
-            
-        }.withoutAutoPublish();
+    protected GenItfRpcCall<GenOncRpcSvc> createRpcCaller(int prognum, int progver, GenItfXdrTransport<GenOncRpcSvc> t) {
+        return new GenRpcCall(prognum, progver, new RpcAuthTypeNone(), t);
+       
     }
 
     @Override
-    protected GenRpcCall<FromGenOncRpcSvc> createRpcCaller(int prognum, int progver, GenXdrTransport<FromGenOncRpcSvc> t) {
-       return new GenRpcCall<FromGenOncRpcSvc>(prognum, progver, new RpcAuthTypeNone(), t);
+    protected GenItfOncRpcSvcBuilder<GenOncRpcSvc> createOncSvcBuilder() {
+        return new GenOncRpcSvcBuilder();
     }
-
 }

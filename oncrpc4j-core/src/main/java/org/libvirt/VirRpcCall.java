@@ -17,14 +17,12 @@
  ******************************************************************************/
 
 package org.libvirt;
-
 import java.io.EOFException;
 
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.ReplyQueue;
 import org.dcache.xdr.RpcAuth;
 import org.dcache.xdr.RpcCall;
-import org.dcache.xdr.RpcMessage;
 import org.dcache.xdr.RpcMessageType;
 import org.dcache.xdr.RpcReply;
 import org.dcache.xdr.RpcReplyStatus;
@@ -33,6 +31,7 @@ import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrEncodingStream;
 import org.dcache.xdr.XdrTransport;
 import org.dcache.xdr.XdrVoid;
+import org.dcache.xdr.model.root.RpcMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,6 +49,7 @@ import java.util.concurrent.TimeoutException;
  * Apdaptation of rpcCall for libvirt ! does not use rpcvers nor
  * rpcauth
  */
+@Deprecated
 public class VirRpcCall extends RpcCall{
 
     private final static Logger _log = LoggerFactory.getLogger(VirRpcCall.class);

@@ -17,13 +17,18 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.xdr;
+package org.dcache.xdr.model.impl;
 
 
 import java.net.InetSocketAddress;
 import java.nio.channels.CompletionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.dcache.xdr.Xdr;
+import org.dcache.xdr.model.itf.GenItfReplyQueue;
+import org.dcache.xdr.model.itf.GenItfRpcSvc;
+import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.itf.GenXdrTransport;
 import org.glassfish.grizzly.Buffer;
 import org.glassfish.grizzly.Connection;
 import org.glassfish.grizzly.EmptyCompletionHandler;
@@ -32,20 +37,20 @@ import org.glassfish.grizzly.asyncqueue.WritableMessage;
 
 import static java.util.Objects.requireNonNull;
 
-public class GenGrizzlyXdrTransport<SVC_T extends GenRpcSvc<SVC_T>> implements GenXdrTransport<SVC_T> {
-
-    private final Connection<InetSocketAddress> _connection;
-    private final GenReplyQueue<SVC_T> _replyQueue;
-    private final InetSocketAddress _localAddress;
-    private final InetSocketAddress _remoteAddress;
+public class GenGrizzlyXdrTransport<SVC_T extends GenItfRpcSvc<SVC_T>> implements GenXdrTransport<SVC_T> {
 
     private final static Logger _log = LoggerFactory.getLogger(GenGrizzlyXdrTransport.class);
 
-    public GenGrizzlyXdrTransport(Connection<InetSocketAddress> connection, GenReplyQueue<SVC_T> replyQueue) {
+    private final Connection<InetSocketAddress> _connection;
+    private final GenItfReplyQueue<SVC_T> _replyQueue;
+    private final InetSocketAddress _localAddress;
+    private final InetSocketAddress _remoteAddress;
+
+    public GenGrizzlyXdrTransport(Connection<InetSocketAddress> connection, GenItfReplyQueue<SVC_T> replyQueue) {
         this(connection, connection.getPeerAddress(), replyQueue);
     }
 
-    public GenGrizzlyXdrTransport(Connection<InetSocketAddress> connection, InetSocketAddress remoteAddress, GenReplyQueue<SVC_T> replyQueue) {
+    public GenGrizzlyXdrTransport(Connection<InetSocketAddress> connection, InetSocketAddress remoteAddress, GenItfReplyQueue<SVC_T> replyQueue) {
         _connection = connection;
         _replyQueue = replyQueue;
         _localAddress = _connection.getLocalAddress();
@@ -91,12 +96,12 @@ public class GenGrizzlyXdrTransport<SVC_T extends GenRpcSvc<SVC_T>> implements G
     }
 
     @Override
-    public GenReplyQueue<SVC_T> getReplyQueue() {
+    public GenItfReplyQueue<SVC_T> getReplyQueue() {
         return _replyQueue;
     }
 
     @Override
-    public GenXdrTransport<SVC_T> getPeerTransport() {
+    public GenItfXdrTransport<SVC_T> getPeerTransport() {
         return new GenGrizzlyXdrTransport<SVC_T>(_connection, getReplyQueue());
     }
 
