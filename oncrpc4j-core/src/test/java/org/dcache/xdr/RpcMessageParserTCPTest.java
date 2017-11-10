@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.nio.ByteOrder;
 
 import org.dcache.xdr.model.impl.GenReplyQueue;
-import org.dcache.xdr.model.root.RpcMessage;
 import org.glassfish.grizzly.Buffer;
 import org.glassfish.grizzly.Connection;
 import org.glassfish.grizzly.filterchain.FilterChainContext;

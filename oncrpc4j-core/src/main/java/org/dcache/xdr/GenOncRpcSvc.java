@@ -57,13 +57,18 @@ public final class GenOncRpcSvc extends GenAbstractOncRpcSvc<GenOncRpcSvc> {
     /**
      * Handle RPCSEC_GSS
      */
-    protected final GssSessionManager _gssSessionManager;
+    private final GssSessionManager _gssSessionManager;
+    /**
+     * Should the srvice register / unregister to/from a portmapper/rpcbind ?
+     */
+    private final boolean _publish;
     /**
      * Create new RPC service with defined configuration.
      * @param builder to build this service
      */
     public  GenOncRpcSvc(GenOncRpcSvcBuilder builder) {
         super(builder);
+        _publish = builder.isAutoPublish();
         _gssSessionManager = builder.getGssSessionManager();
     }
 
@@ -92,6 +97,18 @@ public final class GenOncRpcSvc extends GenAbstractOncRpcSvc<GenOncRpcSvc> {
     protected void addPostTransportProtocolFilters(FilterChainBuilder filterChain, Transport t) {
     }
 
+
+    @Override
+    protected void doBeforeStart() throws IOException {
+        _log.info("In do start");
+        if(!_isClient && _publish) {
+            _log.info("Clearing Portmap, {}", _programs.keySet());
+            clearPortmap(_programs.keySet());
+            _log.info("Portmap cleared");
+        }
+        _log.info("End do start");
+        
+    }
     @Override
     protected void doPostCreationServerActions(Connection<InetSocketAddress> connection) throws IOException {
         if (_publish) {
@@ -171,15 +188,20 @@ public final class GenOncRpcSvc extends GenAbstractOncRpcSvc<GenOncRpcSvc> {
      * @throws IOException
      * @throws UnknownHostException
      */
-    protected void clearPortmap(Set<OncRpcProgram> programs) throws IOException {
-    
+   
+    private void clearPortmap(Set<OncRpcProgram> programs) throws IOException {
+        _log.info("start to clean, create enOncRpcClient, {} ",InetAddress.getByName(null));
+        _log.info("start to clean, create enOncRpcClient, {} ",OncRpcPortmap.PORTMAP_PORT);
          GenOncRpcClient rpcClient = new GenOncRpcClient(InetAddress.getByName(null),
                 IpProtocolType.UDP, OncRpcPortmap.PORTMAP_PORT);
+         _log.info("start to clean, create transport");
+         
          GenXdrTransport<GenOncRpcSvc> transport = rpcClient.connect();
-    
+         
         try {
+            _log.info("create generic client");
             OncPortmapClient portmapClient = new GenGenericPortmapClient(transport);
-    
+            _log.info("ceated portmap client");
             String username = System.getProperty("user.name");
     
             for (OncRpcProgram program : programs) {
@@ -195,15 +217,6 @@ public final class GenOncRpcSvc extends GenAbstractOncRpcSvc<GenOncRpcSvc> {
         } finally {
             rpcClient.close();
         }
-    }
-
-    @Override
-    protected void doBeforeStart() throws IOException {
-
-        if(!_isClient && _publish) {
-            clearPortmap(_programs.keySet());
-        }
-        
     }
     @Override
     protected void addPostRpcProtocolFilter(FilterChainBuilder filterChain) {

@@ -33,7 +33,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.CompletionHandler;
 
 import org.dcache.xdr.IpProtocolType;
-import org.dcache.xdr.OncRpcClient;
 import org.dcache.xdr.RpcAuth;
 import org.dcache.xdr.Xdr;
 import org.dcache.xdr.XdrString;
@@ -42,9 +41,7 @@ import org.dcache.xdr.model.itf.GenItfXdrTransport;
 import org.glassfish.grizzly.Buffer;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
-import org.hamcrest.Matcher;
 
-import static org.hamcrest.CoreMatchers.isA;
 
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -55,7 +52,6 @@ import org.junit.rules.ExpectedException;
 import org.libvirt.GenVirOncRpcClient;
 import org.libvirt.GenVirOncRpcSvc;
 import org.libvirt.GenVirRpcCall;
-import org.libvirt.VirRpcCall;
 import org.libvirt.VirRpcRejectedException;
 import org.libvirt.remote_error;
 

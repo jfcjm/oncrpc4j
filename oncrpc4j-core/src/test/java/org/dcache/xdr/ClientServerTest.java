@@ -9,7 +9,6 @@ import org.dcache.xdr.model.itf.GenItfRpcReply;
 import org.dcache.xdr.model.itf.GenItfRpcSvc;
 import org.dcache.xdr.model.itf.GenItfXdrTransport;
 import org.dcache.xdr.model.itf.GenOncRpcDispatchable;
-import org.dcache.xdr.model.itf.GenRpcDispatchable;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -57,7 +56,7 @@ public class ClientServerTest {
             }
         };
 
-        GenRpcDispatchable<GenItfRpcSvc<GenOncRpcSvc>> upper = ( call) -> {
+        GenOncRpcDispatchable upper = ( call) -> {
             XdrString s = new XdrString();
             call.retrieveCall(s);
             XdrString u = new XdrString(s.stringValue().toUpperCase());
@@ -124,7 +123,7 @@ public class ClientServerTest {
             // ignore disconnect error
         }
 
-        clntCall.call(ECHO, s, (CompletionHandler<GenItfRpcReply<SVC_T>, GenItfXdrTransport<SVC_T>>) null);
+        clntCall.call(ECHO, s, (CompletionHandler<GenItfRpcReply<GenOncRpcSvc>, GenItfXdrTransport<GenOncRpcSvc>>) null);
     }
 
     @Test(expected = EOFException.class, timeout = 5000)

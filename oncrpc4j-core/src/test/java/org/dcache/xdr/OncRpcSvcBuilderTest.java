@@ -96,9 +96,9 @@ public class OncRpcSvcBuilderTest {
     public void shouldThrowExceptionIfClientUsesTwoProtocols() {
 
         GenOncRpcSvc svc = new GenOncRpcSvcBuilder()
-                .withClientMode()
-                .withTCP()
                 .withUDP()
+                .withTCP()
+                .withClientMode()
                 .build();
     }
 
@@ -106,8 +106,8 @@ public class OncRpcSvcBuilderTest {
     public void shouldThrowExceptionDefinedWorkerThreadPoolWithExtern() {
 
         GenOncRpcSvc svc = new GenOncRpcSvcBuilder()
-                .withTCP()
                 .withUDP()
+                .withTCP()
                 .withWorkerThreadExecutionService(Executors.newCachedThreadPool())
                 .withWorkerThreadPoolSize(2)
                 .build();

@@ -26,7 +26,6 @@ import java.util.concurrent.TimeoutException;
 import org.dcache.utils.net.InetSocketAddresses;
 import org.dcache.xdr.portmap.GenGenericPortmapClient;
 import org.dcache.xdr.portmap.GenOncRpcbindServer;
-import org.dcache.xdr.portmap.GenericPortmapClient;
 import org.dcache.xdr.portmap.OncPortmapClient;
 import org.dcache.xdr.portmap.OncRpcPortmap;
 import org.dcache.xdr.portmap.OncRpcbindServer;
@@ -35,6 +34,7 @@ import org.junit.After;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+@SuppressWarnings("deprecation")
 public class OncRpcSvcTest {
 
     private GenOncRpcSvc svc;
@@ -43,9 +43,9 @@ public class OncRpcSvcTest {
     @Test
     public void testBindToInterface() throws IOException {
         svc = new GenOncRpcSvcBuilder()
-                .withTCP()
                 .withUDP()
                 .withoutAutoPublish()
+                .withTCP()
                 .withMinPort(0)
                 .withMinPort(4096)
                 .withBindAddress("127.0.0.1")
@@ -61,9 +61,9 @@ public class OncRpcSvcTest {
     @Test
     public void testNotBindToInterface() throws IOException {
         svc = new GenOncRpcSvcBuilder()
-                .withTCP()
                 .withUDP()
                 .withoutAutoPublish()
+                .withTCP()
                 .withMinPort(0)
                 .withMinPort(4096)
                 .build();
@@ -83,9 +83,9 @@ public class OncRpcSvcTest {
 		GenOncRpcbindServer bindService = new GenOncRpcbindServer();
 		OncRpcProgram portMapProg = new OncRpcProgram(OncRpcPortmap.PORTMAP_PROGRAMM, OncRpcPortmap.PORTMAP_V2);
         svc = new GenOncRpcSvcBuilder()
-                .withTCP()
                 .withUDP()
                 .withoutAutoPublish()
+                .withTCP()
                 .withMinPort(0)
                 .withMinPort(4096)
                 .withBindAddress("127.0.0.1")

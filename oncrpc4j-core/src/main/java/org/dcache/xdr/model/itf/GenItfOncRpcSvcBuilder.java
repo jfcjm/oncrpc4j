@@ -3,26 +3,16 @@ package org.dcache.xdr.model.itf;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
+import org.dcache.xdr.GenOncRpcSvcBuilder;
 import org.dcache.xdr.IoStrategy;
 import org.dcache.xdr.OncRpcProgram;
 
 public interface GenItfOncRpcSvcBuilder<SVC_T extends GenItfRpcSvc<SVC_T>> {
-
-    GenItfOncRpcSvcBuilder<SVC_T> withAutoPublish();
-
-    GenItfOncRpcSvcBuilder<SVC_T> withoutAutoPublish();
-
     GenItfOncRpcSvcBuilder<SVC_T> withMaxPort(int maxPort);
 
     GenItfOncRpcSvcBuilder<SVC_T> withMinPort(int minPort);
 
     GenItfOncRpcSvcBuilder<SVC_T> withPort(int port);
-
-    GenItfOncRpcSvcBuilder<SVC_T> withTCP();
-
-    GenItfOncRpcSvcBuilder<SVC_T> withUDP();
-
-    GenItfOncRpcSvcBuilder<SVC_T> withIpProtocolType(int protocolType);
 
     GenItfOncRpcSvcBuilder<SVC_T> withSameThreadIoStrategy();
 
@@ -59,8 +49,6 @@ public interface GenItfOncRpcSvcBuilder<SVC_T extends GenItfRpcSvc<SVC_T>> {
     int getMinPort();
 
     int getMaxPort();
-
-    boolean isAutoPublish();
 
     IoStrategy getIoStrategy();
 

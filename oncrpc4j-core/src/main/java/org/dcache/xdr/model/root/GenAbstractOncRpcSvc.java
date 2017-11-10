@@ -63,7 +63,6 @@ public abstract class GenAbstractOncRpcSvc<SVC_T extends GenItfRpcSvc<SVC_T>> im
     protected abstract Filter rpcMessageReceiverFor(Transport t);
 
     protected final int _backlog;
-    protected boolean _publish;
     protected final PortRange _portRange;
     protected final String _bindAddress;
     protected final boolean _isClient;
@@ -78,9 +77,8 @@ public abstract class GenAbstractOncRpcSvc<SVC_T extends GenItfRpcSvc<SVC_T>> im
     protected final Map<OncRpcProgram, GenRpcDispatchable<SVC_T>> _programs = new ConcurrentHashMap<>();
 
     public  GenAbstractOncRpcSvc(GenItfOncRpcSvcBuilder<SVC_T> builder) {
-        _publish = builder.isAutoPublish();
         final int protocol = builder.getProtocol();
-
+        _log.info("At sstart Protocol is {}" , protocol);
         if ((protocol & (IpProtocolType.TCP | IpProtocolType.UDP)) == 0) {
             throw new IllegalArgumentException("TCP or UDP protocol have to be defined");
         }
@@ -92,6 +90,7 @@ public abstract class GenAbstractOncRpcSvc<SVC_T extends GenItfRpcSvc<SVC_T>> im
                 builder.getSelectorThreadPoolSize());
 
         if ((protocol & IpProtocolType.TCP) != 0) {
+            _log.info("Using TCP" , protocol);
             final TCPNIOTransport tcpTransport = TCPNIOTransportBuilder
                     .newInstance()
                     .setReuseAddress(true)
@@ -103,6 +102,7 @@ public abstract class GenAbstractOncRpcSvc<SVC_T extends GenItfRpcSvc<SVC_T>> im
         }
 
         if ((protocol & IpProtocolType.UDP) != 0) {
+            _log.info("Using UDP" , protocol);
             final UDPNIOTransport udpTransport = UDPNIOTransportBuilder
                     .newInstance()
                     .setReuseAddress(true)
@@ -132,11 +132,12 @@ public abstract class GenAbstractOncRpcSvc<SVC_T extends GenItfRpcSvc<SVC_T>> im
     
     @Override
     public void start() throws IOException {
+        _log.info("Before doStart()");
         doBeforeStart();
-
+        _log.info("Rpc Srv Starting, will initialize # transports : " + _transports.size());
         
         for (Transport t : _transports) {
-
+            _log.info("Init transport; "  + t);
             FilterChainBuilder filterChain = FilterChainBuilder.stateless();
             filterChain.add(new TransportFilter());
             addPostTransportProtocolFilters(filterChain,t);

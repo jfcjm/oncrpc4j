@@ -19,8 +19,8 @@
 package org.dcache.libvirt;
 
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
+import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.model.itf.GenItfOncRpcSvcBuilder;
 import org.junit.Test;
 import org.libvirt.GenVirOncRpcSvc;
@@ -84,34 +84,9 @@ public class OncRpcSvcBuilderTest {
         ExecutorService executorService = builder.getWorkerThreadExecutorService();
         assertTrue("Provided executor service not used", mockedExecutorService  == executorService);
     }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldThrowExceptionOnInvalidProtocol() {
-
-        GenVirOncRpcSvc svc = new GenVirOncRpcSvcBuilder()
-                .withIpProtocolType(1)
-                .build();
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldThrowExceptionIfClientUsesTwoProtocols() {
-
-        GenVirOncRpcSvc svc = new GenVirOncRpcSvcBuilder()
-                .withClientMode()
-                .withTCP()
-                .withUDP()
-                .build();
-    }
-
-    @Test(expected = IllegalArgumentException.class)
+    @Test()
     public void shouldThrowExceptionDefinedWorkerThreadPoolWithExtern() {
-
-        GenVirOncRpcSvc svc = new GenVirOncRpcSvcBuilder()
-                .withTCP()
-                .withUDP()
-                .withWorkerThreadExecutionService(Executors.newCachedThreadPool())
-                .withWorkerThreadPoolSize(2)
-                .build();
+        assertEquals(IpProtocolType.TCP,new GenVirOncRpcSvcBuilder().getProtocol());
     }
 
 }

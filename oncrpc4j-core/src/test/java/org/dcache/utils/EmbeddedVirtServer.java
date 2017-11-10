@@ -9,13 +9,7 @@ import java.util.Map;
 
 import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcProgram;
-import org.dcache.xdr.RpcCall;
-import org.dcache.xdr.GenOncRpcSvc;
-import org.dcache.xdr.GenRpcCall;
-import org.dcache.xdr.RpcDispatchable;
-import org.dcache.xdr.model.itf.GenItfRpcSvc;
 import org.dcache.xdr.model.itf.GenItfXdrTransport;
-import org.dcache.xdr.model.itf.GenRpcDispatchable;
 import org.libvirt.GenVirOncRpcSvc;
 import org.libvirt.GenVirOncRpcSvcBuilder;
 import org.libvirt.GenVirRpcCall;
@@ -29,11 +23,11 @@ public class EmbeddedVirtServer implements Closeable{
     private static final int PROGVER = 1;
     private static final int LIBVIRT_PORT = 16509;
     
-    Map<Integer,GenRpcDispatchable> srcActions = new HashMap<>();
+    Map<Integer,GenVirRpcDispatchable> srcActions = new HashMap<>();
 
-    GenRpcDispatchable fakeLibvirtd = ( call) ->
+    GenVirRpcDispatchable fakeLibvirtd = ( call) ->
     {
-        GenRpcDispatchable action = srcActions.get(call.getProcedure());
+        GenVirRpcDispatchable action = srcActions.get(call.getProcedure());
         if (null != action){
             action.dispatchOncRpcCall(call);
         } else {
@@ -42,9 +36,12 @@ public class EmbeddedVirtServer implements Closeable{
         }
     };
 
-    private GenVirOncRpcSvc  svc;
 
     private GenVirOncRpcSvc client;
+    
+    private GenVirOncRpcSvc svc;
+
+   
 
     
     public EmbeddedVirtServer() throws IOException{
@@ -55,11 +52,11 @@ public class EmbeddedVirtServer implements Closeable{
         this(LIBVIRT_PORT);
     }
     public EmbeddedVirtServer(int port) throws IOException {
+        // Le typ retoruné dépend du type de l'argument fakeLibvirtd
         svc = new GenVirOncRpcSvcBuilder()
-                .withTCP()
+                .withRpcService(new OncRpcProgram(PROGNUM, PROGVER), fakeLibvirtd)
                 .withPort(port)
                 .withWorkerThreadIoStrategy()
-                .withRpcService(new OncRpcProgram(PROGNUM, PROGVER), fakeLibvirtd)
                 .build();
         assertTrue(svc instanceof GenVirOncRpcSvc);
         svc.start();

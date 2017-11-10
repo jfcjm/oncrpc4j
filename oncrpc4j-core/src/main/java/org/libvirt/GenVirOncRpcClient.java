@@ -48,7 +48,12 @@ public class GenVirOncRpcClient extends GenAbstractOncRpcClient<GenVirOncRpcSvc>
         ((VirOncRpcSvc) _rpcsvc).setPacketWrapper(sc);
     }
     @Override
-    protected GenItfOncRpcSvcBuilder<GenVirOncRpcSvc> getOncRpcSvcBuilder() {
+    protected GenItfOncRpcSvcBuilder<GenVirOncRpcSvc> getRpcSvcBuilder() {
          return new GenVirOncRpcSvcBuilder();
+    }
+    @Override
+    protected GenItfOncRpcSvcBuilder<GenVirOncRpcSvc> getRpcSvcBuilder(int protocol) {
+        //we do not obey protocol requests
+        return null;
     }
 }

@@ -37,7 +37,6 @@ import javax.security.sasl.SaslServer;
 import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.OncRpcProgram;
-import org.dcache.xdr.RpcDispatchable;
 import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrDecodingStream;
 import org.dcache.xdr.XdrEncodingStream;

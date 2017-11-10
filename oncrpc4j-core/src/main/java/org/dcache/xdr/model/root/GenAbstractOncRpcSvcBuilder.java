@@ -48,11 +48,10 @@ public abstract class GenAbstractOncRpcSvcBuilder<SVC_T extends GenItfRpcSvc<SVC
     private int _protocol = 0;
     private int _minPort = 0;
     private int _maxPort = 0;
-    private boolean _autoPublish = true;
     private IoStrategy _ioStrategy = IoStrategy.SAME_THREAD;
     private boolean _withJMX = false;
     private int _backlog = 4096;
-    private String _bindAddress = "127.0.0.1";
+    private String _bindAddress = "0.0.0.0";
     private String _serviceName = "OncRpcSvc";
     private ExecutorService _workerThreadExecutionService;
     private boolean _isClient = false;
@@ -63,18 +62,6 @@ public abstract class GenAbstractOncRpcSvcBuilder<SVC_T extends GenItfRpcSvc<SVC
 
     public GenAbstractOncRpcSvcBuilder() {
         super();
-    }
-
-    @Override
-    public GenItfOncRpcSvcBuilder<SVC_T> withAutoPublish() {
-        _autoPublish = true;
-        return this;
-    }
-
-    @Override
-    public GenItfOncRpcSvcBuilder<SVC_T> withoutAutoPublish() {
-        _autoPublish = false;
-        return this;
     }
 
     @Override
@@ -100,20 +87,20 @@ public abstract class GenAbstractOncRpcSvcBuilder<SVC_T extends GenItfRpcSvc<SVC
         return this;
     }
 
-    @Override
-    public GenItfOncRpcSvcBuilder<SVC_T> withTCP() {
+    
+    protected GenItfOncRpcSvcBuilder<SVC_T> withTCP() {
         _protocol |= TCP;
         return this;
     }
 
-    @Override
-    public GenItfOncRpcSvcBuilder<SVC_T> withUDP() {
+    
+    protected GenItfOncRpcSvcBuilder<SVC_T> withUDP() {
         _protocol |= UDP;
         return this;
     }
 
-    @Override
-    public GenItfOncRpcSvcBuilder<SVC_T> withIpProtocolType(int protocolType) {
+   
+    protected GenItfOncRpcSvcBuilder<SVC_T> withIpProtocolType(int protocolType) {
         _protocol = protocolType;
         return this;
     }
@@ -222,11 +209,6 @@ public abstract class GenAbstractOncRpcSvcBuilder<SVC_T extends GenItfRpcSvc<SVC
     @Override
     public int getMaxPort() {
         return _maxPort;
-    }
-
-    @Override
-    public boolean isAutoPublish() {
-        return _autoPublish;
     }
 
     @Override

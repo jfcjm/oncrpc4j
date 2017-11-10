@@ -172,11 +172,11 @@ public class GenOncRpcbindServer implements GenOncRpcDispatchable {
         GenOncRpcDispatchable rpcbind = new GenOncRpcbindServer();
 
         GenOncRpcSvc server  = new GenOncRpcSvcBuilder()
-                .withPort(port)
                 .withTCP()
                 .withUDP()
-                .withSameThreadIoStrategy()
                 .withoutAutoPublish()
+                .withPort(port)
+                .withSameThreadIoStrategy()
                 .build();
         server.register(new OncRpcProgram( OncRpcPortmap.PORTMAP_PROGRAMM,
                 OncRpcPortmap.PORTMAP_V2), rpcbind);
