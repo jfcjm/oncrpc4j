@@ -24,6 +24,8 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
+import deprecatedclasses.oncrpc.OncRpcSvc;
+
 public class SpringRunner {
 
     private SpringRunner() {

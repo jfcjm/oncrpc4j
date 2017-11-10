@@ -24,6 +24,7 @@ import org.ietf.jgss.GSSException;
 import org.ietf.jgss.MessageProp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.dcache.xdr.*;
 import org.glassfish.grizzly.Buffer;
 import org.ietf.jgss.GSSContext;
@@ -34,13 +35,13 @@ import org.ietf.jgss.GSSContext;
  *
  * @since 0.0.4
  */
-public class RpcGssCall extends RpcCall {
+public class RpcGssCall extends GenRpcCall {
 
     private final static Logger _log = LoggerFactory.getLogger(RpcGssCall.class);
     private final GSSContext _gssContext;
     private final MessageProp _mop;
 
-    public RpcGssCall(RpcCall call, GSSContext gssContext, MessageProp mop) {
+    public RpcGssCall(GenRpcCall call, GSSContext gssContext, MessageProp mop) {
         super(call.getXid(), call.getProgram(), call.getProgramVersion(),
                 call.getProcedure(), call.getCredential(), call.getXdr(), call.getTransport());
         _gssContext = gssContext;

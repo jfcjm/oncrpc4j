@@ -22,7 +22,6 @@ package org.dcache.xdr.portmap;
 import org.dcache.utils.net.InetSocketAddresses;
 import org.dcache.xdr.GenRpcCall;
 import org.dcache.xdr.OncRpcException;
-import org.dcache.xdr.RpcCall;
 import org.dcache.xdr.XdrBoolean;
 import org.dcache.xdr.XdrInt;
 import org.dcache.xdr.XdrVoid;

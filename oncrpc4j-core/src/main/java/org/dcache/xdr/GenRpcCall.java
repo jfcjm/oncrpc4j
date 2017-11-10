@@ -34,7 +34,7 @@ import org.dcache.xdr.model.root.RpcMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class GenRpcCall extends GenAbstractRpcCall<GenOncRpcSvc>  {
+public class GenRpcCall extends GenAbstractRpcCall<GenOncRpcSvc>  {
     final static Logger _log = LoggerFactory.getLogger(GenRpcCall.class);
     
 
@@ -50,7 +50,7 @@ public final class GenRpcCall extends GenAbstractRpcCall<GenOncRpcSvc>  {
         super(xid,xdr,transport);
     }
 
-    public GenRpcCall(int xid, int prog, int ver, int proc, RpcAuth cred, Xdr xdr, GenXdrTransport<GenOncRpcSvc> transport) {
+    public GenRpcCall(int xid, int prog, int ver, int proc, RpcAuth cred, Xdr xdr, GenItfXdrTransport<GenOncRpcSvc> transport) {
         super(xid,prog,ver,proc,cred,xdr,transport);
     }
 

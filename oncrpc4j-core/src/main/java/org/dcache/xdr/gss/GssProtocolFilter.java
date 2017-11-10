@@ -20,17 +20,19 @@
 package org.dcache.xdr.gss;
 
 import com.google.common.primitives.Ints;
+
+
 import java.io.IOException;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.dcache.utils.Bytes;
 import org.dcache.xdr.BadXdrOncRpcException;
+import org.dcache.xdr.GenRpcCall;
 import org.dcache.xdr.RpcAuthError;
 import org.dcache.xdr.RpcAuthStat;
 import org.dcache.xdr.RpcAuthType;
 import org.dcache.xdr.RpcAuthVerifier;
-import org.dcache.xdr.RpcCall;
 import org.dcache.xdr.RpcException;
 import org.dcache.xdr.RpcRejectStatus;
 import org.glassfish.grizzly.Buffer;
@@ -80,7 +82,7 @@ public class GssProtocolFilter extends BaseFilter {
     @Override
     public NextAction handleRead(FilterChainContext ctx) throws IOException {
 
-        RpcCall call = ctx.getMessage();
+        GenRpcCall call = ctx.getMessage();
 
         if (call.getCredential().type() != RpcAuthType.RPCGSS_SEC) {
             return ctx.getInvokeAction();

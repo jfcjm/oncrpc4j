@@ -20,8 +20,12 @@
 package org.dcache.xdr;
 
 import java.io.IOException;
-import org.dcache.xdr.portmap.OncRpcEmbeddedPortmap;
 
+import org.dcache.xdr.model.itf.GenItfRpcCall;
+import org.dcache.xdr.model.itf.GenItfRpcSvc;
+import org.dcache.xdr.model.itf.GenRpcDispatchable;
+import org.dcache.xdr.portmap.OncRpcEmbeddedPortmap;
+//TODO à génériser
 public class SimpleRpcServer {
 
     static final int DEFAULT_PORT = 1717;
@@ -42,15 +46,16 @@ public class SimpleRpcServer {
 
         new OncRpcEmbeddedPortmap();
 
-        RpcDispatchable dummy = new RpcDispatchable() {
+        GenRpcDispatchable dummy = new GenRpcDispatchable() {
 
             @Override
-            public void dispatchOncRpcCall(RpcCall call) throws OncRpcException, IOException {
+            public void dispatchOncRpcCall(GenItfRpcCall call) throws OncRpcException, IOException {
                 call.reply(XdrVoid.XDR_VOID);
+                
             }
         };
 
-        OncRpcSvc svc = new OncRpcSvcBuilder()
+         GenItfRpcSvc svc = new GenOncRpcSvcBuilder()
                 .withTCP()
                 .withAutoPublish()
                 .withPort(port)
