@@ -16,18 +16,33 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  ******************************************************************************/package org.libvirt;
 
-import org.dcache.xdr.model.root.GenAbstractOncRpcSvcBuilder;
-
+import static org.dcache.xdr.ConversionUtils.helperCAST;
+import        org.dcache.xdr.model.root.GenAbstractOncRpcSvcBuilder;
 public  class GenVirOncRpcSvcBuilder extends GenAbstractOncRpcSvcBuilder<GenVirOncRpcSvc> {
 
     public GenVirOncRpcSvcBuilder(){
         super();
-        super.withoutAutoPublish();
+        super.withTCP();
     }
     
     @Override
     protected GenVirOncRpcSvc getNewOncRpcSvc() {
         return new GenVirOncRpcSvc(this);
     }
+    /**
+     * Le casting de cette méthode permet de retourner le type GenVirOncRpcSvcBuilder
+     * à la place de celui utilisé pour caster : facilite l'utilisation par les clients
+     * 
+     * Les méthodes rajoutées ou redéfinies doivent être appelée en premier dans la chaîne
+     * d'appels fuildes.
+     */
+    @Override 
+    public GenVirOncRpcSvcBuilder withTCP(){
+        return helperCAST(super.withTCP());
+    }
     
+    @Override
+    public GenVirOncRpcSvc build(){
+        return getNewOncRpcSvc();
+    }
 }

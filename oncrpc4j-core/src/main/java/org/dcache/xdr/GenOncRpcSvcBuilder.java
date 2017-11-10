@@ -19,20 +19,30 @@
  */
 package org.dcache.xdr;
 
+import static org.dcache.xdr.ConversionUtils.helperCAST;
 import org.dcache.xdr.gss.GssSessionManager;
 import org.dcache.xdr.model.itf.GenItfOncRpcSvcBuilder;
 import org.dcache.xdr.model.root.GenAbstractOncRpcSvcBuilder;
-
+/**
+ * 
+ * Implémentation du builder de service adapté pour les ONC-RPC.
+ * Les méthodes redéfines (ou ajoutéesà doivent être utilisées en premier
+ * dans l'invocation du builder.
+ * @author jmk
+ *
+ */
 public  final class GenOncRpcSvcBuilder  extends GenAbstractOncRpcSvcBuilder<GenOncRpcSvc> {
 
     private GssSessionManager _gssSessionManager;
+    private boolean _autoPublish = true;
+    
     @Override
     protected GenOncRpcSvc getNewOncRpcSvc() {
         return new GenOncRpcSvc(this);
     }
 
    
-    public GenItfOncRpcSvcBuilder withGssSessionManager(GssSessionManager gssSessionManager) {
+    public GenOncRpcSvcBuilder withGssSessionManager(GssSessionManager gssSessionManager) {
         _gssSessionManager = gssSessionManager;
         return this;
     }
@@ -41,6 +51,37 @@ public  final class GenOncRpcSvcBuilder  extends GenAbstractOncRpcSvcBuilder<Gen
     public GssSessionManager getGssSessionManager() {
         return _gssSessionManager;
     }
-
     
+
+    @Override
+    public GenOncRpcSvcBuilder withUDP() {
+        return helperCAST(super.withUDP());
+    }
+    
+
+    @Override
+    public GenOncRpcSvcBuilder withTCP() {
+        return helperCAST(super.withTCP());
+    }
+
+    @Override
+    public  GenOncRpcSvcBuilder withIpProtocolType(int protocolType) {
+        return helperCAST(super.withIpProtocolType(protocolType));
+    }
+    
+    public GenOncRpcSvcBuilder  withAutoPublish() {
+        _autoPublish = true;
+        return this;
+    }
+
+   
+    public GenOncRpcSvcBuilder withoutAutoPublish() {
+        _autoPublish = false;
+        return this;
+    }
+
+
+    public boolean isAutoPublish() {
+        return _autoPublish;
+    }
 }

@@ -5,7 +5,6 @@ import java.io.IOException;
 import org.dcache.xdr.model.itf.GenItfOncRpcSvcBuilder;
 import org.dcache.xdr.model.itf.GenItfRpcCall;
 import org.dcache.xdr.model.itf.GenItfXdrTransport;
-import org.dcache.xdr.model.itf.GenXdrTransport;
 import org.libvirt.GenItfVirtRpcCall;
 import org.libvirt.GenVirOncRpcSvc;
 import org.libvirt.GenVirOncRpcSvcBuilder;

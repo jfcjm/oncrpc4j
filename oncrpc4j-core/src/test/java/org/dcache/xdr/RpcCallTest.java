@@ -25,7 +25,7 @@ import static org.junit.Assert.*;
 public class RpcCallTest {
 
     private Xdr _xdr = new XdrBuffer(1024);
-    private RpcCall _call = new RpcCall(0, _xdr, null);
+    private GenRpcCall _call = new GenRpcCall(0, _xdr, null);
 
     @Test(expected=RpcMismatchReply.class)
     public void testBadRpcVerion() throws Exception {

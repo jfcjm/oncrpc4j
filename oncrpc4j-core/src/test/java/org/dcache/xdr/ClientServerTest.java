@@ -3,6 +3,12 @@ package org.dcache.xdr;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.channels.CompletionHandler;
+
+import org.dcache.xdr.model.itf.GenItfRpcCall;
+import org.dcache.xdr.model.itf.GenItfRpcReply;
+import org.dcache.xdr.model.itf.GenItfRpcSvc;
+import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.itf.GenOncRpcDispatchable;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,15 +26,14 @@ public class ClientServerTest {
     private static final int ECHO = 1;
     private static final int UPPER = 2;
     private static final int SHUTDOWN = 3;
-
-    private OncRpcSvc svc;
-    private OncRpcSvc clnt;
-    private RpcCall clntCall;
+    private GenOncRpcSvc svc;
+    private GenItfRpcSvc<GenOncRpcSvc> clnt;
+    private GenItfRpcCall<GenOncRpcSvc> clntCall;
 
     @Before
     public void setUp() throws IOException {
 
-        RpcDispatchable echo = (RpcCall call) -> {
+        GenOncRpcDispatchable echo = (call) -> {
             switch (call.getProcedure()) {
 
                 case ECHO: {
@@ -38,7 +43,7 @@ public class ClientServerTest {
                     break;
                 }
                 case UPPER: {
-                    RpcCall cb = new RpcCall(PROGNUM, PROGVER, new RpcAuthTypeNone(), call.getTransport());
+                    GenRpcCall cb = new GenRpcCall(PROGNUM, PROGVER, new RpcAuthTypeNone(), call.getTransport());
                     XdrString s = new XdrString();
                     call.retrieveCall(s);
                     cb.call(ECHO, s, s);
@@ -51,14 +56,14 @@ public class ClientServerTest {
             }
         };
 
-        RpcDispatchable upper = (RpcCall call) -> {
+        GenOncRpcDispatchable upper = ( call) -> {
             XdrString s = new XdrString();
             call.retrieveCall(s);
             XdrString u = new XdrString(s.stringValue().toUpperCase());
             call.reply(u);
         };
 
-        svc = new OncRpcSvcBuilder()
+        svc = new GenOncRpcSvcBuilder()
                 .withoutAutoPublish()
                 .withTCP()
                 .withWorkerThreadIoStrategy()
@@ -66,7 +71,7 @@ public class ClientServerTest {
                 .build();
         svc.start();
 
-        clnt = new OncRpcSvcBuilder()
+        clnt = new GenOncRpcSvcBuilder()
                 .withoutAutoPublish()
                 .withTCP()
                 .withClientMode()
@@ -74,8 +79,8 @@ public class ClientServerTest {
                 .withRpcService(new OncRpcProgram(PROGNUM, PROGVER), upper)
                 .build();
         clnt.start();
-        XdrTransport t = clnt.connect(svc.getInetSocketAddress(IpProtocolType.TCP));
-        clntCall = new RpcCall(PROGNUM, PROGVER, new RpcAuthTypeNone(), t);
+           GenItfXdrTransport<GenOncRpcSvc> t = clnt.connect(svc.getInetSocketAddress(IpProtocolType.TCP));
+         clntCall = new GenRpcCall(PROGNUM, PROGVER, new RpcAuthTypeNone(), t);
     }
 
     @After
@@ -118,7 +123,7 @@ public class ClientServerTest {
             // ignore disconnect error
         }
 
-        clntCall.call(ECHO, s, (CompletionHandler) null);
+        clntCall.call(ECHO, s, (CompletionHandler<GenItfRpcReply<GenOncRpcSvc>, GenItfXdrTransport<GenOncRpcSvc>>) null);
     }
 
     @Test(expected = EOFException.class, timeout = 5000)
@@ -131,7 +136,7 @@ public class ClientServerTest {
     @Test
     public void shouldTriggerClientCallbackEvenIfOtherClientDisconnected() throws IOException {
 
-        OncRpcSvc clnt2 = new OncRpcSvcBuilder()
+        GenOncRpcSvc clnt2 = new GenOncRpcSvcBuilder()
                 .withTCP()
                 .withClientMode()
                 .withWorkerThreadIoStrategy()

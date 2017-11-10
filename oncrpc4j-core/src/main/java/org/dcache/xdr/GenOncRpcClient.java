@@ -54,10 +54,15 @@ public class GenOncRpcClient extends GenAbstractOncRpcClient<GenOncRpcSvc> {
     public GenOncRpcClient(InetSocketAddress socketAddress, int protocol, int localPort, IoStrategy ioStrategy, String serviceName) {
         super(socketAddress,protocol,localPort,ioStrategy,serviceName);
     }
-
+    
     @Override
-    protected GenItfOncRpcSvcBuilder<GenOncRpcSvc> getOncRpcSvcBuilder() {
-        return new GenOncRpcSvcBuilder();
+    protected GenItfOncRpcSvcBuilder<GenOncRpcSvc> getRpcSvcBuilder() {
+        return new GenOncRpcSvcBuilder().withTCP().withUDP();
+    }
+    
+    @Override
+    protected GenItfOncRpcSvcBuilder<GenOncRpcSvc> getRpcSvcBuilder(int protocol) {
+        return new GenOncRpcSvcBuilder().withIpProtocolType(protocol);
     }
     @Override
     public  GenXdrTransport<GenOncRpcSvc> connect() throws IOException {

@@ -19,8 +19,7 @@
 package org.dcache.libvirt;
 
 import org.junit.Test;
-import org.libvirt.VirRpcCall;
-
+import org.libvirt.GenVirRpcCall;
 import org.dcache.xdr.BadXdrOncRpcException;
 import org.dcache.xdr.Xdr;
 import org.dcache.xdr.XdrBuffer;
@@ -28,7 +27,7 @@ import org.dcache.xdr.XdrBuffer;
 public class RpcCallTest {
 
     private Xdr _xdr = new XdrBuffer(1024);
-    private VirRpcCall _call = new VirRpcCall(0, _xdr, null);
+    private GenVirRpcCall _call = new GenVirRpcCall(0, _xdr, null);
 
     @Test(expected=BadXdrOncRpcException.class)
     public void testIncomplete1() throws Exception {

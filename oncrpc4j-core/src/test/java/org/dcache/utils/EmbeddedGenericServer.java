@@ -17,7 +17,6 @@ import org.dcache.xdr.model.itf.GenItfRpcCall;
 import org.dcache.xdr.model.itf.GenItfRpcSvc;
 import org.dcache.xdr.model.itf.GenItfXdrTransport;
 import org.dcache.xdr.model.itf.GenRpcDispatchable;
-import org.dcache.xdr.model.itf.GenXdrTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,13 +76,11 @@ public abstract class EmbeddedGenericServer<SVC_T extends GenItfRpcSvc<SVC_T>>
     public EmbeddedGenericServer(int port) throws IOException {
 
         add(0,(GenItfRpcCall<SVC_T> call)-> call.reply(XdrVoid.XDR_VOID));
-        svc = createOncSvcBuilder()
-                .withTCP()
+        GenItfOncRpcSvcBuilder<SVC_T> builder = createOncSvcBuilder()
                 .withPort(port)
                 .withWorkerThreadIoStrategy()
-                .withoutAutoPublish()
-                .withRpcService(new OncRpcProgram(PROGNUM, PROGVER), fakeSrvActions)
-                .build();
+                .withRpcService(new OncRpcProgram(PROGNUM, PROGVER), fakeSrvActions);
+        svc = builder.build();
         System.out.println(svc.getClass());
         svc.start();
     }
@@ -111,9 +108,7 @@ public abstract class EmbeddedGenericServer<SVC_T extends GenItfRpcSvc<SVC_T>>
 
     private GenItfRpcCall<SVC_T> createClient(int prognum, int progver) throws IOException {
         client = createOncSvcBuilder()
-                .withTCP()
                 .withClientMode()
-                .withAutoPublish()
                 .withWorkerThreadIoStrategy()
                 .build();
         client.start();

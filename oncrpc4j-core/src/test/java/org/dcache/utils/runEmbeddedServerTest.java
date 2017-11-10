@@ -7,7 +7,7 @@ import java.io.IOException;
 import org.dcache.xdr.XdrInt;
 import org.dcache.xdr.XdrVoid;
 import org.junit.Test;
-import org.libvirt.VirRpcCall;
+import org.libvirt.GenVirRpcCall;
 import org.libvirt.VirRpcRejectedException;
 
 public class runEmbeddedServerTest {
@@ -17,7 +17,7 @@ public class runEmbeddedServerTest {
         try ( EmbeddedVirtServer srv = new EmbeddedVirtServer(0)){
             assertTrue("Server should listen on a port != 0",srv.getListeningPort()>0);
             System.out.println(srv.getListeningPort());
-            VirRpcCall caller = srv.getClientCall();
+            GenVirRpcCall caller = srv.getClientCall();
             int procNumber = srv.getUnavailableProc();
             System.out.println(procNumber);
             caller.call(procNumber,XdrVoid.XDR_VOID,new XdrInt());
@@ -31,7 +31,7 @@ public class runEmbeddedServerTest {
         try ( EmbeddedVirtServer srv = new EmbeddedVirtServer(0)){
             assertTrue("Server should listen on a port != 0",srv.getListeningPort()>0);
             System.out.println(srv.getListeningPort());
-            VirRpcCall caller = srv.getBadVersionClientCall();
+            GenVirRpcCall caller = srv.getBadVersionClientCall();
             
             
             int procNumber = srv.getAnyProc();
@@ -47,7 +47,7 @@ public class runEmbeddedServerTest {
         try ( EmbeddedVirtServer srv = new EmbeddedVirtServer(0)){
             assertTrue("Server should listen on a port != 0",srv.getListeningPort()>0);
             System.out.println(srv.getListeningPort());
-            VirRpcCall caller = srv.getBadProgClientCall();
+            GenVirRpcCall caller = srv.getBadProgClientCall();
             
             
             int procNumber = srv.getAnyProc();

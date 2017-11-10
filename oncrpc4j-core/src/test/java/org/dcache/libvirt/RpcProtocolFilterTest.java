@@ -21,15 +21,15 @@ package org.dcache.libvirt;
 import java.io.IOException;
 
 import org.dcache.xdr.BadXdrOncRpcException;
-import org.dcache.xdr.ReplyQueue;
 import org.dcache.xdr.Xdr;
+import org.dcache.xdr.model.impl.GenReplyQueue;
 import org.glassfish.grizzly.Connection;
 import org.glassfish.grizzly.filterchain.Filter;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.junit.Before;
 import org.junit.Test;
+import org.libvirt.GenVirRpcProtocolFilter;
 import org.libvirt.VirRpcMessage;
-import org.libvirt.VirRpcProtocolFilter;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
@@ -46,7 +46,7 @@ public class RpcProtocolFilterTest {
 
     @Before
     public void setUp() {
-        filter = new VirRpcProtocolFilter( new ReplyQueue());
+        filter = new GenVirRpcProtocolFilter( new GenReplyQueue());
         mockedContext = FilterChainContext.create(mock(Connection.class));
     }
 

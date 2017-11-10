@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 import org.dcache.xdr.IoStrategy;
 import org.dcache.xdr.model.itf.GenItfOncRpcClient;
@@ -38,10 +39,9 @@ public abstract class GenAbstractOncRpcClient<SVC_T extends GenItfRpcSvc<SVC_T>>
     
     public GenAbstractOncRpcClient(InetSocketAddress socketAddress, int protocol, int localPort, IoStrategy ioStrategy, String serviceName) {
         _socketAddress = socketAddress;
-        _rpcsvc = getOncRpcSvcBuilder()
+        _rpcsvc = getRpcSvcBuilder(protocol)
                 .withClientMode()
                 .withPort(localPort)
-                .withIpProtocolType(protocol)
                 .withIoStrategy(ioStrategy)
                 .withServiceName(serviceName)
                 .build();
@@ -51,8 +51,8 @@ public abstract class GenAbstractOncRpcClient<SVC_T extends GenItfRpcSvc<SVC_T>>
 
 
 
-    abstract protected GenItfOncRpcSvcBuilder<SVC_T> getOncRpcSvcBuilder() ;
-
+    abstract protected GenItfOncRpcSvcBuilder<SVC_T> getRpcSvcBuilder(int protocol) ;
+    abstract protected GenItfOncRpcSvcBuilder<SVC_T> getRpcSvcBuilder() ;
     @Override
     public GenItfXdrTransport<SVC_T> connect() throws IOException {
         return connect(Long.MAX_VALUE, TimeUnit.MILLISECONDS);

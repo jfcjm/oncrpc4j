@@ -34,24 +34,25 @@ import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslServer;
 
+import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.OncRpcProgram;
-import org.dcache.xdr.OncRpcSvc;
-import org.dcache.xdr.RpcCall;
-import org.dcache.xdr.RpcDispatchable;
 import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrDecodingStream;
 import org.dcache.xdr.XdrEncodingStream;
 import org.dcache.xdr.XdrInt;
 import org.dcache.xdr.XdrString;
 import org.dcache.xdr.XdrVoid;
+import org.dcache.xdr.model.itf.GenItfRpcSvc;
+import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.itf.GenRpcDispatchable;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.libvirt.GenVirOncRpcSvcBuilder;
+import org.libvirt.GenVirOncRpcSvc;
+import org.libvirt.GenVirRpcCall;
 import org.libvirt.SASLPacketWrapper;
-import org.libvirt.VirOncRpcSvc;
-import org.libvirt.VirOncRpcSvcBuilder;
-import org.libvirt.VirRpcCall;
 
 import static org.junit.Assert.*;
 
@@ -67,9 +68,10 @@ public class ServerIntegrationWithSASL {
 
     private static final int PROGNUM = 536903814;
     private static final int PROGVER = 1;
+    private GenItfRpcSvc svc;
+    private GenItfRpcSvc clnt;
 
-    private OncRpcSvc svc;
-    private OncRpcSvc clnt;
+    
     @Before
     public void setUp() throws IOException {
 
@@ -106,9 +108,9 @@ public class ServerIntegrationWithSASL {
         props.put(Sasl.QOP,"auth-conf");
         SaslServer saslSrv = Sasl.createSaslServer("DIGEST-MD5", "libvirt", "localhost", props, cbh);
         
-        RpcDispatchable fakeLibvirtd = (RpcCall aCall) -> {
-            assertTrue(aCall instanceof VirRpcCall);
-            VirRpcCall call = (VirRpcCall) aCall;
+        GenRpcDispatchable fakeLibvirtd = ( aCall) -> {
+            assertTrue(aCall instanceof GenVirRpcCall);
+            GenVirRpcCall call =  (GenVirRpcCall) aCall;
             call.getXdr().asBuffer().mark();
             call.getXdr().asBuffer().reset();
             
@@ -259,7 +261,7 @@ public class ServerIntegrationWithSASL {
                         }
                         
                     };
-                    ((VirOncRpcSvc) svc).setPacketWrapperAfterNextWrite(new SASLPacketWrapper(saslSrv));
+                    ((GenVirOncRpcSvc) svc).setPacketWrapperAfterNextWrite(new SASLPacketWrapper(saslSrv));
                     call.reply(res);
                     break;
                 }
@@ -268,14 +270,14 @@ public class ServerIntegrationWithSASL {
             }
         };
 
-        RpcDispatchable upper = (RpcCall call) -> {
+        GenRpcDispatchable upper = ( call) -> {
             XdrString s = new XdrString();
             call.retrieveCall(s);
             XdrString u = new XdrString(s.stringValue().toUpperCase());
             call.reply(u);
         };
 
-        svc = new VirOncRpcSvcBuilder()
+        svc = new GenVirOncRpcSvcBuilder()
                 .withTCP()
                 .withPort(20000)
                 .withWorkerThreadIoStrategy()
@@ -283,16 +285,16 @@ public class ServerIntegrationWithSASL {
                 .build();
         svc.start();
         
-        /*
-        clnt = new VirOncRpcSvcBuilder()
+        
+        clnt = new GenVirOncRpcSvcBuilder()
                 .withTCP()
                 .withClientMode()
                 .withWorkerThreadIoStrategy()
                 .withRpcService(new OncRpcProgram(PROGNUM, PROGVER), upper)
                 .build();
         clnt.start();
-        XdrTransport t = clnt.connect(svc.getInetSocketAddress(IpProtocolType.TCP));
-        */
+          GenItfXdrTransport t = clnt.connect(svc.getInetSocketAddress(IpProtocolType.TCP));
+        
     }
 
     @After

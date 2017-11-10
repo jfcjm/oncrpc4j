@@ -21,23 +21,17 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import org.dcache.xdr.OncRpcSvc;
 import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrInt;
 import org.dcache.xdr.XdrLong;
-import org.dcache.xdr.XdrTransport;
 import org.dcache.xdr.XdrVoid;
+import org.dcache.xdr.model.itf.GenItfXdrTransport;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.experimental.categories.Categories;
-import org.junit.experimental.categories.Categories.ExcludeCategory;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite.SuiteClasses;
-import org.libvirt.VirOncRpcSvcBuilder;
-import org.libvirt.VirRpcCall;
-import org.libvirt.VirRpcRejectedException;
+import org.libvirt.GenVirOncRpcSvc;
+import org.libvirt.GenVirOncRpcSvcBuilder;
+import org.libvirt.GenVirRpcCall;
 /**
  * 
  * Basic tests agains a running libvirtd.
@@ -57,19 +51,19 @@ public class ClientIntegrationBaseTest {
     
     private static final int PROGNUM            = 536903814;
     private static final int PROGVER            = 1;
-    private VirRpcCall clntCall;
+    private GenVirRpcCall clntCall;
 
     @Before
     public void prepare() throws IOException {
-        OncRpcSvc clnt = new VirOncRpcSvcBuilder()
+        GenVirOncRpcSvc clnt = new GenVirOncRpcSvcBuilder()
                 .withTCP()
                 .withClientMode()
                 .withWorkerThreadIoStrategy()
                 .build();
         clnt.start();
         InetSocketAddress inetAddress = new InetSocketAddress(LIBVIRT_HOST, LIBVIRT_PORT);
-        XdrTransport t = clnt.connect(inetAddress);
-        clntCall = new VirRpcCall(PROGNUM, PROGVER, null, t);
+         GenItfXdrTransport<GenVirOncRpcSvc> t = clnt.connect(inetAddress);
+        clntCall = new GenVirRpcCall(PROGNUM, PROGVER, null, t);
         
         
     }

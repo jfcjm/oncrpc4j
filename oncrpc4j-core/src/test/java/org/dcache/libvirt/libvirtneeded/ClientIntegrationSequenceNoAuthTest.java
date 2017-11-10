@@ -24,19 +24,21 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 import org.dcache.xdr.OncRpcException;
-import org.dcache.xdr.OncRpcSvc;
+import org.dcache.xdr.GenOncRpcSvc;
 import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrDecodingStream;
 import org.dcache.xdr.XdrEncodingStream;
 import org.dcache.xdr.XdrInt;
 import org.dcache.xdr.XdrString;
-import org.dcache.xdr.XdrTransport;
 import org.dcache.xdr.XdrVoid;
+import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.root.GenAbstractOncRpcSvc;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.libvirt.VirOncRpcSvcBuilder;
-import org.libvirt.VirRpcCall;
+import org.libvirt.GenVirOncRpcSvc;
+import org.libvirt.GenVirOncRpcSvcBuilder;
+import org.libvirt.GenVirRpcCall;
 
 import tests.credentials.TestCredentials4Libvirt;
 
@@ -74,18 +76,17 @@ public class ClientIntegrationSequenceNoAuthTest {
     
     private static final int PROGNUM = 536903814;
     private static final int PROGVER = 1;
-    private VirRpcCall clntCall;
-    private OncRpcSvc clnt;
-    private XdrTransport t;
+    private GenAbstractOncRpcSvc<GenVirOncRpcSvc> clnt;
+    private GenVirRpcCall clntCall;
 
     @Before
 
     public void prepare() throws IOException {
-        clnt = new VirOncRpcSvcBuilder().withTCP().withClientMode().withWorkerThreadIoStrategy().build();
+        clnt = new GenVirOncRpcSvcBuilder().withTCP().withClientMode().withWorkerThreadIoStrategy().build();
         clnt.start();
         InetSocketAddress inetAddress = new InetSocketAddress(TARGET_HOST, 16509);
-        t = clnt.connect(inetAddress);
-        clntCall = new VirRpcCall(PROGNUM, PROGVER, null, t);
+        GenItfXdrTransport<GenVirOncRpcSvc> t = clnt.connect(inetAddress);
+        clntCall = new GenVirRpcCall(PROGNUM, PROGVER, null, t);
     }
 
     @Test(timeout=3000)

@@ -19,27 +19,26 @@
 
 package org.dcache.libvirt;
 
-import java.io.DataInputStream;
 import java.io.IOException;
 
 import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.OncRpcProgram;
-import org.dcache.xdr.OncRpcSvc;
-import org.dcache.xdr.RpcCall;
-import org.dcache.xdr.RpcDispatchable;
 import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrDecodingStream;
 import org.dcache.xdr.XdrEncodingStream;
 import org.dcache.xdr.XdrInt;
 import org.dcache.xdr.XdrString;
-import org.dcache.xdr.XdrTransport;
 import org.dcache.xdr.XdrVoid;
+import org.dcache.xdr.model.itf.GenItfRpcSvc;
+import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.itf.GenRpcDispatchable;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.libvirt.VirOncRpcSvcBuilder;
-import org.libvirt.VirRpcCall;
+import org.libvirt.GenVirOncRpcSvc;
+import org.libvirt.GenVirOncRpcSvcBuilder;
+import org.libvirt.GenVirRpcCall;
 
 import static org.junit.Assert.*;
 
@@ -52,16 +51,16 @@ public class ClientServerLibvirtInteractions {
     private static final int PROGNUM = 536903814;
     private static final int PROGVER = 1;
 
-    private OncRpcSvc svc;
-    private OncRpcSvc clnt;
-    private VirRpcCall clntCall;
+    private GenItfRpcSvc svc;
+    private GenVirOncRpcSvc clnt;
+    private GenVirRpcCall clntCall;
 
     @Before
     public void setUp() throws IOException {
 
-        RpcDispatchable fakeLibvirtd = (RpcCall aCall) -> {
-            assertTrue(aCall instanceof VirRpcCall);
-            VirRpcCall call = (VirRpcCall) aCall;
+        GenRpcDispatchable fakeLibvirtd = (aCall) -> {
+            assertTrue(aCall instanceof GenVirRpcCall);
+            GenVirRpcCall call = (GenVirRpcCall) aCall;
             call.getXdr().asBuffer().mark();
             call.getXdr().asBuffer().reset();
             
@@ -121,7 +120,7 @@ public class ClientServerLibvirtInteractions {
             }
         };
 
-        svc = new VirOncRpcSvcBuilder()
+        svc = new GenVirOncRpcSvcBuilder()
                 .withTCP()
                 .withPort(20000)
                 .withWorkerThreadIoStrategy()
@@ -130,14 +129,14 @@ public class ClientServerLibvirtInteractions {
         svc.start();
         
        
-        clnt = new VirOncRpcSvcBuilder()
+        clnt = new GenVirOncRpcSvcBuilder()
                 .withTCP()
                 .withClientMode()
                 .withWorkerThreadIoStrategy()
                 .build();
         clnt.start();
-        XdrTransport t = clnt.connect(svc.getInetSocketAddress(IpProtocolType.TCP));
-        clntCall = new VirRpcCall(PROGNUM, PROGVER, null, t);
+         GenItfXdrTransport<GenVirOncRpcSvc> t = clnt.connect(svc.getInetSocketAddress(IpProtocolType.TCP));
+        clntCall = new GenVirRpcCall(PROGNUM, PROGVER, null, t);
     }
 
     @After
