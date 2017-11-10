@@ -17,10 +17,20 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.xdr;
+package deprecatedclasses.oncrpc;
 
 import java.io.IOException;
 
+import org.dcache.xdr.BadXdrOncRpcException;
+import org.dcache.xdr.MismatchInfo;
+import org.dcache.xdr.OncRpcException;
+import org.dcache.xdr.RpcAccepsStatus;
+import org.dcache.xdr.RpcAuthStat;
+import org.dcache.xdr.RpcAuthVerifier;
+import org.dcache.xdr.RpcRejectStatus;
+import org.dcache.xdr.RpcReplyStatus;
+import org.dcache.xdr.Xdr;
+import org.dcache.xdr.XdrAble;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 @Deprecated

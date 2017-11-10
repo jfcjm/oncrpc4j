@@ -17,10 +17,12 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.xdr;
+package deprecatedclasses.oncrpc;
 
 import java.net.InetSocketAddress;
 import java.nio.channels.CompletionHandler;
+
+import org.dcache.xdr.Xdr;
 
 /**
  *

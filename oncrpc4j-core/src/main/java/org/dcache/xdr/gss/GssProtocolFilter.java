@@ -20,6 +20,9 @@
 package org.dcache.xdr.gss;
 
 import com.google.common.primitives.Ints;
+
+import deprecatedclasses.oncrpc.RpcCall;
+
 import java.io.IOException;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -30,7 +33,6 @@ import org.dcache.xdr.RpcAuthError;
 import org.dcache.xdr.RpcAuthStat;
 import org.dcache.xdr.RpcAuthType;
 import org.dcache.xdr.RpcAuthVerifier;
-import org.dcache.xdr.RpcCall;
 import org.dcache.xdr.RpcException;
 import org.dcache.xdr.RpcRejectStatus;
 import org.glassfish.grizzly.Buffer;

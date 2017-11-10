@@ -16,18 +16,20 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  ******************************************************************************/
 
-package org.libvirt;
+package deprecatedclasses.libvirt;
 
 import java.io.IOException;
 
 import org.dcache.xdr.BadXdrOncRpcException;
 import org.dcache.xdr.OncRpcException;
-import org.dcache.xdr.RpcReply;
 import org.dcache.xdr.RpcReplyStatus;
 import org.dcache.xdr.Xdr;
-import org.dcache.xdr.XdrTransport;
+import org.libvirt.remote_error;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import deprecatedclasses.oncrpc.RpcReply;
+import deprecatedclasses.oncrpc.XdrTransport;
 @Deprecated
 public class VirRpcReply extends RpcReply{
 

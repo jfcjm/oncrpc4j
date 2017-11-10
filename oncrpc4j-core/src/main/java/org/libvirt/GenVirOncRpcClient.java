@@ -26,6 +26,7 @@ import org.dcache.xdr.model.itf.GenItfOncRpcSvcBuilder;
 import org.dcache.xdr.model.root.GenAbstractOncRpcClient;
 
 
+
 /**
  * 
  * AU contraire de OncRpcClient, les constructeurs ne nécessitent pas l'utilisation
@@ -45,7 +46,7 @@ public class GenVirOncRpcClient extends GenAbstractOncRpcClient<GenVirOncRpcSvc>
        super(new InetSocketAddress(host,port),libvirtTransportProtocol,localPort,ioStrategy,serviceName);
     }
     public synchronized void setPacketWrapper(SASLPacketWrapper sc) throws OncRpcException {
-        ((VirOncRpcSvc) _rpcsvc).setPacketWrapper(sc);
+        ((GenVirOncRpcSvc) _rpcsvc).setPacketWrapper(sc);
     }
     @Override
     protected GenItfOncRpcSvcBuilder<GenVirOncRpcSvc> getRpcSvcBuilder() {

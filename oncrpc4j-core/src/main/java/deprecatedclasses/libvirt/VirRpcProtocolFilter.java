@@ -1,66 +1,79 @@
-/*
- * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
- * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
- *
- * This library is free software; you can redistribute it and/or modify
- * it under the terms of the GNU Library General Public License as
- * published by the Free Software Foundation; either version 2 of the
- * License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Library General Public License for more details.
- *
- * You should have received a copy of the GNU Library General Public
- * License along with this program (see the file COPYING.LIB for more
- * details); if not, write to the Free Software Foundation, Inc.,
- * 675 Mass Ave, Cambridge, MA 02139, USA.
- */
-package org.dcache.xdr;
+/*//*******************************************************************************
+ * Copyright (C) 2017 INU Champollion, Albi, France
+ * 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or (at
+ * your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
+ * General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ ******************************************************************************/
+
+package deprecatedclasses.libvirt;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.CompletionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import deprecatedclasses.oncrpc.GrizzlyXdrTransport;
+import deprecatedclasses.oncrpc.ReplyQueue;
+import deprecatedclasses.oncrpc.RpcProtocolFilter;
+import deprecatedclasses.oncrpc.RpcReply;
+import deprecatedclasses.oncrpc.XdrTransport;
+
+import org.dcache.xdr.OncRpcException;
+import org.dcache.xdr.RpcAccepsStatus;
+import org.dcache.xdr.RpcException;
+import org.dcache.xdr.RpcMessageType;
+import org.dcache.xdr.Xdr;
 import org.dcache.xdr.model.root.RpcMessage;
-import org.glassfish.grizzly.filterchain.BaseFilter;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.filterchain.NextAction;
+import org.libvirt.VirRpcAcceptedException;
+import org.libvirt.VirRpcMessage;
+import org.libvirt.VirRpcRejectedException;
 @Deprecated
-public class RpcProtocolFilter extends BaseFilter {
+public class VirRpcProtocolFilter extends RpcProtocolFilter {
 
-    private final static Logger _log = LoggerFactory.getLogger(RpcProtocolFilter.class);
-    protected final ReplyQueue _replyQueue;
+    private final static Logger _log = LoggerFactory.getLogger(VirRpcProtocolFilter.class);
 
-    public RpcProtocolFilter(ReplyQueue replyQueue) {
-        _replyQueue = replyQueue;
+    public VirRpcProtocolFilter(ReplyQueue replyQueue) {
+        super(replyQueue);
     }
 
     @Override
     public NextAction handleRead(FilterChainContext ctx) throws IOException {
+        _log.debug("VirRpcProtocolFilter handle read");
 
         Xdr xdr = ctx.getMessage();
+        _log.debug("Got an xdr message");
         if (xdr == null) {
-            _log.error("Parser returns bad XDR");
+            _log.error("Xdr message should not be null");
             return ctx.getStopAction();
         }
 
         xdr.beginDecoding();
-
-        RpcMessage message = new RpcMessage(xdr);
+        RpcMessage message = new VirRpcMessage(xdr);
+        _log.debug("created a new VirRpcMessage message {},{} " + message.type(),message.xid());
         /**
          * In case of UDP grizzly does not populates connection with correct destination address.
          * We have to get peer address from the request context, which will contain SocketAddress where from
          * request was coming.
          */
         XdrTransport transport = new GrizzlyXdrTransport(ctx.getConnection(), (InetSocketAddress)ctx.getAddress(), _replyQueue);
-
         switch (message.type()) {
             case RpcMessageType.CALL:
             	_log.debug("Received a CALL message");
-                RpcCall call = new RpcCall(message.xid(), xdr, transport);
+                VirRpcCall call = new VirRpcCall(message.xid(), xdr, transport);
                 try {
                     call.accept();
                     ctx.setMessage(call);
@@ -77,17 +90,17 @@ public class RpcProtocolFilter extends BaseFilter {
             case RpcMessageType.REPLY:
             	_log.debug("Received a Reply message with xid {}",message.xid());
                 try {
-                    RpcReply reply = new RpcReply(message.xid(), xdr, transport);
+                    VirRpcReply reply = new VirRpcReply(message.xid(), xdr, transport);
                     _log.debug("Rpc reply is {}",reply);
                     CompletionHandler<RpcReply, XdrTransport> callback = _replyQueue.get(message.xid());
                     if (callback != null) {
-                    	_log.debug("Processing callback");
+                    	_log.debug("Processing callback" + callback);
                         if (!reply.isAccepted()) {
-                        	_log.debug("Reply is not accepted");
-                            callback.failed(new OncRpcRejectedException(reply.getRejectStatus()), transport);
+                        	_log.warn("Reply is not accepted"+reply);
+                            callback.failed(new VirRpcRejectedException(reply.getError()), transport);
                         } else if (reply.getAcceptStatus() != RpcAccepsStatus.SUCCESS) {
-                        	_log.debug("Accept status failed");
-                            callback.failed(new OncRpcAcceptedException(reply.getAcceptStatus()), transport);
+                        	_log.warn("Accept status failed");
+                            callback.failed(new VirRpcAcceptedException(reply.getAcceptStatus()), transport);
                         } else {
                         	_log.debug("Callback completed");
                             callback.completed(reply, transport);
@@ -101,6 +114,7 @@ public class RpcProtocolFilter extends BaseFilter {
                 return ctx.getStopAction();
             default:
                 // bad XDR
+                _log.warn("unknown message.type" + message.type());
                 return ctx.getStopAction();
         }
     }

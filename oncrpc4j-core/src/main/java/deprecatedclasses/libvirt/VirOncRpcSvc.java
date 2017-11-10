@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
- ******************************************************************************/package org.libvirt;
+ ******************************************************************************/package deprecatedclasses.libvirt;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -22,15 +22,18 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.dcache.xdr.OncRpcException;
-import org.dcache.xdr.OncRpcSvc;
-import org.dcache.xdr.ReplyQueue;
-import org.dcache.xdr.RpcProtocolFilter;
 import org.glassfish.grizzly.Transport;
 import org.glassfish.grizzly.filterchain.Filter;
 import org.glassfish.grizzly.filterchain.FilterChainBuilder;
 import org.glassfish.grizzly.nio.transport.TCPNIOTransport;
+import org.libvirt.PacketWrapperFilter;
+import org.libvirt.SASLPacketWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import deprecatedclasses.oncrpc.OncRpcSvc;
+import deprecatedclasses.oncrpc.ReplyQueue;
+import deprecatedclasses.oncrpc.RpcProtocolFilter;
 @Deprecated
 public class VirOncRpcSvc extends OncRpcSvc {
     private final static Logger _log = LoggerFactory.getLogger(VirOncRpcSvc.class);

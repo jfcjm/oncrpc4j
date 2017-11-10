@@ -17,12 +17,14 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.xdr;
+package deprecatedclasses.oncrpc;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
+
+import org.dcache.xdr.IoStrategy;
 @Deprecated
 public class OncRpcClient implements AutoCloseable {
 

@@ -24,6 +24,9 @@ import org.ietf.jgss.GSSException;
 import org.ietf.jgss.MessageProp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import deprecatedclasses.oncrpc.RpcCall;
+
 import org.dcache.xdr.*;
 import org.glassfish.grizzly.Buffer;
 import org.ietf.jgss.GSSContext;

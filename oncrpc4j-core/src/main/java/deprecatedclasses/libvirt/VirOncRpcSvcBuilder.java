@@ -14,9 +14,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
- ******************************************************************************/package org.libvirt;
+ ******************************************************************************/package deprecatedclasses.libvirt;
 
-import org.dcache.xdr.OncRpcSvcBuilder;
+import deprecatedclasses.oncrpc.OncRpcSvcBuilder;
 @Deprecated
 public class VirOncRpcSvcBuilder extends OncRpcSvcBuilder {
 

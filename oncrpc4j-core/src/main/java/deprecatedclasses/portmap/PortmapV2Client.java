@@ -17,17 +17,23 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.xdr.portmap;
+package deprecatedclasses.portmap;
 
 import org.dcache.utils.net.InetSocketAddresses;
-import org.dcache.xdr.GenRpcCall;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.XdrBoolean;
 import org.dcache.xdr.XdrInt;
 import org.dcache.xdr.XdrVoid;
 import org.dcache.xdr.netid;
+import org.dcache.xdr.portmap.OncPortmapClient;
+import org.dcache.xdr.portmap.OncRpcPortmap;
+import org.dcache.xdr.portmap.mapping;
+import org.dcache.xdr.portmap.pmaplist;
+import org.dcache.xdr.portmap.rpcb;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import deprecatedclasses.oncrpc.RpcCall;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -36,13 +42,13 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class GenPortmapV2Client2 implements OncPortmapClient {
+public class PortmapV2Client implements OncPortmapClient {
 
-    private final static Logger _log = LoggerFactory.getLogger(GenPortmapV2Client2.class);
-    private final GenRpcCall _call;
+    private final static Logger _log = LoggerFactory.getLogger(PortmapV2Client.class);
+    private final RpcCall _call;
 
-    public GenPortmapV2Client2(GenRpcCall genRpcCall) {
-        _call = genRpcCall;
+    public PortmapV2Client(RpcCall call) {
+        _call = call;
     }
 
     public List<rpcb> dump() throws OncRpcException, IOException, TimeoutException {

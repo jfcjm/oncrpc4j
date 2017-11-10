@@ -28,10 +28,10 @@ import org.dcache.xdr.portmap.GenGenericPortmapClient;
 import org.dcache.xdr.portmap.GenOncRpcbindServer;
 import org.dcache.xdr.portmap.OncPortmapClient;
 import org.dcache.xdr.portmap.OncRpcPortmap;
-import org.dcache.xdr.portmap.OncRpcbindServer;
 import org.dcache.xdr.portmap.rpcb;
 import org.junit.After;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 @SuppressWarnings("deprecation")

@@ -17,7 +17,7 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.xdr.portmap;
+package deprecatedclasses.portmap;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,14 +28,21 @@ import java.util.ListIterator;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import deprecatedclasses.oncrpc.OncRpcSvc;
+import deprecatedclasses.oncrpc.OncRpcSvcBuilder;
+import deprecatedclasses.oncrpc.RpcCall;
+import deprecatedclasses.oncrpc.RpcDispatchable;
+
 import org.dcache.xdr.OncRpcException;
-import org.dcache.xdr.RpcCall;
-import org.dcache.xdr.RpcDispatchable;
-import org.dcache.xdr.OncRpcSvc;
 import org.dcache.xdr.OncRpcProgram;
-import org.dcache.xdr.OncRpcSvcBuilder;
 import org.dcache.xdr.XdrBoolean;
 import org.dcache.xdr.XdrVoid;
+import org.dcache.xdr.portmap.OncRpcPortmap;
+import org.dcache.xdr.portmap.Port;
+import org.dcache.xdr.portmap.mapping;
+import org.dcache.xdr.portmap.pmaplist;
+import org.dcache.xdr.portmap.rpcb;
 
 
 public class OncRpcbindServer implements RpcDispatchable {

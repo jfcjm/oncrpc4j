@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -17,106 +17,105 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.xdr.portmap;
+package deprecatedclasses.portmap;
 
-import org.dcache.utils.net.InetSocketAddresses;
 import org.dcache.xdr.OncRpcException;
-import org.dcache.xdr.RpcCall;
+import org.dcache.xdr.RpcAuth;
+import org.dcache.xdr.RpcAuthTypeNone;
 import org.dcache.xdr.XdrBoolean;
-import org.dcache.xdr.XdrInt;
+import org.dcache.xdr.XdrString;
 import org.dcache.xdr.XdrVoid;
-import org.dcache.xdr.netid;
+import org.dcache.xdr.portmap.OncPortmapClient;
+import org.dcache.xdr.portmap.OncRpcPortmap;
+import org.dcache.xdr.portmap.rpcb;
+import org.dcache.xdr.portmap.rpcb_list;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import deprecatedclasses.oncrpc.RpcCall;
+
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class PortmapV2Client implements OncPortmapClient {
+public class RpcbindV4Client implements OncPortmapClient {
 
-    private final static Logger _log = LoggerFactory.getLogger(PortmapV2Client.class);
+    private final static Logger _log = LoggerFactory.getLogger(RpcbindV4Client.class);
+
+    private final RpcAuth _auth = new RpcAuthTypeNone();
     private final RpcCall _call;
 
-    public PortmapV2Client(RpcCall call) {
+    public RpcbindV4Client(RpcCall call) {
         _call = call;
     }
 
-    public List<rpcb> dump() throws OncRpcException, IOException, TimeoutException {
-        _log.debug("portmap dump");
-        pmaplist list_reply = new pmaplist();
-        _call.call(OncRpcPortmap.PMAPPROC_DUMP, XdrVoid.XDR_VOID, list_reply);
-		List<rpcb> out = new LinkedList<>();
-		// walk entries and add to list
-		out.add( new rpcb(list_reply.getEntry() ) );
-		while( (list_reply = list_reply.getNext()) != null ) {
-			mapping c = list_reply.getEntry();
-			if ( c != null ) {
-				out.add( new rpcb(c) );
-			}
-		}
-		return out;
-    }
-
     public boolean ping() {
+
         _log.debug("portmap ping");
         boolean pong = false;
+
         try {
             _call.call(OncRpcPortmap.PMAPPROC_NULL, XdrVoid.XDR_VOID, XdrVoid.XDR_VOID, 2, TimeUnit.SECONDS);
             pong = true;
-        }catch (TimeoutException | IOException e) {}
+        }catch(IOException | TimeoutException e) {
+        }
 
         return pong;
     }
 
-    public boolean setPort(int program, int version, String netids, String addr, String owner)
+    public boolean setPort(int program, int version, String netid, String addr, String owner)
             throws OncRpcException, IOException, TimeoutException {
-        _log.debug("portmap set port: prog: {} vers: {}, netid: {} addr: {}, owner: {}",
-                new Object[]{program, version, netids, addr, owner});
 
-        int protocol = netid.idOf(netids);
-        if (protocol == -1) {
-            return false;
-        }
-        InetSocketAddress address = org.dcache.xdr.netid.toInetSocketAddress(addr);
-        mapping m1 = new mapping(program, version, protocol, address.getPort());
+        _log.debug("portmap set port: prog: {} vers: {}, netid: {} addr: {}, owner: {}",
+                new Object[] {program, version, netid, addr, owner});
+
+        rpcb m1 = new rpcb(program, version, netid, addr, owner);
 
         XdrBoolean isSet = new XdrBoolean();
-        _call.call(OncRpcPortmap.PMAPPROC_SET, m1, isSet);
-
+        _call.call(OncRpcPortmap.RPCBPROC_SET, m1, isSet);
         return isSet.booleanValue();
+
     }
 
     @Override
     public boolean unsetPort(int program, int version, String owner)
             throws OncRpcException, IOException, TimeoutException {
+
         _log.debug("portmap unset port: prog: {} vers: {}, owner: {}",
                 new Object[]{program, version, owner});
 
-        mapping m = new mapping(program, version, 0, -1);
+        rpcb m = new rpcb(program, version, "", "", owner);
 
         XdrBoolean isSet = new XdrBoolean();
-        _call.call(OncRpcPortmap.PMAPPROC_UNSET, m, isSet);
-
+        _call.call(OncRpcPortmap.RPCBPROC_UNSET, m, isSet);
         return isSet.booleanValue();
+
     }
 
     @Override
-    public String getPort(int program, int version, String nid)
+    public String getPort(int program, int version, String netid)
             throws OncRpcException, IOException, TimeoutException {
-
-        mapping m = new mapping(program, version, netid.idOf(nid), 0);
-        XdrInt port = new XdrInt();
-
-        _call.call(OncRpcPortmap.PMAPPROC_GETPORT, m, port);
-        return InetSocketAddresses.uaddrOf(_call.getTransport()
-                .getRemoteSocketAddress()
-                .getAddress()
-                .getHostAddress()
-            , port.intValue());
+        rpcb arg = new rpcb(program, version, netid, "", "");
+        XdrString xdrString = new XdrString();
+        _call.call(OncRpcPortmap.RPCBPROC_GETADDR, arg, xdrString);
+        return xdrString.stringValue();
     }
 
+    public List<rpcb> dump() throws OncRpcException, IOException, TimeoutException {
+        _log.debug("portmap dump");
+        rpcb_list rpcb_list_reply = new rpcb_list();
+        _call.call(OncRpcPortmap.RPCBPROC_DUMP, XdrVoid.XDR_VOID, rpcb_list_reply);
+		List<rpcb> out = new LinkedList<>();
+		// walk entries and add to list
+		out.add(rpcb_list_reply.getEntry());
+		while( (rpcb_list_reply=rpcb_list_reply.getNext()) != null ) {
+			rpcb c = rpcb_list_reply.getEntry();
+			if ( c != null ) {
+				out.add(c);
+			}
+		}
+		return out;
+    }
 }

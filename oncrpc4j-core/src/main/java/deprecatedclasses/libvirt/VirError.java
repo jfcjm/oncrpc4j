@@ -1,6 +1,8 @@
-package org.libvirt;
+package deprecatedclasses.libvirt;
 
 import org.dcache.xdr.XdrAble;
+import org.libvirt.remote_error;
+import org.libvirt.remote_string;
 import org.libvirt.types.remote_domain;
 import org.libvirt.types.remote_network;
 import org.libvirt.types.remote_nonnull_domain;

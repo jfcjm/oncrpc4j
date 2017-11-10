@@ -17,15 +17,18 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.xdr;
+package deprecatedclasses.oncrpc;
 
 import java.io.IOException;
+
+import org.dcache.xdr.OncRpcException;
 
 /**
  *
  * Interface for RPC servers
  *
  */
+@Deprecated
 public interface RpcDispatchable {
 
     public void dispatchOncRpcCall(RpcCall call)

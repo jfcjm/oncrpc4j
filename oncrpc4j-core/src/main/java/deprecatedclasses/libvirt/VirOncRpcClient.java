@@ -14,14 +14,16 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this library; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
- ******************************************************************************/package org.libvirt;
+ ******************************************************************************/package deprecatedclasses.libvirt;
 
 import java.net.InetAddress;
 import org.dcache.xdr.IoStrategy;
 import org.dcache.xdr.IpProtocolType;
-import org.dcache.xdr.OncRpcClient;
 import org.dcache.xdr.OncRpcException;
-import org.dcache.xdr.OncRpcSvcBuilder;
+import org.libvirt.SASLPacketWrapper;
+
+import deprecatedclasses.oncrpc.OncRpcClient;
+import deprecatedclasses.oncrpc.OncRpcSvcBuilder;
 
 
 /**

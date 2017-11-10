@@ -22,6 +22,8 @@ package org.dcache.xdr;
 import java.net.InetAddress;
 import java.util.concurrent.Future;
 
+import org.dcache.xdr.model.itf.GenXdrTransport;
+//TODO à génériser
 public class SimpleRpcClient {
 
     public static void main(String[] args) throws Exception {
@@ -34,11 +36,11 @@ public class SimpleRpcClient {
         InetAddress address = InetAddress.getByName(args[0]);
         int port = Integer.parseInt(args[1]);
 
-        OncRpcClient rpcClient = new OncRpcClient(address, IpProtocolType.TCP, port);
-        XdrTransport transport = rpcClient.connect();
+        GenOncRpcClient rpcClient = new GenOncRpcClient(address, IpProtocolType.TCP, port);
+        GenXdrTransport<GenOncRpcSvc> transport = rpcClient.connect();
         RpcAuth auth = new RpcAuthTypeNone();
 
-        RpcCall call = new RpcCall(100017, 1, auth, transport);
+        GenRpcCall call = new GenRpcCall(100017, 1, auth, transport);
 
         /*
          * call PROC_NULL (ping)

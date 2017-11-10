@@ -17,12 +17,17 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.xdr;
+package deprecatedclasses.oncrpc;
 
 import org.dcache.utils.net.InetSocketAddresses;
+import org.dcache.xdr.IoStrategy;
+import org.dcache.xdr.IpProtocolType;
+import org.dcache.xdr.OncRpcException;
+import org.dcache.xdr.OncRpcProgram;
+import org.dcache.xdr.RpcMessageParserUDP;
+import org.dcache.xdr.RpcProgUnavailable;
 import org.dcache.xdr.gss.GssProtocolFilter;
 import org.dcache.xdr.gss.GssSessionManager;
-import org.dcache.xdr.portmap.GenericPortmapClient;
 import org.dcache.xdr.portmap.OncPortmapClient;
 import org.dcache.xdr.portmap.OncRpcPortmap;
 import org.glassfish.grizzly.CloseType;
@@ -46,6 +51,8 @@ import org.glassfish.grizzly.strategies.SameThreadIOStrategy;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import deprecatedclasses.portmap.GenericPortmapClient;
 
 import java.io.IOException;
 import java.net.Inet6Address;

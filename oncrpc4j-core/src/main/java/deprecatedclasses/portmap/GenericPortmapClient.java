@@ -17,7 +17,7 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.xdr.portmap;
+package deprecatedclasses.portmap;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -26,17 +26,21 @@ import java.util.List;
 import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import deprecatedclasses.oncrpc.OncRpcClient;
+import deprecatedclasses.oncrpc.OncRpcSvc;
+import deprecatedclasses.oncrpc.OncRpcSvcBuilder;
+import deprecatedclasses.oncrpc.RpcCall;
+import deprecatedclasses.oncrpc.XdrTransport;
+
 import org.dcache.xdr.IpProtocolType;
-import org.dcache.xdr.OncRpcClient;
 import org.dcache.xdr.OncRpcException;
-import org.dcache.xdr.OncRpcSvc;
-import org.dcache.xdr.OncRpcSvcBuilder;
 import org.dcache.xdr.RpcAuth;
 import org.dcache.xdr.RpcAuthTypeNone;
-import org.dcache.xdr.RpcCall;
 import org.dcache.xdr.RpcProgUnavailable;
-import org.dcache.xdr.XdrTransport;
-
+import org.dcache.xdr.portmap.OncPortmapClient;
+import org.dcache.xdr.portmap.rpcb;
+@Deprecated
 public class GenericPortmapClient implements OncPortmapClient {
 
     private final static Logger _log = LoggerFactory.getLogger(GenericPortmapClient.class);

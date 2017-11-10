@@ -21,6 +21,9 @@ package org.dcache.xdr;
 
 import org.springframework.beans.factory.FactoryBean;
 
+import deprecatedclasses.oncrpc.OncRpcSvcBuilder;
+import deprecatedclasses.oncrpc.RpcDispatchable;
+
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 

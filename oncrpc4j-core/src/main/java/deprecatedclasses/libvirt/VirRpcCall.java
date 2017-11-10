@@ -16,26 +16,30 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  ******************************************************************************/
 
-package org.libvirt;
+package deprecatedclasses.libvirt;
 import java.io.EOFException;
 
 import org.dcache.xdr.OncRpcException;
-import org.dcache.xdr.ReplyQueue;
 import org.dcache.xdr.RpcAuth;
-import org.dcache.xdr.RpcCall;
 import org.dcache.xdr.RpcMessageType;
-import org.dcache.xdr.RpcReply;
 import org.dcache.xdr.RpcReplyStatus;
 import org.dcache.xdr.Xdr;
 import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrEncodingStream;
-import org.dcache.xdr.XdrTransport;
 import org.dcache.xdr.XdrVoid;
 import org.dcache.xdr.model.root.RpcMessage;
+import org.libvirt.VirRpcAcceptStatus;
+import org.libvirt.VirRpcException;
+import org.libvirt.VirRpcMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Throwables;
+
+import deprecatedclasses.oncrpc.ReplyQueue;
+import deprecatedclasses.oncrpc.RpcCall;
+import deprecatedclasses.oncrpc.RpcReply;
+import deprecatedclasses.oncrpc.XdrTransport;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;

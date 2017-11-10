@@ -17,9 +17,12 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.xdr;
+package deprecatedclasses.oncrpc;
 
 import com.google.common.util.concurrent.MoreExecutors;
+
+import org.dcache.xdr.IoStrategy;
+import org.dcache.xdr.OncRpcProgram;
 import org.dcache.xdr.gss.GssSessionManager;
 import org.glassfish.grizzly.threadpool.FixedThreadPool;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
