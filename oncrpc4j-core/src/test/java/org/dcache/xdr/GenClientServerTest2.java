@@ -134,7 +134,7 @@ public class GenClientServerTest2 {
     @Test
     public void shouldTriggerClientCallbackEvenIfOtherClientDisconnected() throws IOException {
 
-        OncRpcSvc clnt2 = new OncRpcSvcBuilder()
+        GenOncRpcSvc clnt2 = new GenOncRpcSvcBuilder()
                 .withTCP()
                 .withClientMode()
                 .withWorkerThreadIoStrategy()

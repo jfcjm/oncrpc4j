@@ -43,7 +43,7 @@ public class RpcProtocolFilterTest {
 
     @Before
     public void setUp() {
-        filter = new RpcProtocolFilter( new ReplyQueue());
+        filter = new GenRpcProtocolFilter( new ReplyQueue());
         mockedContext = FilterChainContext.create(mock(Connection.class));
     }
 

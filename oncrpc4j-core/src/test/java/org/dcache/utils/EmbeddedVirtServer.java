@@ -9,13 +9,16 @@ import java.util.Map;
 
 import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcProgram;
-import org.dcache.xdr.OncRpcSvc;
 import org.dcache.xdr.RpcCall;
+import org.dcache.xdr.GenOncRpcSvc;
+import org.dcache.xdr.GenRpcCall;
 import org.dcache.xdr.RpcDispatchable;
-import org.dcache.xdr.XdrTransport;
-import org.libvirt.VirOncRpcSvc;
-import org.libvirt.VirOncRpcSvcBuilder;
-import org.libvirt.VirRpcCall;
+import org.dcache.xdr.model.itf.GenItfRpcSvc;
+import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.itf.GenRpcDispatchable;
+import org.libvirt.GenVirOncRpcSvc;
+import org.libvirt.GenVirOncRpcSvcBuilder;
+import org.libvirt.GenVirRpcCall;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,11 +29,11 @@ public class EmbeddedVirtServer implements Closeable{
     private static final int PROGVER = 1;
     private static final int LIBVIRT_PORT = 16509;
     
-    Map<Integer,RpcDispatchable> srcActions = new HashMap<Integer,RpcDispatchable>();
+    Map<Integer,GenRpcDispatchable> srcActions = new HashMap<>();
 
-    RpcDispatchable fakeLibvirtd = (RpcCall call) ->
+    GenRpcDispatchable fakeLibvirtd = ( call) ->
     {
-        RpcDispatchable action = srcActions.get(call.getProcedure());
+        GenRpcDispatchable action = srcActions.get(call.getProcedure());
         if (null != action){
             action.dispatchOncRpcCall(call);
         } else {
@@ -39,9 +42,10 @@ public class EmbeddedVirtServer implements Closeable{
         }
     };
 
-    private OncRpcSvc svc;
+    private GenVirOncRpcSvc  svc;
 
-    private OncRpcSvc client;
+    private GenVirOncRpcSvc client;
+
     
     public EmbeddedVirtServer() throws IOException{
         this(LIBVIRT_PORT);
@@ -51,13 +55,13 @@ public class EmbeddedVirtServer implements Closeable{
         this(LIBVIRT_PORT);
     }
     public EmbeddedVirtServer(int port) throws IOException {
-        svc = new VirOncRpcSvcBuilder()
+        svc = new GenVirOncRpcSvcBuilder()
                 .withTCP()
                 .withPort(port)
                 .withWorkerThreadIoStrategy()
                 .withRpcService(new OncRpcProgram(PROGNUM, PROGVER), fakeLibvirtd)
                 .build();
-        assertTrue(svc instanceof VirOncRpcSvc);
+        assertTrue(svc instanceof GenVirOncRpcSvc);
         svc.start();
     }
 
@@ -69,25 +73,25 @@ public class EmbeddedVirtServer implements Closeable{
         return svc.getInetSocketAddress(IpProtocolType.TCP).getPort();
     }
     
-    public XdrTransport getTransport() throws IOException {
+    public GenItfXdrTransport getTransport() throws IOException {
         return svc.connect(getAddress());
         
     }
 
-    public VirRpcCall getClientCall() throws IOException {
+    public GenVirRpcCall getClientCall() throws IOException {
         if (null != client) throw new UnexpectedException("A client already exists");
         return createClient(PROGNUM,PROGVER);
     }
 
-    private VirRpcCall createClient(int prognum, int progver) throws IOException {
-        client = new VirOncRpcSvcBuilder()
+    private GenVirRpcCall createClient(int prognum, int progver) throws IOException {
+        client = new GenVirOncRpcSvcBuilder()
                 .withTCP()
                 .withClientMode()
                 .withWorkerThreadIoStrategy()
                 .build();
         client.start();
-        XdrTransport t = client.connect(svc.getInetSocketAddress(IpProtocolType.TCP));
-        return new VirRpcCall(prognum, progver, null, t);
+         GenItfXdrTransport<GenVirOncRpcSvc> t = client.connect(svc.getInetSocketAddress(IpProtocolType.TCP));
+        return new GenVirRpcCall(prognum, progver, null, t);
     }
     
     public void close() throws IOException{
@@ -95,7 +99,7 @@ public class EmbeddedVirtServer implements Closeable{
         close(svc);
     }
 
-    private void close(OncRpcSvc svc) throws IOException {
+    private void close(GenVirOncRpcSvc svc) throws IOException {
         if (svc != null) svc.stop();
     }
 
@@ -111,7 +115,7 @@ public class EmbeddedVirtServer implements Closeable{
         return null != srcActions.get(randomNum);
     }
 
-    public VirRpcCall getBadProgClientCall() throws IOException {
+    public GenVirRpcCall getBadProgClientCall() throws IOException {
         if (null != client) throw new UnexpectedException("A client already exists");
         return createClient(PROGNUM+12,PROGVER);
     }
@@ -120,7 +124,7 @@ public class EmbeddedVirtServer implements Closeable{
         return 0;
     }
 
-    public VirRpcCall getBadVersionClientCall() throws IOException {
+    public GenVirRpcCall getBadVersionClientCall() throws IOException {
         if (null != client) throw new UnexpectedException("A client already exists");
         return createClient(PROGNUM,PROGVER+12);
     }

@@ -21,10 +21,10 @@ package org.dcache.libvirt;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.dcache.xdr.OncRpcSvc;
-import org.dcache.xdr.OncRpcSvcBuilder;
+import org.dcache.xdr.model.itf.GenItfOncRpcSvcBuilder;
 import org.junit.Test;
-import org.libvirt.VirOncRpcSvcBuilder;
+import org.libvirt.GenVirOncRpcSvc;
+import org.libvirt.GenVirOncRpcSvcBuilder;
 
 import static org.mockito.Mockito.mock;
 import static org.junit.Assert.*;
@@ -37,7 +37,7 @@ public class OncRpcSvcBuilderTest {
     @Test
     public void shouldReturnSameThreadExecutorForSameThreadStrategy() {
 
-        VirOncRpcSvcBuilder builder = new VirOncRpcSvcBuilder();
+        GenVirOncRpcSvcBuilder builder = new GenVirOncRpcSvcBuilder();
 
         ExecutorService executorService = builder.getWorkerThreadExecutorService();
         final Object[] holder = new Object[1];
@@ -56,7 +56,7 @@ public class OncRpcSvcBuilderTest {
     @Test
     public void shouldReturnDifferentExecutorForWorkerThreadStrategy() {
 
-        OncRpcSvcBuilder builder = new VirOncRpcSvcBuilder()
+        GenItfOncRpcSvcBuilder<GenVirOncRpcSvc> builder = new GenVirOncRpcSvcBuilder()
                 .withWorkerThreadIoStrategy();
 
         ExecutorService executorService = builder.getWorkerThreadExecutorService();
@@ -77,7 +77,7 @@ public class OncRpcSvcBuilderTest {
     public void shouldReturnGivenExecutorForWorkerThreadStrategy() {
 
         ExecutorService mockedExecutorService = mock(ExecutorService.class);
-        OncRpcSvcBuilder builder = new VirOncRpcSvcBuilder()
+        GenItfOncRpcSvcBuilder<GenVirOncRpcSvc> builder = new GenVirOncRpcSvcBuilder()
                 .withWorkerThreadIoStrategy()
                 .withWorkerThreadExecutionService(mockedExecutorService);
 
@@ -88,7 +88,7 @@ public class OncRpcSvcBuilderTest {
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionOnInvalidProtocol() {
 
-        OncRpcSvc svc = new VirOncRpcSvcBuilder()
+        GenVirOncRpcSvc svc = new GenVirOncRpcSvcBuilder()
                 .withIpProtocolType(1)
                 .build();
     }
@@ -96,7 +96,7 @@ public class OncRpcSvcBuilderTest {
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionIfClientUsesTwoProtocols() {
 
-        OncRpcSvc svc = new VirOncRpcSvcBuilder()
+        GenVirOncRpcSvc svc = new GenVirOncRpcSvcBuilder()
                 .withClientMode()
                 .withTCP()
                 .withUDP()
@@ -106,7 +106,7 @@ public class OncRpcSvcBuilderTest {
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionDefinedWorkerThreadPoolWithExtern() {
 
-        OncRpcSvc svc = new VirOncRpcSvcBuilder()
+        GenVirOncRpcSvc svc = new GenVirOncRpcSvcBuilder()
                 .withTCP()
                 .withUDP()
                 .withWorkerThreadExecutionService(Executors.newCachedThreadPool())

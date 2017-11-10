@@ -17,7 +17,6 @@ import org.dcache.xdr.model.itf.GenItfRpcCall;
 import org.dcache.xdr.model.itf.GenItfRpcSvc;
 import org.dcache.xdr.model.itf.GenItfXdrTransport;
 import org.dcache.xdr.model.itf.GenRpcDispatchable;
-import org.dcache.xdr.model.itf.GenXdrTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

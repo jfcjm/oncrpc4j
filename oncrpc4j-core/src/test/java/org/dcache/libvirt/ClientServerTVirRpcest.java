@@ -28,17 +28,17 @@ import java.nio.channels.CompletionHandler;
 
 import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcProgram;
-import org.dcache.xdr.OncRpcSvc;
-import org.dcache.xdr.RpcCall;
-import org.dcache.xdr.RpcDispatchable;
 import org.dcache.xdr.XdrString;
-import org.dcache.xdr.XdrTransport;
 import org.dcache.xdr.XdrVoid;
+import org.dcache.xdr.model.itf.GenItfRpcSvc;
+import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.itf.GenRpcDispatchable;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.libvirt.VirOncRpcSvcBuilder;
-import org.libvirt.VirRpcCall;
+import org.libvirt.GenVirOncRpcSvc;
+import org.libvirt.GenVirOncRpcSvcBuilder;
+import org.libvirt.GenVirRpcCall;
 
 /**
  * These tests use both a virrpc serer and client. It is adapted
@@ -53,16 +53,16 @@ public class ClientServerTVirRpcest {
     private static final int UPPER = 2;
     private static final int SHUTDOWN = 3;
 
-    private OncRpcSvc svc;
-    private OncRpcSvc clnt;
-    private RpcCall clntCall;
+    private GenVirOncRpcSvc svc;
+    private GenItfRpcSvc clnt;
+    private GenVirRpcCall clntCall;
 
     @Before
     public void setUp() throws IOException {
 
-        RpcDispatchable echo = (RpcCall aCall) -> {
-            assertTrue(aCall instanceof VirRpcCall);
-            VirRpcCall call = (VirRpcCall) aCall;
+        GenRpcDispatchable<GenVirOncRpcSvc> echo = ( aCall) -> {
+            assertTrue(aCall instanceof GenVirRpcCall);
+            GenVirRpcCall call = (GenVirRpcCall) aCall;
             call.getXdr().asBuffer().mark();
             assertEquals(0,call.getXdr().asBuffer().get());
             assertEquals(0,call.getXdr().asBuffer().get());
@@ -79,7 +79,7 @@ public class ClientServerTVirRpcest {
                     break;
                 }
                 case UPPER: {
-                    RpcCall cb = new VirRpcCall(PROGNUM, PROGVER, null, call.getTransport());
+                    GenVirRpcCall cb = new GenVirRpcCall(PROGNUM, PROGVER, null, call.getTransport());
                     XdrString s = new XdrString();
                     call.retrieveCall(s);
                     assertEquals("hello",s.stringValue());
@@ -96,29 +96,29 @@ public class ClientServerTVirRpcest {
             }
         };
 
-        RpcDispatchable upper = (RpcCall call) -> {
+        GenRpcDispatchable upper = ( call) -> {
             XdrString s = new XdrString();
             call.retrieveCall(s);
             XdrString u = new XdrString(s.stringValue().toUpperCase());
             call.reply(u);
         };
 
-        svc = new VirOncRpcSvcBuilder()
+        svc = new GenVirOncRpcSvcBuilder()
                 .withTCP()
                 .withWorkerThreadIoStrategy()
                 .withRpcService(new OncRpcProgram(PROGNUM, PROGVER), echo)
                 .build();
         svc.start();
 
-        clnt = new VirOncRpcSvcBuilder()
+        clnt = new GenVirOncRpcSvcBuilder()
                 .withTCP()
                 .withClientMode()
                 .withWorkerThreadIoStrategy()
                 .withRpcService(new OncRpcProgram(PROGNUM, PROGVER), upper)
                 .build();
         clnt.start();
-        XdrTransport t = clnt.connect(svc.getInetSocketAddress(IpProtocolType.TCP));
-        clntCall = new VirRpcCall(PROGNUM, PROGVER, null, t);
+        GenItfXdrTransport<GenVirOncRpcSvc> t = clnt.connect(svc.getInetSocketAddress(IpProtocolType.TCP));
+        clntCall = new GenVirRpcCall(PROGNUM, PROGVER, null, t);
     }
 
     @After
@@ -174,7 +174,7 @@ public class ClientServerTVirRpcest {
     @Test
     public void shouldTriggerClientCallbackEvenIfOtherClientDisconnected() throws IOException {
 
-        OncRpcSvc clnt2 = new VirOncRpcSvcBuilder()
+        GenVirOncRpcSvc clnt2 = new GenVirOncRpcSvcBuilder()
                 .withTCP()
                 .withClientMode()
                 .withWorkerThreadIoStrategy()

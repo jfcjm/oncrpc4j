@@ -23,7 +23,6 @@ import java.nio.ByteOrder;
 
 import org.dcache.xdr.GrizzlyMemoryManager;
 import org.dcache.xdr.OncRpcException;
-import org.dcache.xdr.ReplyQueue;
 import org.dcache.xdr.RpcAuth;
 import org.dcache.xdr.RpcAuthTypeNone;
 import org.dcache.xdr.RpcMessageType;
@@ -31,13 +30,14 @@ import org.dcache.xdr.Xdr;
 import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrString;
 import org.dcache.xdr.XdrVoid;
+import org.dcache.xdr.model.impl.GenReplyQueue;
 import org.glassfish.grizzly.Buffer;
 import org.glassfish.grizzly.Connection;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.junit.*;
+import org.libvirt.GenVirRpcMessageParserTCP2;
+import org.libvirt.GenVirRpcProtocolFilter;
 import org.libvirt.VirRpcMessage;
-import org.libvirt.VirRpcMessageParserTCP;
-import org.libvirt.VirRpcProtocolFilter;
 
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
@@ -47,14 +47,14 @@ public class VirRpcMessageParserTCPTest {
     private final static int INVOKE = 0;
     private final static int STOP = 1;
     private FilterChainContext mockedContext;
-    private VirRpcMessageParserTCP tcpParser;
-    private VirRpcProtocolFilter rpc;
+    private GenVirRpcMessageParserTCP2 tcpParser;
+    private GenVirRpcProtocolFilter rpc;
 
     @Before
     public void setUp() {
         mockedContext = FilterChainContext.create(mock(Connection.class));
-        tcpParser = new VirRpcMessageParserTCP();
-        rpc = new VirRpcProtocolFilter(new ReplyQueue());
+        tcpParser = new GenVirRpcMessageParserTCP2();
+        rpc = new GenVirRpcProtocolFilter(new GenReplyQueue<>());
     }
 
     @Test
