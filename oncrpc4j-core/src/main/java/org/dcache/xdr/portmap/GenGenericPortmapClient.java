@@ -26,9 +26,9 @@ import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.dcache.xdr.GenOncRpcClient;
-import org.dcache.xdr.GenOncRpcSvc;
-import org.dcache.xdr.GenRpcCall;
+import org.dcache.xdr.OncRpcClient;
+import org.dcache.xdr.OncRpcSvc;
+import org.dcache.xdr.RpcCall;
 import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcAuth;
@@ -49,11 +49,11 @@ public class GenGenericPortmapClient implements OncPortmapClient {
     private final RpcAuth _auth = new RpcAuthTypeNone();
     private final OncPortmapClient _portmapClient;
 
-    public GenGenericPortmapClient(GenXdrTransport<GenOncRpcSvc> transport) throws RpcProgUnavailable {
+    public GenGenericPortmapClient(GenXdrTransport<OncRpcSvc> transport) throws RpcProgUnavailable {
 
-       OncPortmapClient portmapClient = new GenRpcbindV4Client(new GenRpcCall(100000, 4, _auth, transport));
+       OncPortmapClient portmapClient = new GenRpcbindV4Client(new RpcCall(100000, 4, _auth, transport));
         if( !portmapClient.ping() ) {
-            portmapClient = new GenPortmapV2Client2( new GenRpcCall(100000, 2, _auth, transport) );
+            portmapClient = new GenPortmapV2Client2( new RpcCall(100000, 2, _auth, transport) );
             if(!portmapClient.ping()) {
                 // FIXME: return correct exception
                 throw new RpcProgUnavailable("portmap service not available");
@@ -87,8 +87,8 @@ public class GenGenericPortmapClient implements OncPortmapClient {
 
         int protocol = IpProtocolType.TCP;
 
-        GenOncRpcClient rpcClient = new GenOncRpcClient(InetAddress.getByName(null), IpProtocolType.UDP, 111);
-         GenXdrTransport<GenOncRpcSvc> transport = rpcClient.connect();
+        OncRpcClient rpcClient = new OncRpcClient(InetAddress.getByName(null), IpProtocolType.UDP, 111);
+         GenXdrTransport<OncRpcSvc> transport = rpcClient.connect();
 
         OncPortmapClient portmapClient = new GenGenericPortmapClient(transport);
 

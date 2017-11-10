@@ -25,16 +25,16 @@ import org.dcache.xdr.Xdr;
 import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrEncodingStream;
 import org.dcache.xdr.XdrVoid;
-import org.dcache.xdr.model.itf.GenItfRpcCall;
-import org.dcache.xdr.model.itf.GenItfRpcReply;
-import org.dcache.xdr.model.itf.GenItfRpcSvc;
-import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.itf.RpcCallItf;
+import org.dcache.xdr.model.itf.RpcReplyItf;
+import org.dcache.xdr.model.itf.RpcSvcItf;
+import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Throwables;
 
-public abstract class GenAbstractRpcCall<SVC_T extends GenItfRpcSvc<SVC_T>>  implements GenItfRpcCall<SVC_T>{
+public abstract class GenAbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>>  implements RpcCallItf<SVC_T>{
 
     final static Logger _log = LoggerFactory.getLogger(GenAbstractRpcCall.class);
     //TODO : fin a better way for RpcMessage Constructor
@@ -89,7 +89,7 @@ public abstract class GenAbstractRpcCall<SVC_T extends GenItfRpcSvc<SVC_T>>  imp
     /**
      * RPC call transport.
      */
-    protected final GenItfXdrTransport<SVC_T> _transport;
+    protected final XdrTransportItf<SVC_T> _transport;
 
     /**
      * Call body.
@@ -123,11 +123,11 @@ public abstract class GenAbstractRpcCall<SVC_T extends GenItfRpcSvc<SVC_T>>  imp
      */
     List<CompletionHandler<Integer, InetSocketAddress>> _sendOnceListeners;
     
-    public GenAbstractRpcCall(int prog, int ver, RpcAuth cred, GenItfXdrTransport<SVC_T> transport) {
+    public GenAbstractRpcCall(int prog, int ver, RpcAuth cred, XdrTransportItf<SVC_T> transport) {
         this(prog, ver, cred, new Xdr(Xdr.INITIAL_XDR_SIZE), transport);
     }
 
-    public GenAbstractRpcCall(int prog, int ver, RpcAuth cred, Xdr xdr, GenItfXdrTransport<SVC_T> transport) {
+    public GenAbstractRpcCall(int prog, int ver, RpcAuth cred, Xdr xdr, XdrTransportItf<SVC_T> transport) {
         _prog = prog;
         _version = ver;
         _cred = cred;
@@ -136,13 +136,13 @@ public abstract class GenAbstractRpcCall<SVC_T extends GenItfRpcSvc<SVC_T>>  imp
         _proc = 0;
     }
 
-    public GenAbstractRpcCall(int xid, Xdr xdr, GenItfXdrTransport<SVC_T> transport) {
+    public GenAbstractRpcCall(int xid, Xdr xdr, XdrTransportItf<SVC_T> transport) {
         _xid = xid;
         _xdr = xdr;
         _transport = transport;
     }
 
-    public GenAbstractRpcCall(int xid, int prog, int ver, int proc, RpcAuth cred, Xdr xdr, GenItfXdrTransport<SVC_T> transport) {
+    public GenAbstractRpcCall(int xid, int prog, int ver, int proc, RpcAuth cred, Xdr xdr, XdrTransportItf<SVC_T> transport) {
         _xid = xid;
         _prog = prog;
         _version = ver;
@@ -156,7 +156,7 @@ public abstract class GenAbstractRpcCall<SVC_T extends GenItfRpcSvc<SVC_T>>  imp
 
     
     protected abstract int callInternal(int procedure, XdrAble args,
-            CompletionHandler<GenItfRpcReply<SVC_T>, GenItfXdrTransport<SVC_T>> callback, long timeoutValue,
+            CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback, long timeoutValue,
             TimeUnit timeoutUnits, RpcAuth auth) throws IOException;
     
     
@@ -181,7 +181,7 @@ public abstract class GenAbstractRpcCall<SVC_T extends GenItfRpcSvc<SVC_T>>  imp
     }
 
     @Override
-    public GenItfXdrTransport<SVC_T> getTransport() {
+    public XdrTransportItf<SVC_T> getTransport() {
         return _transport;
     }
 
@@ -243,23 +243,23 @@ public abstract class GenAbstractRpcCall<SVC_T extends GenItfRpcSvc<SVC_T>>  imp
     }
 
     @Override
-    public void call(int procedure, XdrAble args, CompletionHandler<GenItfRpcReply<SVC_T>, GenItfXdrTransport<SVC_T>> callback, long timeoutValue, TimeUnit timeoutUnits, RpcAuth auth)
+    public void call(int procedure, XdrAble args, CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback, long timeoutValue, TimeUnit timeoutUnits, RpcAuth auth)
             throws IOException {
                 callInternal(procedure, args, callback, timeoutValue, timeoutUnits, auth);
             }
 
     @Override
-    public void call(int procedure, XdrAble args, CompletionHandler<GenItfRpcReply<SVC_T>, GenItfXdrTransport<SVC_T>> callback, long timeoutValue, TimeUnit timeoutUnits) throws IOException {
+    public void call(int procedure, XdrAble args, CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback, long timeoutValue, TimeUnit timeoutUnits) throws IOException {
         callInternal(procedure, args, callback, timeoutValue, timeoutUnits, null);
     }
 
     @Override
-    public void call(int procedure, XdrAble args, CompletionHandler<GenItfRpcReply<SVC_T>, GenItfXdrTransport<SVC_T>> callback, RpcAuth auth) throws IOException {
+    public void call(int procedure, XdrAble args, CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback, RpcAuth auth) throws IOException {
         callInternal(procedure, args, callback, 0, null, auth);
     }
 
     @Override
-    public void call(int procedure, XdrAble args, CompletionHandler<GenItfRpcReply<SVC_T>, GenItfXdrTransport<SVC_T>> callback) throws IOException {
+    public void call(int procedure, XdrAble args, CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback) throws IOException {
         callInternal(procedure, args, callback, 0, null, null);
     }
 
@@ -327,10 +327,10 @@ public abstract class GenAbstractRpcCall<SVC_T extends GenItfRpcSvc<SVC_T>>  imp
             RpcAuth auth) throws IOException {
             
                 final CompletableFuture<T> future = new CompletableFuture<>();
-                CompletionHandler<GenItfRpcReply<SVC_T>, GenItfXdrTransport<SVC_T>> callback = new CompletionHandler<GenItfRpcReply<SVC_T>, GenItfXdrTransport<SVC_T>>() {
+                CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback = new CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>>() {
             
                     @Override
-                    public void completed(GenItfRpcReply<SVC_T> reply, GenItfXdrTransport<SVC_T> attachment) {
+                    public void completed(RpcReplyItf<SVC_T> reply, XdrTransportItf<SVC_T> attachment) {
                         try {
                             reply.getReplyResult(result);
                             future.complete(result);
@@ -340,7 +340,7 @@ public abstract class GenAbstractRpcCall<SVC_T extends GenItfRpcSvc<SVC_T>>  imp
                     }
             
                     @Override
-                    public void failed(Throwable exc, GenItfXdrTransport<SVC_T> attachment) {
+                    public void failed(Throwable exc, XdrTransportItf<SVC_T> attachment) {
                         future.completeExceptionally(exc);
                     }
                 };

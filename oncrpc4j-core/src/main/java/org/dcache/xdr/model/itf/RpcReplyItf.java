@@ -6,7 +6,7 @@ import org.dcache.xdr.MismatchInfo;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.XdrAble;
 
-public interface GenItfRpcReply<SVC_T extends GenItfRpcSvc<SVC_T>> {
+public interface RpcReplyItf<SVC_T extends RpcSvcItf<SVC_T>> {
 
     boolean isAccepted();
 

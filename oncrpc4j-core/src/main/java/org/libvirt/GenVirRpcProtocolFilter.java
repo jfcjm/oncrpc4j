@@ -28,10 +28,10 @@ import org.dcache.xdr.RpcAccepsStatus;
 import org.dcache.xdr.RpcException;
 import org.dcache.xdr.RpcMessageType;
 import org.dcache.xdr.Xdr;
-import org.dcache.xdr.model.impl.GenGrizzlyXdrTransport;
-import org.dcache.xdr.model.itf.GenItfReplyQueue;
-import org.dcache.xdr.model.itf.GenItfRpcReply;
-import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.impl.GrizzlyXdrTransport;
+import org.dcache.xdr.model.itf.ReplyQueueItf;
+import org.dcache.xdr.model.itf.RpcReplyItf;
+import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.dcache.xdr.model.itf.GenXdrTransport;
 import org.dcache.xdr.model.root.GenAbstractRpcProtocolFilter;
 import org.dcache.xdr.model.root.RpcMessage;
@@ -42,7 +42,7 @@ public final class GenVirRpcProtocolFilter  extends GenAbstractRpcProtocolFilter
 
     private final static Logger _log = LoggerFactory.getLogger(GenVirRpcProtocolFilter.class);
 
-    public GenVirRpcProtocolFilter(GenItfReplyQueue<GenVirOncRpcSvc> replyQueue) {
+    public GenVirRpcProtocolFilter(ReplyQueueItf<GenVirOncRpcSvc> replyQueue) {
         super(replyQueue);
     }
 
@@ -68,7 +68,7 @@ public final class GenVirRpcProtocolFilter  extends GenAbstractRpcProtocolFilter
          * We have to get peer address from the request context, which will contain SocketAddress where from
          * request was coming.
          */
-        GenXdrTransport<GenVirOncRpcSvc> transport = new GenGrizzlyXdrTransport<>(ctx.getConnection(), (InetSocketAddress)ctx.getAddress(), _replyQueue);
+        GenXdrTransport<GenVirOncRpcSvc> transport = new GrizzlyXdrTransport<>(ctx.getConnection(), (InetSocketAddress)ctx.getAddress(), _replyQueue);
         switch (message.type()) {
             case RpcMessageType.CALL:
             	_log.debug("Received a CALL message");
@@ -89,9 +89,9 @@ public final class GenVirRpcProtocolFilter  extends GenAbstractRpcProtocolFilter
             case RpcMessageType.REPLY:
             	_log.debug("Received a Reply message with xid {}",message.xid());
                 try {
-                    final GenItfRpcReply<GenVirOncRpcSvc> reply = createReply(xdr, message, transport);
+                    final RpcReplyItf<GenVirOncRpcSvc> reply = createReply(xdr, message, transport);
                     _log.debug("Rpc reply is {}",reply);
-                       CompletionHandler<GenItfRpcReply<GenVirOncRpcSvc>, GenItfXdrTransport<GenVirOncRpcSvc>> callback = _replyQueue.get(message.xid());
+                       CompletionHandler<RpcReplyItf<GenVirOncRpcSvc>, XdrTransportItf<GenVirOncRpcSvc>> callback = _replyQueue.get(message.xid());
                     if (callback != null) {
                     	_log.debug("Processing callback" + callback);
                         if (!reply.isAccepted()) {
@@ -120,8 +120,8 @@ public final class GenVirRpcProtocolFilter  extends GenAbstractRpcProtocolFilter
 
 
     @Override
-    protected GenItfRpcReply<GenVirOncRpcSvc> createReply(Xdr xdr, RpcMessage message,
-            GenItfXdrTransport<GenVirOncRpcSvc> transport) throws OncRpcException, IOException {
+    protected RpcReplyItf<GenVirOncRpcSvc> createReply(Xdr xdr, RpcMessage message,
+            XdrTransportItf<GenVirOncRpcSvc> transport) throws OncRpcException, IOException {
         return  new GenVirRpcReply(message.xid(), xdr, transport);
     }
 }

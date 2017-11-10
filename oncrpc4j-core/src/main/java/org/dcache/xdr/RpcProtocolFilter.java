@@ -24,11 +24,11 @@ import java.net.InetSocketAddress;
 import java.nio.channels.CompletionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.dcache.xdr.model.impl.GenGrizzlyXdrTransport;
-import org.dcache.xdr.model.itf.GenItfReplyQueue;
-import org.dcache.xdr.model.itf.GenItfRpcCall;
-import org.dcache.xdr.model.itf.GenItfRpcReply;
-import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.impl.GrizzlyXdrTransport;
+import org.dcache.xdr.model.itf.ReplyQueueItf;
+import org.dcache.xdr.model.itf.RpcCallItf;
+import org.dcache.xdr.model.itf.RpcReplyItf;
+import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.dcache.xdr.model.itf.GenXdrTransport;
 import org.dcache.xdr.model.root.GenAbstractRpcProtocolFilter;
 import org.dcache.xdr.model.root.RpcMessage;
@@ -36,11 +36,11 @@ import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.filterchain.NextAction;
 
 @SuppressWarnings("deprecation")
-public final class GenRpcProtocolFilter extends GenAbstractRpcProtocolFilter<GenOncRpcSvc>  {
+public final class RpcProtocolFilter extends GenAbstractRpcProtocolFilter<OncRpcSvc>  {
 
-    private final static Logger _log = LoggerFactory.getLogger(GenRpcProtocolFilter.class);
+    private final static Logger _log = LoggerFactory.getLogger(RpcProtocolFilter.class);
 
-    public GenRpcProtocolFilter(GenItfReplyQueue<GenOncRpcSvc> replyQueue) {
+    public RpcProtocolFilter(ReplyQueueItf<OncRpcSvc> replyQueue) {
         super(replyQueue);
     }
 
@@ -65,12 +65,12 @@ public final class GenRpcProtocolFilter extends GenAbstractRpcProtocolFilter<Gen
          * We have to get peer address from the request context, which will contain SocketAddress where from
          * request was coming.
          */
-        GenXdrTransport transport = new GenGrizzlyXdrTransport<GenOncRpcSvc>(ctx.getConnection(), (InetSocketAddress)ctx.getAddress(), _replyQueue);
+        GenXdrTransport transport = new GrizzlyXdrTransport<OncRpcSvc>(ctx.getConnection(), (InetSocketAddress)ctx.getAddress(), _replyQueue);
 
         switch (message.type()) {
             case RpcMessageType.CALL:
             	_log.debug("Received a CALL message");
-            	GenItfRpcCall<GenOncRpcSvc> call = new GenRpcCall(message.xid(), xdr, transport);
+            	RpcCallItf<OncRpcSvc> call = new RpcCall(message.xid(), xdr, transport);
                 try {
                     call.accept();
                     ctx.setMessage(call);
@@ -87,10 +87,10 @@ public final class GenRpcProtocolFilter extends GenAbstractRpcProtocolFilter<Gen
             case RpcMessageType.REPLY:
             	_log.debug("Received a Reply message with xid {} ",message.xid());
                 try {
-                    GenRpcReply reply = new GenRpcReply(message.xid(), xdr, transport);
+                    RpcReply reply = new RpcReply(message.xid(), xdr, transport);
                     _log.debug("Got a reply, status {}",reply.getAcceptStatus());
                     _log.debug("Rpc reply is {}",reply);
-                     CompletionHandler<GenItfRpcReply<GenOncRpcSvc>, GenItfXdrTransport<GenOncRpcSvc>> callback = _replyQueue.get(message.xid());
+                     CompletionHandler<RpcReplyItf<OncRpcSvc>, XdrTransportItf<OncRpcSvc>> callback = _replyQueue.get(message.xid());
                     if (callback != null) {
                     	_log.debug("Processing callback");
                         if (!reply.isAccepted()) {
@@ -118,8 +118,8 @@ public final class GenRpcProtocolFilter extends GenAbstractRpcProtocolFilter<Gen
 
 
     @Override
-    protected GenItfRpcReply<GenOncRpcSvc> createReply(Xdr xdr, RpcMessage message,
-            GenItfXdrTransport<GenOncRpcSvc> transport) throws OncRpcException, IOException {
-        return new GenRpcReply(message.xid(), xdr, transport);
+    protected RpcReplyItf<OncRpcSvc> createReply(Xdr xdr, RpcMessage message,
+            XdrTransportItf<OncRpcSvc> transport) throws OncRpcException, IOException {
+        return new RpcReply(message.xid(), xdr, transport);
     }
 }

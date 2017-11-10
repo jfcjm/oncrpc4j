@@ -31,7 +31,7 @@ import org.dcache.xdr.XdrDecodingStream;
 import org.dcache.xdr.XdrEncodingStream;
 import org.dcache.xdr.XdrInt;
 import org.dcache.xdr.XdrString;
-import org.dcache.xdr.model.itf.GenItfRpcSvc;
+import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.GenRpcDispatchable;
 import org.junit.After;
 import org.junit.Before;
@@ -54,8 +54,8 @@ public class ServerIntegration {
 
     private static final int PROGNUM = 536903814;
     private static final int PROGVER = 1;
-    private GenItfRpcSvc svc;
-    private GenItfRpcSvc clnt;
+    private RpcSvcItf svc;
+    private RpcSvcItf clnt;
 
     @Before
     public void setUp() throws IOException {

@@ -3,9 +3,9 @@ package org.libvirt;
 import java.io.IOException;
 
 import org.dcache.xdr.OncRpcException;
-import org.dcache.xdr.model.itf.GenItfRpcSvc;
+import org.dcache.xdr.model.itf.RpcSvcItf;
 
-public interface GenItfVirOncRpcSvc  extends GenItfRpcSvc<GenVirOncRpcSvc>{
+public interface GenItfVirOncRpcSvc  extends RpcSvcItf<GenVirOncRpcSvc>{
 
     @Override
     void start() throws IOException;

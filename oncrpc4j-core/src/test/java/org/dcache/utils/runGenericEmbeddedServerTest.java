@@ -7,12 +7,12 @@ import java.io.IOException;
 import org.dcache.xdr.OncRpcAcceptedException;
 import org.dcache.xdr.XdrInt;
 import org.dcache.xdr.XdrVoid;
-import org.dcache.xdr.model.itf.GenItfRpcCall;
-import org.dcache.xdr.model.itf.GenItfRpcSvc;
+import org.dcache.xdr.model.itf.RpcCallItf;
+import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.junit.Test;
 
 public abstract class runGenericEmbeddedServerTest<
-            SVC_T extends GenItfRpcSvc<SVC_T>,
+            SVC_T extends RpcSvcItf<SVC_T>,
             SRV_T extends EmbeddedGenericServer<SVC_T>> {
 
 
@@ -28,7 +28,7 @@ public abstract class runGenericEmbeddedServerTest<
         try ( EmbeddedGenericServer<SVC_T> srv = createEmbededServer (0)){
             assertTrue("Server should listen on a port != 0",srv.getListeningPort()>0);
             System.out.println(srv.getListeningPort());
-            GenItfRpcCall<SVC_T> caller = srv.getClientCall();
+            RpcCallItf<SVC_T> caller = srv.getClientCall();
             int procNumber = srv.getAnyProc();
             System.out.println(procNumber);
             caller.call(0,XdrVoid.XDR_VOID,XdrVoid.XDR_VOID);
@@ -43,7 +43,7 @@ public abstract class runGenericEmbeddedServerTest<
         try (EmbeddedGenericServer<SVC_T>  srv = createEmbededServer (0)){
             assertTrue("Server should listen on a port != 0",srv.getListeningPort()>0);
             System.out.println(srv.getListeningPort());
-            GenItfRpcCall<SVC_T> caller = srv.getClientCall();
+            RpcCallItf<SVC_T> caller = srv.getClientCall();
             assertNotNull(caller);
             int procNumber = srv.getUnavailableProc();
             System.out.println(procNumber);
@@ -61,7 +61,7 @@ public abstract class runGenericEmbeddedServerTest<
         try (EmbeddedGenericServer<SVC_T>  srv = createEmbededServer (0)){
             assertTrue("Server should listen on a port != 0",srv.getListeningPort()>0);
             System.out.println(srv.getListeningPort());
-            GenItfRpcCall<SVC_T> caller = srv.getBadVersionClientCall();
+            RpcCallItf<SVC_T> caller = srv.getBadVersionClientCall();
             
             
             int procNumber = srv.getAnyProc();
@@ -82,7 +82,7 @@ public abstract class runGenericEmbeddedServerTest<
         try (EmbeddedGenericServer<SVC_T>  srv = createEmbededServer (0)){
             assertTrue("Server should listen on a port != 0",srv.getListeningPort()>0);
             System.out.println(srv.getListeningPort());
-            GenItfRpcCall<SVC_T> caller = srv.getBadProgClientCall();
+            RpcCallItf<SVC_T> caller = srv.getBadProgClientCall();
             
             
             int procNumber = srv.getAnyProc();
@@ -101,7 +101,7 @@ public abstract class runGenericEmbeddedServerTest<
         try ( EmbeddedGenericServer<SVC_T> srv = createEmbededServer (0)){
             assertTrue("Server should listen on a port != 0",srv.getListeningPort()>0);
             System.out.println(srv.getListeningPort());
-            GenItfRpcCall<SVC_T> caller = srv.getClientCall();
+            RpcCallItf<SVC_T> caller = srv.getClientCall();
             int procNumber = srv.getAnyProc();
             System.out.println(procNumber);
             caller.call(srv.unexpectedErrorCall(),XdrVoid.XDR_VOID,new XdrInt());

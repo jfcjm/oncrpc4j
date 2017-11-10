@@ -19,7 +19,7 @@
  */
 package org.dcache.xdr.portmap;
 
-import org.dcache.xdr.GenRpcCall;
+import org.dcache.xdr.RpcCall;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcAuth;
 import org.dcache.xdr.RpcAuthTypeNone;
@@ -40,9 +40,9 @@ public class GenRpcbindV4Client implements OncPortmapClient {
     private final static Logger _log = LoggerFactory.getLogger(GenRpcbindV4Client.class);
 
     private final RpcAuth _auth = new RpcAuthTypeNone();
-    private final GenRpcCall _call;
+    private final RpcCall _call;
 
-    public GenRpcbindV4Client(GenRpcCall genRpcCall) {
+    public GenRpcbindV4Client(RpcCall genRpcCall) {
         _call = genRpcCall;
     }
 

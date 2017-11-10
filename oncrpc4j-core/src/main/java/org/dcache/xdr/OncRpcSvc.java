@@ -31,7 +31,7 @@ import java.util.concurrent.TimeoutException;
 import org.dcache.utils.net.InetSocketAddresses;
 import org.dcache.xdr.gss.GssProtocolFilter;
 import org.dcache.xdr.gss.GssSessionManager;
-import org.dcache.xdr.model.itf.GenItfReplyQueue;
+import org.dcache.xdr.model.itf.ReplyQueueItf;
 import org.dcache.xdr.model.itf.GenXdrTransport;
 import org.dcache.xdr.model.root.GenAbstractOncRpcSvc;
 import org.dcache.xdr.portmap.GenGenericPortmapClient;
@@ -48,8 +48,8 @@ import org.slf4j.LoggerFactory;
 
 
 
-public final class GenOncRpcSvc extends GenAbstractOncRpcSvc<GenOncRpcSvc> {
-    final static Logger _log = LoggerFactory.getLogger(GenOncRpcSvc.class);
+public final class OncRpcSvc extends GenAbstractOncRpcSvc<OncRpcSvc> {
+    final static Logger _log = LoggerFactory.getLogger(OncRpcSvc.class);
     /**
      * Handle RPCSEC_GSS
      */
@@ -62,7 +62,7 @@ public final class GenOncRpcSvc extends GenAbstractOncRpcSvc<GenOncRpcSvc> {
      * Create new RPC service with defined configuration.
      * @param builder to build this service
      */
-    public  GenOncRpcSvc(GenOncRpcSvcBuilder builder) {
+    public  OncRpcSvc(OncRpcSvcBuilder builder) {
         super(builder);
         _publish = builder.isAutoPublish();
         _gssSessionManager = builder.getGssSessionManager();
@@ -74,7 +74,7 @@ public final class GenOncRpcSvc extends GenAbstractOncRpcSvc<GenOncRpcSvc> {
     @Override
     protected Filter rpcMessageReceiverFor(Transport t) {
         if (t instanceof TCPNIOTransport) {
-            return new GenRpcMessageParserTCP2();
+            return new RpcMessageParserTCP();
         }
 
         if (t instanceof UDPNIOTransport) {
@@ -85,8 +85,8 @@ public final class GenOncRpcSvc extends GenAbstractOncRpcSvc<GenOncRpcSvc> {
     }
 
     @Override
-    protected Filter getRpcProtocolFilter(GenItfReplyQueue<GenOncRpcSvc> replyQueue) {
-        return new GenRpcProtocolFilter(replyQueue);
+    protected Filter getRpcProtocolFilter(ReplyQueueItf<OncRpcSvc> replyQueue) {
+        return new RpcProtocolFilter(replyQueue);
     }
 
     @Override
@@ -129,9 +129,9 @@ public final class GenOncRpcSvc extends GenAbstractOncRpcSvc<GenOncRpcSvc> {
      */
     protected void publishToPortmap(Connection<InetSocketAddress> connection, Set<OncRpcProgram> programs) throws IOException {
     
-        GenOncRpcClient rpcClient = new GenOncRpcClient(InetAddress.getByName(null),
+        OncRpcClient rpcClient = new OncRpcClient(InetAddress.getByName(null),
                 IpProtocolType.UDP, OncRpcPortmap.PORTMAP_PORT);
-         GenXdrTransport<GenOncRpcSvc> transport = rpcClient.connect();
+         GenXdrTransport<OncRpcSvc> transport = rpcClient.connect();
     
         try {
             OncPortmapClient portmapClient = new GenGenericPortmapClient(transport);
@@ -188,11 +188,11 @@ public final class GenOncRpcSvc extends GenAbstractOncRpcSvc<GenOncRpcSvc> {
     private void clearPortmap(Set<OncRpcProgram> programs) throws IOException {
         _log.info("start to clean, create enOncRpcClient, {} ",InetAddress.getByName(null));
         _log.info("start to clean, create enOncRpcClient, {} ",OncRpcPortmap.PORTMAP_PORT);
-         GenOncRpcClient rpcClient = new GenOncRpcClient(InetAddress.getByName(null),
+         OncRpcClient rpcClient = new OncRpcClient(InetAddress.getByName(null),
                 IpProtocolType.UDP, OncRpcPortmap.PORTMAP_PORT);
          _log.info("start to clean, create transport");
          
-         GenXdrTransport<GenOncRpcSvc> transport = rpcClient.connect();
+         GenXdrTransport<OncRpcSvc> transport = rpcClient.connect();
          
         try {
             _log.info("create generic client");

@@ -32,19 +32,19 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.dcache.xdr.model.itf.GenItfReplyQueue;
-import org.dcache.xdr.model.itf.GenItfRpcReply;
-import org.dcache.xdr.model.itf.GenItfRpcSvc;
-import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.itf.ReplyQueueItf;
+import org.dcache.xdr.model.itf.RpcReplyItf;
+import org.dcache.xdr.model.itf.RpcSvcItf;
+import org.dcache.xdr.model.itf.XdrTransportItf;
 
-public final class GenReplyQueue<SVC_T extends GenItfRpcSvc<SVC_T>> implements GenItfReplyQueue<SVC_T> {
+public final class ReplyQueue<SVC_T extends RpcSvcItf<SVC_T>> implements ReplyQueueItf<SVC_T> {
 
     private final ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(1, new ThreadFactory() {
         private final AtomicInteger counter = new AtomicInteger();
 
         @Override
         public Thread newThread(Runnable r) {
-            Thread t = new Thread(r, "timeout thread #" + counter.incrementAndGet() + " for ReplyQueue " + GenReplyQueue.this);
+            Thread t = new Thread(r, "timeout thread #" + counter.incrementAndGet() + " for ReplyQueue " + ReplyQueue.this);
             t.setDaemon(true);
             return t;
         }
@@ -55,7 +55,7 @@ public final class GenReplyQueue<SVC_T extends GenItfRpcSvc<SVC_T>> implements G
      * @see org.dcache.xdr.GenItfReplyQueue#registerKey(int, java.net.SocketAddress, java.nio.channels.CompletionHandler)
      */
     @Override
-    public void registerKey(int xid, SocketAddress addr, CompletionHandler<GenItfRpcReply<SVC_T>, GenItfXdrTransport<SVC_T>> callback) throws EOFException {
+    public void registerKey(int xid, SocketAddress addr, CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback) throws EOFException {
         registerKey(xid, addr, callback, 0, null);
     }
 
@@ -63,11 +63,11 @@ public final class GenReplyQueue<SVC_T extends GenItfRpcSvc<SVC_T>> implements G
      * @see org.dcache.xdr.GenItfReplyQueue#registerKey(int, java.net.SocketAddress, java.nio.channels.CompletionHandler, long, java.util.concurrent.TimeUnit)
      */
     @Override
-    public void registerKey(int xid, SocketAddress addr, CompletionHandler<GenItfRpcReply<SVC_T>, GenItfXdrTransport<SVC_T>> callback, final long timeout, final TimeUnit timeoutUnits) throws EOFException {
+    public void registerKey(int xid, SocketAddress addr, CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback, final long timeout, final TimeUnit timeoutUnits) throws EOFException {
         ScheduledFuture<?> scheduledTimeout = null;
         if (timeout > 0 && timeoutUnits != null) {
             scheduledTimeout = executorService.schedule(() -> {
-                CompletionHandler<GenItfRpcReply<SVC_T>, GenItfXdrTransport<SVC_T>> handler = get(xid);
+                CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> handler = get(xid);
                 if (handler != null) { //means we're 1st, no response yet
                     handler.failed(new TimeoutException("did not get a response within " + timeout + " " + timeoutUnits), null);
                 }
@@ -95,7 +95,7 @@ public final class GenReplyQueue<SVC_T extends GenItfRpcSvc<SVC_T>> implements G
      * @see org.dcache.xdr.GenItfReplyQueue#get(int)
      */
     @Override
-    public CompletionHandler<GenItfRpcReply<SVC_T>, GenItfXdrTransport<SVC_T>> get(int xid) {
+    public CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> get(int xid) {
         PendingRequest request = _queue.remove(xid);
         if (request != null) { //means we're first. call off any pending timeouts
             request.cancelTimeout();
@@ -106,11 +106,11 @@ public final class GenReplyQueue<SVC_T extends GenItfRpcSvc<SVC_T>> implements G
     }
 
     private  class PendingRequest {
-        private final CompletionHandler<GenItfRpcReply<SVC_T>, GenItfXdrTransport<SVC_T>> handler;
+        private final CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> handler;
         private final ScheduledFuture<?> scheduledTimeout;
         private final SocketAddress addr;
 
-        public PendingRequest(SocketAddress addr, CompletionHandler<GenItfRpcReply<SVC_T>, GenItfXdrTransport<SVC_T>> handler, ScheduledFuture<?> scheduledTimeout) {
+        public PendingRequest(SocketAddress addr, CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> handler, ScheduledFuture<?> scheduledTimeout) {
             this.handler = handler;
             this.scheduledTimeout = scheduledTimeout;
             this.addr = addr;

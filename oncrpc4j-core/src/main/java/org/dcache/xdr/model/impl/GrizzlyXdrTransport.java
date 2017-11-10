@@ -25,9 +25,9 @@ import java.nio.channels.CompletionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.dcache.xdr.Xdr;
-import org.dcache.xdr.model.itf.GenItfReplyQueue;
-import org.dcache.xdr.model.itf.GenItfRpcSvc;
-import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.itf.ReplyQueueItf;
+import org.dcache.xdr.model.itf.RpcSvcItf;
+import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.dcache.xdr.model.itf.GenXdrTransport;
 import org.glassfish.grizzly.Buffer;
 import org.glassfish.grizzly.Connection;
@@ -37,20 +37,20 @@ import org.glassfish.grizzly.asyncqueue.WritableMessage;
 
 import static java.util.Objects.requireNonNull;
 
-public class GenGrizzlyXdrTransport<SVC_T extends GenItfRpcSvc<SVC_T>> implements GenXdrTransport<SVC_T> {
+public class GrizzlyXdrTransport<SVC_T extends RpcSvcItf<SVC_T>> implements GenXdrTransport<SVC_T> {
 
-    private final static Logger _log = LoggerFactory.getLogger(GenGrizzlyXdrTransport.class);
+    private final static Logger _log = LoggerFactory.getLogger(GrizzlyXdrTransport.class);
 
     private final Connection<InetSocketAddress> _connection;
-    private final GenItfReplyQueue<SVC_T> _replyQueue;
+    private final ReplyQueueItf<SVC_T> _replyQueue;
     private final InetSocketAddress _localAddress;
     private final InetSocketAddress _remoteAddress;
 
-    public GenGrizzlyXdrTransport(Connection<InetSocketAddress> connection, GenItfReplyQueue<SVC_T> replyQueue) {
+    public GrizzlyXdrTransport(Connection<InetSocketAddress> connection, ReplyQueueItf<SVC_T> replyQueue) {
         this(connection, connection.getPeerAddress(), replyQueue);
     }
 
-    public GenGrizzlyXdrTransport(Connection<InetSocketAddress> connection, InetSocketAddress remoteAddress, GenItfReplyQueue<SVC_T> replyQueue) {
+    public GrizzlyXdrTransport(Connection<InetSocketAddress> connection, InetSocketAddress remoteAddress, ReplyQueueItf<SVC_T> replyQueue) {
         _connection = connection;
         _replyQueue = replyQueue;
         _localAddress = _connection.getLocalAddress();
@@ -96,13 +96,13 @@ public class GenGrizzlyXdrTransport<SVC_T extends GenItfRpcSvc<SVC_T>> implement
     }
 
     @Override
-    public GenItfReplyQueue<SVC_T> getReplyQueue() {
+    public ReplyQueueItf<SVC_T> getReplyQueue() {
         return _replyQueue;
     }
 
     @Override
-    public GenItfXdrTransport<SVC_T> getPeerTransport() {
-        return new GenGrizzlyXdrTransport<SVC_T>(_connection, getReplyQueue());
+    public XdrTransportItf<SVC_T> getPeerTransport() {
+        return new GrizzlyXdrTransport<SVC_T>(_connection, getReplyQueue());
     }
 
     @Override

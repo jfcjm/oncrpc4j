@@ -29,9 +29,9 @@ import org.slf4j.LoggerFactory;
 import javax.security.auth.Subject;
 import javax.security.auth.kerberos.KerberosPrincipal;
 
-import org.dcache.xdr.GenOncRpcSvc;
+import org.dcache.xdr.OncRpcSvc;
 import org.dcache.xdr.RpcLoginService;
-import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.dcache.utils.Opaque;
 
 import org.ietf.jgss.GSSContext;
@@ -103,7 +103,7 @@ public class GssSessionManager {
         return context;
     }
 
-    public Subject subjectOf(GenItfXdrTransport<GenOncRpcSvc> transport, GSSContext context) {
+    public Subject subjectOf(XdrTransportItf<OncRpcSvc> transport, GSSContext context) {
         return _loginService.login(transport, context);
     }
 }

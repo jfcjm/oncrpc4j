@@ -26,9 +26,9 @@ import org.dcache.xdr.RpcMessageType;
 import org.dcache.xdr.Xdr;
 import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrEncodingStream;
-import org.dcache.xdr.model.itf.GenItfReplyQueue;
-import org.dcache.xdr.model.itf.GenItfRpcReply;
-import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.itf.ReplyQueueItf;
+import org.dcache.xdr.model.itf.RpcReplyItf;
+import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.dcache.xdr.model.root.GenAbstractRpcCall;
 import org.dcache.xdr.model.root.RpcMessage;
 import org.slf4j.Logger;
@@ -58,20 +58,20 @@ public final class GenVirRpcCall extends GenAbstractRpcCall<GenVirOncRpcSvc> imp
      * @param ver       veriosn du programme
      * @param transport XdrTransport to use
      */
-    public GenVirRpcCall(int prog, int ver,  GenItfXdrTransport<GenVirOncRpcSvc> transport) {
+    public GenVirRpcCall(int prog, int ver,  XdrTransportItf<GenVirOncRpcSvc> transport) {
         this(prog, ver,  new Xdr(Xdr.INITIAL_XDR_SIZE), transport);
     }
 
-    public GenVirRpcCall(int prog, int ver,  Xdr xdr, GenItfXdrTransport<GenVirOncRpcSvc> transport) {
+    public GenVirRpcCall(int prog, int ver,  Xdr xdr, XdrTransportItf<GenVirOncRpcSvc> transport) {
         super(prog,ver,null,xdr,transport);
         
     }
 
-    public GenVirRpcCall(int xid, Xdr xdr, GenItfXdrTransport<GenVirOncRpcSvc> transport) {
+    public GenVirRpcCall(int xid, Xdr xdr, XdrTransportItf<GenVirOncRpcSvc> transport) {
         super(xid,xdr,transport);
     }
 
-    public GenVirRpcCall(int xid, int prog, int ver, int proc, Xdr xdr, GenItfXdrTransport<GenVirOncRpcSvc> transport) {
+    public GenVirRpcCall(int xid, int prog, int ver, int proc, Xdr xdr, XdrTransportItf<GenVirOncRpcSvc> transport) {
         super(xid,prog,ver,proc,null,xdr,transport);
     }
     /* (non-Javadoc)
@@ -128,7 +128,7 @@ public final class GenVirRpcCall extends GenAbstractRpcCall<GenVirOncRpcSvc> imp
      */
     @Override
     protected int callInternal(int procedure, XdrAble args, 
-            CompletionHandler<GenItfRpcReply<GenVirOncRpcSvc>, GenItfXdrTransport<GenVirOncRpcSvc>> callback,
+            CompletionHandler<RpcReplyItf<GenVirOncRpcSvc>, XdrTransportItf<GenVirOncRpcSvc>> callback,
                              long timeoutValue, TimeUnit timeoutUnits, RpcAuth auth)
             throws IOException {
         int xid = nextXid();
@@ -148,9 +148,9 @@ public final class GenVirRpcCall extends GenAbstractRpcCall<GenVirOncRpcSvc> imp
         System.out.println("wrote " + xdr.asBuffer().limit() + "bytes");
         
         
-        GenItfXdrTransport<GenVirOncRpcSvc> _transport = getTransport();
+        XdrTransportItf<GenVirOncRpcSvc> _transport = getTransport();
         
-        GenItfReplyQueue<GenVirOncRpcSvc> replyQueue = _transport.getReplyQueue();
+        ReplyQueueItf<GenVirOncRpcSvc> replyQueue = _transport.getReplyQueue();
         if (callback != null) {
             replyQueue.registerKey(xid, _transport.getLocalSocketAddress(), callback, timeoutValue, timeoutUnits);
         } else {
@@ -215,7 +215,7 @@ public final class GenVirRpcCall extends GenAbstractRpcCall<GenVirOncRpcSvc> imp
             reply.xdrEncode(xdr);
             xdr.endEncoding();
             {
-                GenItfXdrTransport<GenVirOncRpcSvc> _transport = getTransport();
+                XdrTransportItf<GenVirOncRpcSvc> _transport = getTransport();
                 _transport.send((Xdr)xdr, _transport.getRemoteSocketAddress(), _sendNotificationHandler);
             }
 

@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.dcache.xdr.OncRpcProgram;
 
-public interface GenItfRpcSvc<SVC_T extends GenItfRpcSvc<SVC_T>> {
+public interface RpcSvcItf<SVC_T extends RpcSvcItf<SVC_T>> {
 
     /**
      * Register a new PRC service. Existing registration will be overwritten.
@@ -37,9 +37,9 @@ public interface GenItfRpcSvc<SVC_T extends GenItfRpcSvc<SVC_T>> {
 
     void stop(long gracePeriod, TimeUnit timeUnit) throws IOException;
 
-    GenItfXdrTransport<SVC_T> connect(InetSocketAddress socketAddress) throws IOException;
+    XdrTransportItf<SVC_T> connect(InetSocketAddress socketAddress) throws IOException;
 
-    GenItfXdrTransport<SVC_T> connect(InetSocketAddress socketAddress, long timeout, TimeUnit timeUnit) throws IOException;
+    XdrTransportItf<SVC_T> connect(InetSocketAddress socketAddress, long timeout, TimeUnit timeUnit) throws IOException;
 
     /**
      * Returns the address of the endpoint this service is bound to,

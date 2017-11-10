@@ -25,32 +25,32 @@ import java.net.InetSocketAddress;
 import java.nio.channels.CompletionHandler;
 import java.util.concurrent.TimeUnit;
 
-import org.dcache.xdr.model.itf.GenItfReplyQueue;
-import org.dcache.xdr.model.itf.GenItfRpcReply;
-import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.itf.ReplyQueueItf;
+import org.dcache.xdr.model.itf.RpcReplyItf;
+import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.dcache.xdr.model.itf.GenXdrTransport;
 import org.dcache.xdr.model.root.GenAbstractRpcCall;
 import org.dcache.xdr.model.root.RpcMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GenRpcCall extends GenAbstractRpcCall<GenOncRpcSvc>  {
-    final static Logger _log = LoggerFactory.getLogger(GenRpcCall.class);
+public class RpcCall extends GenAbstractRpcCall<OncRpcSvc>  {
+    final static Logger _log = LoggerFactory.getLogger(RpcCall.class);
     
 
-    public GenRpcCall(int prog, int ver, RpcAuth cred, GenItfXdrTransport<GenOncRpcSvc> transport) {
+    public RpcCall(int prog, int ver, RpcAuth cred, XdrTransportItf<OncRpcSvc> transport) {
         super(prog, ver, cred, new Xdr(Xdr.INITIAL_XDR_SIZE), transport);
     }
 
-    public GenRpcCall(int prog, int ver, RpcAuth cred, Xdr xdr, GenXdrTransport<GenOncRpcSvc> transport) {
+    public RpcCall(int prog, int ver, RpcAuth cred, Xdr xdr, GenXdrTransport<OncRpcSvc> transport) {
         super(prog, ver, cred, xdr, transport);
     }
 
-    public GenRpcCall(int xid, Xdr xdr, GenXdrTransport<GenOncRpcSvc> transport) {
+    public RpcCall(int xid, Xdr xdr, GenXdrTransport<OncRpcSvc> transport) {
         super(xid,xdr,transport);
     }
 
-    public GenRpcCall(int xid, int prog, int ver, int proc, RpcAuth cred, Xdr xdr, GenItfXdrTransport<GenOncRpcSvc> transport) {
+    public RpcCall(int xid, int prog, int ver, int proc, RpcAuth cred, Xdr xdr, XdrTransportItf<OncRpcSvc> transport) {
         super(xid,prog,ver,proc,cred,xdr,transport);
     }
 
@@ -143,7 +143,7 @@ public class GenRpcCall extends GenAbstractRpcCall<GenOncRpcSvc>  {
      */
     @Override
     protected int callInternal(int procedure, XdrAble args,
-            CompletionHandler<GenItfRpcReply<GenOncRpcSvc>, GenItfXdrTransport<GenOncRpcSvc>> callback,
+            CompletionHandler<RpcReplyItf<OncRpcSvc>, XdrTransportItf<OncRpcSvc>> callback,
                              long timeoutValue, TimeUnit timeoutUnits, RpcAuth auth)
             throws IOException {
 
@@ -165,7 +165,7 @@ public class GenRpcCall extends GenAbstractRpcCall<GenOncRpcSvc>  {
         args.xdrEncode(xdr);
         xdr.endEncoding();
 
-        GenItfReplyQueue<GenOncRpcSvc> replyQueue = _transport.getReplyQueue();
+        ReplyQueueItf<OncRpcSvc> replyQueue = _transport.getReplyQueue();
         if (callback != null) {
             replyQueue.registerKey(xid, _transport.getLocalSocketAddress(), callback, timeoutValue, timeoutUnits);
         } else {

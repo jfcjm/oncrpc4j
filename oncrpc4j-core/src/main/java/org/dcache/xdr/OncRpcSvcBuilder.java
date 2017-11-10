@@ -21,7 +21,7 @@ package org.dcache.xdr;
 
 import static org.dcache.xdr.ConversionUtils.helperCAST;
 import org.dcache.xdr.gss.GssSessionManager;
-import org.dcache.xdr.model.itf.GenItfOncRpcSvcBuilder;
+import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
 import org.dcache.xdr.model.root.GenAbstractOncRpcSvcBuilder;
 /**
  * 
@@ -31,18 +31,18 @@ import org.dcache.xdr.model.root.GenAbstractOncRpcSvcBuilder;
  * @author jmk
  *
  */
-public  final class GenOncRpcSvcBuilder  extends GenAbstractOncRpcSvcBuilder<GenOncRpcSvc> {
+public  final class OncRpcSvcBuilder  extends GenAbstractOncRpcSvcBuilder<OncRpcSvc> {
 
     private GssSessionManager _gssSessionManager;
     private boolean _autoPublish = true;
     
     @Override
-    protected GenOncRpcSvc getNewOncRpcSvc() {
-        return new GenOncRpcSvc(this);
+    protected OncRpcSvc getNewOncRpcSvc() {
+        return new OncRpcSvc(this);
     }
 
    
-    public GenOncRpcSvcBuilder withGssSessionManager(GssSessionManager gssSessionManager) {
+    public OncRpcSvcBuilder withGssSessionManager(GssSessionManager gssSessionManager) {
         _gssSessionManager = gssSessionManager;
         return this;
     }
@@ -54,28 +54,28 @@ public  final class GenOncRpcSvcBuilder  extends GenAbstractOncRpcSvcBuilder<Gen
     
 
     @Override
-    public GenOncRpcSvcBuilder withUDP() {
+    public OncRpcSvcBuilder withUDP() {
         return helperCAST(super.withUDP());
     }
     
 
     @Override
-    public GenOncRpcSvcBuilder withTCP() {
+    public OncRpcSvcBuilder withTCP() {
         return helperCAST(super.withTCP());
     }
 
     @Override
-    public  GenOncRpcSvcBuilder withIpProtocolType(int protocolType) {
+    public  OncRpcSvcBuilder withIpProtocolType(int protocolType) {
         return helperCAST(super.withIpProtocolType(protocolType));
     }
     
-    public GenOncRpcSvcBuilder  withAutoPublish() {
+    public OncRpcSvcBuilder  withAutoPublish() {
         _autoPublish = true;
         return this;
     }
 
    
-    public GenOncRpcSvcBuilder withoutAutoPublish() {
+    public OncRpcSvcBuilder withoutAutoPublish() {
         _autoPublish = false;
         return this;
     }

@@ -22,7 +22,7 @@ package org.dcache.xdr;
 import java.io.IOException;
 import java.nio.ByteOrder;
 
-import org.dcache.xdr.model.impl.GenReplyQueue;
+import org.dcache.xdr.model.impl.ReplyQueue;
 import org.dcache.xdr.model.root.RpcMessage;
 import org.glassfish.grizzly.Buffer;
 import org.glassfish.grizzly.Connection;
@@ -36,14 +36,14 @@ public class RpcMessageParserTCPTest {
     private final static int INVOKE = 0;
     private final static int STOP = 1;
     private FilterChainContext mockedContext;
-    private GenRpcMessageParserTCP2 tcpParser;
-    private GenRpcProtocolFilter rpc;
+    private RpcMessageParserTCP tcpParser;
+    private RpcProtocolFilter rpc;
 
     @Before
     public void setUp() {
         mockedContext = FilterChainContext.create(mock(Connection.class));
-        tcpParser = new GenRpcMessageParserTCP2();
-        rpc = new GenRpcProtocolFilter(new GenReplyQueue());
+        tcpParser = new RpcMessageParserTCP();
+        rpc = new RpcProtocolFilter(new ReplyQueue());
     }
 
     @Test

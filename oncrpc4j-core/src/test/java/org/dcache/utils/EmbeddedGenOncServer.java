@@ -1,29 +1,29 @@
 package org.dcache.utils;
 
 import java.io.IOException;
-import org.dcache.xdr.GenOncRpcSvcBuilder;
-import org.dcache.xdr.GenRpcCall;
-import org.dcache.xdr.GenOncRpcSvc;
+import org.dcache.xdr.OncRpcSvcBuilder;
+import org.dcache.xdr.RpcCall;
+import org.dcache.xdr.OncRpcSvc;
 import org.dcache.xdr.RpcAuthTypeNone;
-import org.dcache.xdr.model.itf.GenItfOncRpcSvcBuilder;
-import org.dcache.xdr.model.itf.GenItfRpcCall;
-import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
+import org.dcache.xdr.model.itf.RpcCallItf;
+import org.dcache.xdr.model.itf.XdrTransportItf;
 
-public class EmbeddedGenOncServer extends  EmbeddedGenericServer<GenOncRpcSvc> {
+public class EmbeddedGenOncServer extends  EmbeddedGenericServer<OncRpcSvc> {
 
     public EmbeddedGenOncServer(int i) throws IOException {
         super(i);
     }
 
     @Override
-    protected GenItfRpcCall<GenOncRpcSvc> createRpcCaller(int prognum, int progver, GenItfXdrTransport<GenOncRpcSvc> t) {
-        return new GenRpcCall(prognum, progver, new RpcAuthTypeNone(), t);
+    protected RpcCallItf<OncRpcSvc> createRpcCaller(int prognum, int progver, XdrTransportItf<OncRpcSvc> t) {
+        return new RpcCall(prognum, progver, new RpcAuthTypeNone(), t);
        
     }
 
     @Override
-    protected GenItfOncRpcSvcBuilder<GenOncRpcSvc> createOncSvcBuilder() {
-         GenOncRpcSvcBuilder result = new GenOncRpcSvcBuilder().withTCP().withoutAutoPublish();
+    protected OncRpcSvcBuilderItf<OncRpcSvc> createOncSvcBuilder() {
+         OncRpcSvcBuilder result = new OncRpcSvcBuilder().withTCP().withoutAutoPublish();
          return result;
     }
 }

@@ -21,8 +21,8 @@ package org.dcache.xdr;
 
 import java.io.IOException;
 
-import org.dcache.xdr.model.itf.GenItfRpcCall;
-import org.dcache.xdr.model.itf.GenItfRpcSvc;
+import org.dcache.xdr.model.itf.RpcCallItf;
+import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.GenRpcDispatchable;
 import org.dcache.xdr.portmap.OncRpcEmbeddedPortmap;
 //TODO à génériser
@@ -49,13 +49,13 @@ public class SimpleRpcServer {
         GenRpcDispatchable dummy = new GenRpcDispatchable() {
 
             @Override
-            public void dispatchOncRpcCall(GenItfRpcCall call) throws OncRpcException, IOException {
+            public void dispatchOncRpcCall(RpcCallItf call) throws OncRpcException, IOException {
                 call.reply(XdrVoid.XDR_VOID);
                 
             }
         };
 
-         GenItfRpcSvc svc = new GenOncRpcSvcBuilder()
+         RpcSvcItf svc = new OncRpcSvcBuilder()
                 .withTCP()
                 .withAutoPublish()
                 .withPort(port)

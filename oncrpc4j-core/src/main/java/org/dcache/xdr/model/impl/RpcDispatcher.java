@@ -32,9 +32,9 @@ import org.slf4j.LoggerFactory;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.OncRpcProgram;
 import org.dcache.xdr.RpcException;
-import org.dcache.xdr.model.itf.GenItfRpcCall;
-import org.dcache.xdr.model.itf.GenItfRpcDispatcher;
-import org.dcache.xdr.model.itf.GenItfRpcSvc;
+import org.dcache.xdr.model.itf.RpcCallItf;
+import org.dcache.xdr.model.itf.RpcDispatcherItf;
+import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.GenRpcDispatchable;
 import org.glassfish.grizzly.filterchain.BaseFilter;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
@@ -42,9 +42,9 @@ import org.glassfish.grizzly.filterchain.NextAction;
 
 import static java.util.Objects.requireNonNull;
 
-public final class GenRpcDispatcher<SVC_T extends GenItfRpcSvc<SVC_T>> extends BaseFilter implements GenItfRpcDispatcher<SVC_T> {
+public final class RpcDispatcher<SVC_T extends RpcSvcItf<SVC_T>> extends BaseFilter implements RpcDispatcherItf<SVC_T> {
 
-    private final static Logger _log = LoggerFactory.getLogger(GenRpcDispatcher.class);
+    private final static Logger _log = LoggerFactory.getLogger(RpcDispatcher.class);
     /**
      * List of registered RPC services
      *
@@ -72,7 +72,7 @@ public final class GenRpcDispatcher<SVC_T extends GenItfRpcSvc<SVC_T>> extends B
      *
      * @throws NullPointerException if executor or program is null
      */
-    public GenRpcDispatcher(ExecutorService executor, Map<OncRpcProgram,
+    public RpcDispatcher(ExecutorService executor, Map<OncRpcProgram,
             GenRpcDispatchable<SVC_T>> programs, boolean withSubjectPropagation)
             throws NullPointerException {
 
@@ -87,7 +87,7 @@ public final class GenRpcDispatcher<SVC_T extends GenItfRpcSvc<SVC_T>> extends B
     @Override
     public NextAction handleRead(final FilterChainContext ctx) throws IOException {
 
-        final GenItfRpcCall<SVC_T> call = ctx.getMessage();
+        final RpcCallItf<SVC_T> call = ctx.getMessage();
         final int prog = call.getProgram();
         final int vers = call.getProgramVersion();
         final int proc = call.getProcedure();

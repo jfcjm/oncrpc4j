@@ -25,17 +25,17 @@ import java.util.HashSet;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.dcache.xdr.GenOncRpcSvc;
+import org.dcache.xdr.OncRpcSvc;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.OncRpcProgram;
-import org.dcache.xdr.GenOncRpcSvcBuilder;
+import org.dcache.xdr.OncRpcSvcBuilder;
 import org.dcache.xdr.XdrBoolean;
 import org.dcache.xdr.XdrVoid;
-import org.dcache.xdr.model.itf.GenItfRpcCall;
-import org.dcache.xdr.model.itf.GenOncRpcDispatchable;
+import org.dcache.xdr.model.itf.RpcCallItf;
+import org.dcache.xdr.model.itf.OncRpcDispatchableItf;
 
 
-public class GenOncRpcbindServer implements GenOncRpcDispatchable {
+public class GenOncRpcbindServer implements OncRpcDispatchableItf {
 	static final ArrayList<String> v2NetIDs = new ArrayList<String>() {{
 		add("tcp");
 		add("udp");
@@ -54,7 +54,7 @@ public class GenOncRpcbindServer implements GenOncRpcDispatchable {
         //_services.add(new rpcb(100000, 4, "tcp", "0.0.0.0.0.111", "superuser"));
     }
 
-    public void dispatchOncRpcCall(GenItfRpcCall<GenOncRpcSvc> call) throws OncRpcException, IOException {
+    public void dispatchOncRpcCall(RpcCallItf<OncRpcSvc> call) throws OncRpcException, IOException {
         int version = call.getProgramVersion();
 
         switch(version) {
@@ -69,7 +69,7 @@ public class GenOncRpcbindServer implements GenOncRpcDispatchable {
         }
     }
 
-    private void processV2Call(GenItfRpcCall<GenOncRpcSvc> call) throws OncRpcException, IOException {
+    private void processV2Call(RpcCallItf<OncRpcSvc> call) throws OncRpcException, IOException {
         switch(call.getProcedure()) {
             case OncRpcPortmap.PMAPPROC_NULL:
                 call.reply(XdrVoid.XDR_VOID);
@@ -169,9 +169,9 @@ public class GenOncRpcbindServer implements GenOncRpcDispatchable {
         }
 
 
-        GenOncRpcDispatchable rpcbind = new GenOncRpcbindServer();
+        OncRpcDispatchableItf rpcbind = new GenOncRpcbindServer();
 
-        GenOncRpcSvc server  = new GenOncRpcSvcBuilder()
+        OncRpcSvc server  = new OncRpcSvcBuilder()
                 .withTCP()
                 .withUDP()
                 .withoutAutoPublish()

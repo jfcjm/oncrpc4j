@@ -24,7 +24,7 @@ import org.dcache.xdr.BadXdrOncRpcException;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcReplyStatus;
 import org.dcache.xdr.Xdr;
-import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.dcache.xdr.model.root.GenAbstractRpcReply;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +34,7 @@ public final class GenVirRpcReply extends GenAbstractRpcReply<GenVirOncRpcSvc> i
     private remote_error _error;
    
 
-    public GenVirRpcReply(int xid, Xdr xdr, GenItfXdrTransport<GenVirOncRpcSvc> transport) throws OncRpcException, IOException {
+    public GenVirRpcReply(int xid, Xdr xdr, XdrTransportItf<GenVirOncRpcSvc> transport) throws OncRpcException, IOException {
         super(xid,xdr,transport);
         _log.debug("reply status: {}",_replyStatus);
     }

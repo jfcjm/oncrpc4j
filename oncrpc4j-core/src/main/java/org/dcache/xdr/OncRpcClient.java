@@ -23,49 +23,49 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
-import org.dcache.xdr.model.itf.GenItfOncRpcSvcBuilder;
-import org.dcache.xdr.model.itf.GenItfRpcSvc;
-import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
+import org.dcache.xdr.model.itf.RpcSvcItf;
+import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.dcache.xdr.model.itf.GenXdrTransport;
 import org.dcache.xdr.model.root.GenAbstractOncRpcClient;
 
-public class GenOncRpcClient extends GenAbstractOncRpcClient<GenOncRpcSvc> {
+public class OncRpcClient extends GenAbstractOncRpcClient<OncRpcSvc> {
 
-    public GenOncRpcClient(InetAddress address, int protocol, int port) {
+    public OncRpcClient(InetAddress address, int protocol, int port) {
         this(new InetSocketAddress(address, port), protocol, 0, IoStrategy.SAME_THREAD, DEFAULT_SERVICE_NAME);
     }
 
-    public GenOncRpcClient(InetAddress address, int protocol, int port, int localPort) {
+    public OncRpcClient(InetAddress address, int protocol, int port, int localPort) {
         this(new InetSocketAddress(address, port), protocol, localPort, IoStrategy.SAME_THREAD, DEFAULT_SERVICE_NAME);
     }
 
-    public GenOncRpcClient(InetAddress address, int protocol, int port, int localPort, IoStrategy ioStrategy) {
+    public OncRpcClient(InetAddress address, int protocol, int port, int localPort, IoStrategy ioStrategy) {
         this(new InetSocketAddress(address, port), protocol, localPort, ioStrategy, DEFAULT_SERVICE_NAME);
     }
 
-    public GenOncRpcClient(InetAddress address, int protocol, int port, int localPort, IoStrategy ioStrategy, String serviceName) {
+    public OncRpcClient(InetAddress address, int protocol, int port, int localPort, IoStrategy ioStrategy, String serviceName) {
         this(new InetSocketAddress(address, port), protocol, localPort, ioStrategy, serviceName);
     }
 
-    public GenOncRpcClient(InetSocketAddress socketAddress, int protocol) {
+    public OncRpcClient(InetSocketAddress socketAddress, int protocol) {
         this(socketAddress, protocol, 0, IoStrategy.SAME_THREAD, DEFAULT_SERVICE_NAME);
     }
 
-    public GenOncRpcClient(InetSocketAddress socketAddress, int protocol, int localPort, IoStrategy ioStrategy, String serviceName) {
+    public OncRpcClient(InetSocketAddress socketAddress, int protocol, int localPort, IoStrategy ioStrategy, String serviceName) {
         super(socketAddress,protocol,localPort,ioStrategy,serviceName);
     }
     
     @Override
-    protected GenItfOncRpcSvcBuilder<GenOncRpcSvc> getRpcSvcBuilder() {
-        return new GenOncRpcSvcBuilder().withTCP().withUDP();
+    protected OncRpcSvcBuilderItf<OncRpcSvc> getRpcSvcBuilder() {
+        return new OncRpcSvcBuilder().withTCP().withUDP();
     }
     
     @Override
-    protected GenItfOncRpcSvcBuilder<GenOncRpcSvc> getRpcSvcBuilder(int protocol) {
-        return new GenOncRpcSvcBuilder().withIpProtocolType(protocol);
+    protected OncRpcSvcBuilderItf<OncRpcSvc> getRpcSvcBuilder(int protocol) {
+        return new OncRpcSvcBuilder().withIpProtocolType(protocol);
     }
     @Override
-    public  GenXdrTransport<GenOncRpcSvc> connect() throws IOException {
-        return (GenXdrTransport<GenOncRpcSvc>) super.connect();
+    public  GenXdrTransport<OncRpcSvc> connect() throws IOException {
+        return (GenXdrTransport<OncRpcSvc>) super.connect();
     }
 }

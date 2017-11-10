@@ -43,8 +43,8 @@ import org.dcache.xdr.XdrEncodingStream;
 import org.dcache.xdr.XdrInt;
 import org.dcache.xdr.XdrString;
 import org.dcache.xdr.XdrVoid;
-import org.dcache.xdr.model.itf.GenItfRpcSvc;
-import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.itf.RpcSvcItf;
+import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.dcache.xdr.model.itf.GenRpcDispatchable;
 import org.junit.After;
 import org.junit.Before;
@@ -68,8 +68,8 @@ public class ServerIntegrationWithSASL {
 
     private static final int PROGNUM = 536903814;
     private static final int PROGVER = 1;
-    private GenItfRpcSvc svc;
-    private GenItfRpcSvc clnt;
+    private RpcSvcItf svc;
+    private RpcSvcItf clnt;
 
     
     @Before
@@ -293,7 +293,7 @@ public class ServerIntegrationWithSASL {
                 .withRpcService(new OncRpcProgram(PROGNUM, PROGVER), upper)
                 .build();
         clnt.start();
-          GenItfXdrTransport t = clnt.connect(svc.getInetSocketAddress(IpProtocolType.TCP));
+          XdrTransportItf t = clnt.connect(svc.getInetSocketAddress(IpProtocolType.TCP));
         
     }
 

@@ -21,16 +21,16 @@ package org.dcache.xdr;
 
 import java.io.IOException;
 
-import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.dcache.xdr.model.root.GenAbstractRpcReply;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class GenRpcReply extends GenAbstractRpcReply<GenOncRpcSvc>  {
+public final class RpcReply extends GenAbstractRpcReply<OncRpcSvc>  {
 
-    private static final Logger _log = LoggerFactory.getLogger(GenRpcReply.class);
+    private static final Logger _log = LoggerFactory.getLogger(RpcReply.class);
 
-    public GenRpcReply(int xid, Xdr xdr, GenItfXdrTransport<GenOncRpcSvc> transport) throws OncRpcException, IOException {
+    public RpcReply(int xid, Xdr xdr, XdrTransportItf<OncRpcSvc> transport) throws OncRpcException, IOException {
         super(xid,xdr,transport);
     }
 

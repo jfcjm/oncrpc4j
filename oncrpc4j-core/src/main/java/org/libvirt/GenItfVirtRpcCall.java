@@ -7,9 +7,9 @@ import java.util.concurrent.TimeoutException;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcAuth;
 import org.dcache.xdr.XdrAble;
-import org.dcache.xdr.model.itf.GenItfRpcCall;
+import org.dcache.xdr.model.itf.RpcCallItf;
 
-public interface GenItfVirtRpcCall extends GenItfRpcCall<GenVirOncRpcSvc>{
+public interface GenItfVirtRpcCall extends RpcCallItf<GenVirOncRpcSvc>{
 
     @Override
     void call(int procedure, XdrAble args, XdrAble result, long timeoutValue, TimeUnit timeoutUnits, RpcAuth auth)

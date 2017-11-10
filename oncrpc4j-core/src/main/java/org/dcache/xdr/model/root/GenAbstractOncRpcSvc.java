@@ -23,13 +23,13 @@ import java.util.concurrent.TimeoutException;
 import org.dcache.xdr.IoStrategy;
 import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcProgram;
-import org.dcache.xdr.model.impl.GenGrizzlyXdrTransport;
-import org.dcache.xdr.model.impl.GenReplyQueue;
-import org.dcache.xdr.model.impl.GenRpcDispatcher;
-import org.dcache.xdr.model.itf.GenItfOncRpcSvcBuilder;
-import org.dcache.xdr.model.itf.GenItfReplyQueue;
-import org.dcache.xdr.model.itf.GenItfRpcSvc;
-import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.impl.GrizzlyXdrTransport;
+import org.dcache.xdr.model.impl.ReplyQueue;
+import org.dcache.xdr.model.impl.RpcDispatcher;
+import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
+import org.dcache.xdr.model.itf.ReplyQueueItf;
+import org.dcache.xdr.model.itf.RpcSvcItf;
+import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.dcache.xdr.model.itf.GenRpcDispatchable;
 import org.glassfish.grizzly.CloseType;
 import org.glassfish.grizzly.Connection;
@@ -52,13 +52,13 @@ import org.glassfish.grizzly.strategies.SameThreadIOStrategy;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-public abstract class GenAbstractOncRpcSvc<SVC_T extends GenItfRpcSvc<SVC_T>> implements GenItfRpcSvc<SVC_T>{
+public abstract class GenAbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implements RpcSvcItf<SVC_T>{
 
     private static final Logger _log = LoggerFactory.getLogger(GenAbstractOncRpcSvc.class);
 
     protected abstract void addPostTransportProtocolFilters(FilterChainBuilder filterChain, Transport t);
 
-    protected abstract Filter getRpcProtocolFilter(GenItfReplyQueue<SVC_T> replyQueue);
+    protected abstract Filter getRpcProtocolFilter(ReplyQueueItf<SVC_T> replyQueue);
 
     protected abstract Filter rpcMessageReceiverFor(Transport t);
 
@@ -69,14 +69,14 @@ public abstract class GenAbstractOncRpcSvc<SVC_T extends GenItfRpcSvc<SVC_T>> im
     protected final List<NIOTransport> _transports = new ArrayList<>();
     protected final Set<Connection<InetSocketAddress>> _boundConnections = new HashSet<>();
     protected final ExecutorService _requestExecutor;
-    protected final GenItfReplyQueue<SVC_T> _replyQueue = new GenReplyQueue<>();
+    protected final ReplyQueueItf<SVC_T> _replyQueue = new ReplyQueue<>();
     protected final boolean _withSubjectPropagation;
     /**
      * mapping of registered programs.
      */
     protected final Map<OncRpcProgram, GenRpcDispatchable<SVC_T>> _programs = new ConcurrentHashMap<>();
 
-    public  GenAbstractOncRpcSvc(GenItfOncRpcSvcBuilder<SVC_T> builder) {
+    public  GenAbstractOncRpcSvc(OncRpcSvcBuilderItf<SVC_T> builder) {
         final int protocol = builder.getProtocol();
         _log.info("At sstart Protocol is {}" , protocol);
         if ((protocol & (IpProtocolType.TCP | IpProtocolType.UDP)) == 0) {
@@ -144,7 +144,7 @@ public abstract class GenAbstractOncRpcSvc<SVC_T extends GenItfRpcSvc<SVC_T>> im
             filterChain.add(rpcMessageReceiverFor(t));
             filterChain.add(getRpcProtocolFilter(_replyQueue));
             addPostRpcProtocolFilter(filterChain);
-            filterChain.add(new GenRpcDispatcher<SVC_T>(_requestExecutor, _programs, _withSubjectPropagation));
+            filterChain.add(new RpcDispatcher<SVC_T>(_requestExecutor, _programs, _withSubjectPropagation));
             final FilterChain filters = filterChain.build();
 
             t.setProcessor(filters);
@@ -235,12 +235,12 @@ public abstract class GenAbstractOncRpcSvc<SVC_T extends GenItfRpcSvc<SVC_T>> im
     }
 
     @Override
-    public GenItfXdrTransport<SVC_T> connect(InetSocketAddress socketAddress) throws IOException {
+    public XdrTransportItf<SVC_T> connect(InetSocketAddress socketAddress) throws IOException {
         return connect(socketAddress, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
 
     @Override
-    public GenItfXdrTransport<SVC_T> connect(InetSocketAddress socketAddress, long timeout, TimeUnit timeUnit) throws IOException {
+    public XdrTransportItf<SVC_T> connect(InetSocketAddress socketAddress, long timeout, TimeUnit timeUnit) throws IOException {
     
         // in client mode only one transport is defined
         NIOTransport transport = _transports.get(0);
@@ -256,7 +256,7 @@ public abstract class GenAbstractOncRpcSvc<SVC_T extends GenItfRpcSvc<SVC_T>> im
         try {
             //noinspection unchecked
             Connection<InetSocketAddress> connection = connectFuture.get(timeout, timeUnit);
-            return new GenGrizzlyXdrTransport<SVC_T>(connection, _replyQueue);
+            return new GrizzlyXdrTransport<SVC_T>(connection, _replyQueue);
         } catch (ExecutionException e) {
             Throwable t = getRootCause(e);
             propagateIfPossible(t, IOException.class);

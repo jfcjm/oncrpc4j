@@ -12,13 +12,13 @@ import org.dcache.xdr.RpcRejectStatus;
 import org.dcache.xdr.RpcReplyStatus;
 import org.dcache.xdr.Xdr;
 import org.dcache.xdr.XdrAble;
-import org.dcache.xdr.model.itf.GenItfRpcReply;
-import org.dcache.xdr.model.itf.GenItfRpcSvc;
-import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.itf.RpcReplyItf;
+import org.dcache.xdr.model.itf.RpcSvcItf;
+import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class GenAbstractRpcReply<SVC_T extends GenItfRpcSvc<SVC_T>> implements GenItfRpcReply<SVC_T>{
+public abstract class GenAbstractRpcReply<SVC_T extends RpcSvcItf<SVC_T>> implements RpcReplyItf<SVC_T>{
 
     private static final Logger _log = LoggerFactory.getLogger(GenAbstractRpcReply.class);
 
@@ -36,7 +36,7 @@ public abstract class GenAbstractRpcReply<SVC_T extends GenItfRpcSvc<SVC_T>> imp
      * XDR message
      */
     protected final Xdr _xdr;
-    protected final GenItfXdrTransport<SVC_T> _transport;
+    protected final XdrTransportItf<SVC_T> _transport;
     
     protected int _replyStatus;
     protected int _acceptedStatus;
@@ -44,7 +44,7 @@ public abstract class GenAbstractRpcReply<SVC_T extends GenItfRpcSvc<SVC_T>> imp
     protected MismatchInfo _mismatchInfo;
     protected int _authStatus;
     protected RpcAuthVerifier _verf;
-    public GenAbstractRpcReply(int xid, Xdr xdr, GenItfXdrTransport<SVC_T> transport) throws OncRpcException, IOException {
+    public GenAbstractRpcReply(int xid, Xdr xdr, XdrTransportItf<SVC_T> transport) throws OncRpcException, IOException {
         super();
         _xid = xid;
         _xdr = xdr;

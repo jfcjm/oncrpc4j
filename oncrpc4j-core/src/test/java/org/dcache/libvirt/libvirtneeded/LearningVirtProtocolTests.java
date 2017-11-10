@@ -37,7 +37,7 @@ import org.dcache.xdr.RpcAuth;
 import org.dcache.xdr.Xdr;
 import org.dcache.xdr.XdrString;
 import org.dcache.xdr.XdrVoid;
-import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.glassfish.grizzly.Buffer;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
@@ -253,7 +253,7 @@ public class LearningVirtProtocolTests {
 		int port = 16509;
 		GenVirOncRpcClient client = new GenVirOncRpcClient(localhost,port);
 		assertNotNull(client);
-		 GenItfXdrTransport<GenVirOncRpcSvc> transport = client.connect();
+		 XdrTransportItf<GenVirOncRpcSvc> transport = client.connect();
 		assertNotNull(transport);
 		assertTrue(transport.isOpen());
 		int PROGNUM = 0x20008086;
@@ -290,7 +290,7 @@ public class LearningVirtProtocolTests {
 		int port = 16509;
 		GenVirOncRpcClient client = new GenVirOncRpcClient(localhost,port);
 		assertNotNull(client);
-		GenItfXdrTransport<GenVirOncRpcSvc> transport = client.connect();
+		XdrTransportItf<GenVirOncRpcSvc> transport = client.connect();
 		assertNotNull(transport);
 		assertTrue(transport.isOpen());
 		Object attachment = null;

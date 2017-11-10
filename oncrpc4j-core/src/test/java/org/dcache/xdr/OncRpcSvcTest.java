@@ -37,12 +37,12 @@ import static org.junit.Assert.*;
 @SuppressWarnings("deprecation")
 public class OncRpcSvcTest {
 
-    private GenOncRpcSvc svc;
+    private OncRpcSvc svc;
 	
 
     @Test
     public void testBindToInterface() throws IOException {
-        svc = new GenOncRpcSvcBuilder()
+        svc = new OncRpcSvcBuilder()
                 .withUDP()
                 .withoutAutoPublish()
                 .withTCP()
@@ -60,7 +60,7 @@ public class OncRpcSvcTest {
 
     @Test
     public void testNotBindToInterface() throws IOException {
-        svc = new GenOncRpcSvcBuilder()
+        svc = new OncRpcSvcBuilder()
                 .withUDP()
                 .withoutAutoPublish()
                 .withTCP()
@@ -82,7 +82,7 @@ public class OncRpcSvcTest {
 		String TEST_PROG_OWNER = "superuser";
 		GenOncRpcbindServer bindService = new GenOncRpcbindServer();
 		OncRpcProgram portMapProg = new OncRpcProgram(OncRpcPortmap.PORTMAP_PROGRAMM, OncRpcPortmap.PORTMAP_V2);
-        svc = new GenOncRpcSvcBuilder()
+        svc = new OncRpcSvcBuilder()
                 .withUDP()
                 .withoutAutoPublish()
                 .withTCP()
@@ -92,7 +92,7 @@ public class OncRpcSvcTest {
                 .build();
 		svc.register(portMapProg,bindService);
         svc.start();
-        try ( GenOncRpcClient rpcClient = new GenOncRpcClient(InetAddress.getByName(null), IpProtocolType.UDP, svc.getInetSocketAddress(IpProtocolType.UDP).getPort() ) ) {
+        try ( OncRpcClient rpcClient = new OncRpcClient(InetAddress.getByName(null), IpProtocolType.UDP, svc.getInetSocketAddress(IpProtocolType.UDP).getPort() ) ) {
 			OncPortmapClient portmapClient = new GenGenericPortmapClient(rpcClient.connect()); // init portmapper (only v2 atm)
             assertTrue(portmapClient.ping()); // ping portmap
 			assertTrue( portmapClient.getPort(OncRpcPortmap.PORTMAP_PROGRAMM, OncRpcPortmap.PORTMAP_V2, "tcp").equals("127.0.0.1.0.111") ); // check port

@@ -21,7 +21,7 @@ package org.dcache.libvirt;
 import java.util.concurrent.ExecutorService;
 
 import org.dcache.xdr.IpProtocolType;
-import org.dcache.xdr.model.itf.GenItfOncRpcSvcBuilder;
+import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
 import org.junit.Test;
 import org.libvirt.GenVirOncRpcSvc;
 import org.libvirt.GenVirOncRpcSvcBuilder;
@@ -56,7 +56,7 @@ public class OncRpcSvcBuilderTest {
     @Test
     public void shouldReturnDifferentExecutorForWorkerThreadStrategy() {
 
-        GenItfOncRpcSvcBuilder<GenVirOncRpcSvc> builder = new GenVirOncRpcSvcBuilder()
+        OncRpcSvcBuilderItf<GenVirOncRpcSvc> builder = new GenVirOncRpcSvcBuilder()
                 .withWorkerThreadIoStrategy();
 
         ExecutorService executorService = builder.getWorkerThreadExecutorService();
@@ -77,7 +77,7 @@ public class OncRpcSvcBuilderTest {
     public void shouldReturnGivenExecutorForWorkerThreadStrategy() {
 
         ExecutorService mockedExecutorService = mock(ExecutorService.class);
-        GenItfOncRpcSvcBuilder<GenVirOncRpcSvc> builder = new GenVirOncRpcSvcBuilder()
+        OncRpcSvcBuilderItf<GenVirOncRpcSvc> builder = new GenVirOncRpcSvcBuilder()
                 .withWorkerThreadIoStrategy()
                 .withWorkerThreadExecutionService(mockedExecutorService);
 

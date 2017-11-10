@@ -36,11 +36,11 @@ public class SimpleRpcClient {
         InetAddress address = InetAddress.getByName(args[0]);
         int port = Integer.parseInt(args[1]);
 
-        GenOncRpcClient rpcClient = new GenOncRpcClient(address, IpProtocolType.TCP, port);
-        GenXdrTransport<GenOncRpcSvc> transport = rpcClient.connect();
+        OncRpcClient rpcClient = new OncRpcClient(address, IpProtocolType.TCP, port);
+        GenXdrTransport<OncRpcSvc> transport = rpcClient.connect();
         RpcAuth auth = new RpcAuthTypeNone();
 
-        GenRpcCall call = new GenRpcCall(100017, 1, auth, transport);
+        RpcCall call = new RpcCall(100017, 1, auth, transport);
 
         /*
          * call PROC_NULL (ping)

@@ -28,9 +28,9 @@ import org.dcache.xdr.OncRpcException;
  * Interface for RPC servers
  *
  */
-public interface GenRpcDispatchable<SVC_T extends GenItfRpcSvc<SVC_T>> {
+public interface GenRpcDispatchable<SVC_T extends RpcSvcItf<SVC_T>> {
 
-    public void dispatchOncRpcCall(GenItfRpcCall<SVC_T> call)
+    public void dispatchOncRpcCall(RpcCallItf<SVC_T> call)
             throws OncRpcException, IOException;
 
 }

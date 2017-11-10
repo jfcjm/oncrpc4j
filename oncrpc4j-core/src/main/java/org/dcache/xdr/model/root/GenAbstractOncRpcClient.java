@@ -7,16 +7,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import org.dcache.xdr.IoStrategy;
-import org.dcache.xdr.model.itf.GenItfOncRpcClient;
-import org.dcache.xdr.model.itf.GenItfOncRpcSvcBuilder;
-import org.dcache.xdr.model.itf.GenItfRpcSvc;
-import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.itf.OncRpcClientItf;
+import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
+import org.dcache.xdr.model.itf.RpcSvcItf;
+import org.dcache.xdr.model.itf.XdrTransportItf;
 
-public abstract class GenAbstractOncRpcClient<SVC_T extends GenItfRpcSvc<SVC_T>>  implements  GenItfOncRpcClient<SVC_T> {
+public abstract class GenAbstractOncRpcClient<SVC_T extends RpcSvcItf<SVC_T>>  implements  OncRpcClientItf<SVC_T> {
 
     protected static final String DEFAULT_SERVICE_NAME = null;
     protected final InetSocketAddress _socketAddress;
-    protected final GenItfRpcSvc<SVC_T> _rpcsvc;
+    protected final RpcSvcItf<SVC_T> _rpcsvc;
     
     
     public GenAbstractOncRpcClient(InetAddress address, int protocol, int port) {
@@ -51,16 +51,16 @@ public abstract class GenAbstractOncRpcClient<SVC_T extends GenItfRpcSvc<SVC_T>>
 
 
 
-    abstract protected GenItfOncRpcSvcBuilder<SVC_T> getRpcSvcBuilder(int protocol) ;
-    abstract protected GenItfOncRpcSvcBuilder<SVC_T> getRpcSvcBuilder() ;
+    abstract protected OncRpcSvcBuilderItf<SVC_T> getRpcSvcBuilder(int protocol) ;
+    abstract protected OncRpcSvcBuilderItf<SVC_T> getRpcSvcBuilder() ;
     @Override
-    public GenItfXdrTransport<SVC_T> connect() throws IOException {
+    public XdrTransportItf<SVC_T> connect() throws IOException {
         return connect(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
 
     @Override
-    public GenItfXdrTransport<SVC_T> connect(long timeout, TimeUnit timeUnit) throws IOException {
-        GenItfXdrTransport<SVC_T> t;
+    public XdrTransportItf<SVC_T> connect(long timeout, TimeUnit timeUnit) throws IOException {
+        XdrTransportItf<SVC_T> t;
         try {
         _rpcsvc.start();
             t =_rpcsvc.connect(_socketAddress, timeout, timeUnit);

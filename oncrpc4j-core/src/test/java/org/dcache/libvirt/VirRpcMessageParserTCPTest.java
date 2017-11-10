@@ -30,7 +30,7 @@ import org.dcache.xdr.Xdr;
 import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrString;
 import org.dcache.xdr.XdrVoid;
-import org.dcache.xdr.model.impl.GenReplyQueue;
+import org.dcache.xdr.model.impl.ReplyQueue;
 import org.glassfish.grizzly.Buffer;
 import org.glassfish.grizzly.Connection;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
@@ -54,7 +54,7 @@ public class VirRpcMessageParserTCPTest {
     public void setUp() {
         mockedContext = FilterChainContext.create(mock(Connection.class));
         tcpParser = new GenVirRpcMessageParserTCP2();
-        rpc = new GenVirRpcProtocolFilter(new GenReplyQueue<>());
+        rpc = new GenVirRpcProtocolFilter(new ReplyQueue<>());
     }
 
     @Test

@@ -9,7 +9,7 @@ import java.util.Map;
 
 import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcProgram;
-import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.libvirt.GenVirOncRpcSvc;
 import org.libvirt.GenVirOncRpcSvcBuilder;
 import org.libvirt.GenVirRpcCall;
@@ -70,7 +70,7 @@ public class EmbeddedVirtServer implements Closeable{
         return svc.getInetSocketAddress(IpProtocolType.TCP).getPort();
     }
     
-    public GenItfXdrTransport getTransport() throws IOException {
+    public XdrTransportItf getTransport() throws IOException {
         return svc.connect(getAddress());
         
     }
@@ -87,7 +87,7 @@ public class EmbeddedVirtServer implements Closeable{
                 .withWorkerThreadIoStrategy()
                 .build();
         client.start();
-         GenItfXdrTransport<GenVirOncRpcSvc> t = client.connect(svc.getInetSocketAddress(IpProtocolType.TCP));
+         XdrTransportItf<GenVirOncRpcSvc> t = client.connect(svc.getInetSocketAddress(IpProtocolType.TCP));
         return new GenVirRpcCall(prognum, progver, null, t);
     }
     

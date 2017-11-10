@@ -24,5 +24,5 @@ package org.dcache.xdr.model.itf;
  * Abstraction for sending reply to clients
  *
  */
-public  interface GenXdrTransport<SVC_T extends GenItfRpcSvc<SVC_T>> extends GenItfXdrTransport<SVC_T> {
+public  interface GenXdrTransport<SVC_T extends RpcSvcItf<SVC_T>> extends XdrTransportItf<SVC_T> {
 }

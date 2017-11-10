@@ -11,8 +11,8 @@ import java.util.concurrent.ExecutorService;
 
 import org.dcache.xdr.IoStrategy;
 import org.dcache.xdr.OncRpcProgram;
-import org.dcache.xdr.model.itf.GenItfOncRpcSvcBuilder;
-import org.dcache.xdr.model.itf.GenItfRpcSvc;
+import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
+import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.GenRpcDispatchable;
 import org.glassfish.grizzly.threadpool.FixedThreadPool;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
@@ -43,7 +43,7 @@ import com.google.common.util.concurrent.MoreExecutors;
  * </pre>
  * @since 2.0
  */
-public abstract class GenAbstractOncRpcSvcBuilder<SVC_T extends GenItfRpcSvc<SVC_T>> implements GenItfOncRpcSvcBuilder<SVC_T>{
+public abstract class GenAbstractOncRpcSvcBuilder<SVC_T extends RpcSvcItf<SVC_T>> implements OncRpcSvcBuilderItf<SVC_T>{
 
     private int _protocol = 0;
     private int _minPort = 0;
@@ -65,7 +65,7 @@ public abstract class GenAbstractOncRpcSvcBuilder<SVC_T extends GenItfRpcSvc<SVC
     }
 
     @Override
-    public GenItfOncRpcSvcBuilder<SVC_T> withMaxPort(int maxPort) {
+    public OncRpcSvcBuilderItf<SVC_T> withMaxPort(int maxPort) {
         checkArgument(maxPort >= 0, "Illegal max port value");
         _maxPort = maxPort;
         _minPort = Math.min(_minPort, _maxPort);
@@ -73,7 +73,7 @@ public abstract class GenAbstractOncRpcSvcBuilder<SVC_T extends GenItfRpcSvc<SVC
     }
 
     @Override
-    public GenItfOncRpcSvcBuilder<SVC_T> withMinPort(int minPort) {
+    public OncRpcSvcBuilderItf<SVC_T> withMinPort(int minPort) {
         checkArgument(minPort >= 0, "Illegal min port value");
         _minPort = minPort;
         _maxPort = Math.max(_minPort, _maxPort);
@@ -81,112 +81,112 @@ public abstract class GenAbstractOncRpcSvcBuilder<SVC_T extends GenItfRpcSvc<SVC
     }
 
     @Override
-    public GenItfOncRpcSvcBuilder<SVC_T> withPort(int port) {
+    public OncRpcSvcBuilderItf<SVC_T> withPort(int port) {
         checkArgument(port >= 0, "Illegal port value");
         _minPort = _maxPort = port;
         return this;
     }
 
     
-    protected GenItfOncRpcSvcBuilder<SVC_T> withTCP() {
+    protected OncRpcSvcBuilderItf<SVC_T> withTCP() {
         _protocol |= TCP;
         return this;
     }
 
     
-    protected GenItfOncRpcSvcBuilder<SVC_T> withUDP() {
+    protected OncRpcSvcBuilderItf<SVC_T> withUDP() {
         _protocol |= UDP;
         return this;
     }
 
    
-    protected GenItfOncRpcSvcBuilder<SVC_T> withIpProtocolType(int protocolType) {
+    protected OncRpcSvcBuilderItf<SVC_T> withIpProtocolType(int protocolType) {
         _protocol = protocolType;
         return this;
     }
 
     @Override
-    public GenItfOncRpcSvcBuilder<SVC_T> withSameThreadIoStrategy() {
+    public OncRpcSvcBuilderItf<SVC_T> withSameThreadIoStrategy() {
         _ioStrategy = IoStrategy.SAME_THREAD;
         return this;
     }
 
     @Override
-    public GenItfOncRpcSvcBuilder<SVC_T> withSelectorThreadPoolSize(int threadPoolSize) {
+    public OncRpcSvcBuilderItf<SVC_T> withSelectorThreadPoolSize(int threadPoolSize) {
         checkArgument(threadPoolSize > 0, "thread pool size must be positive");
         _selectorThreadPoolSize = threadPoolSize;
         return this;
     }
 
     @Override
-    public GenItfOncRpcSvcBuilder<SVC_T> withWorkerThreadIoStrategy() {
+    public OncRpcSvcBuilderItf<SVC_T> withWorkerThreadIoStrategy() {
         _ioStrategy = IoStrategy.WORKER_THREAD;
         return this;
     }
 
     @Override
-    public GenItfOncRpcSvcBuilder<SVC_T> withWorkerThreadPoolSize(int threadPoolSize) {
+    public OncRpcSvcBuilderItf<SVC_T> withWorkerThreadPoolSize(int threadPoolSize) {
         checkArgument(threadPoolSize > 0, "thread pool size must be positive");
         _workerThreadPoolSize = threadPoolSize;
         return this;
     }
 
     @Override
-    public GenItfOncRpcSvcBuilder<SVC_T> withIoStrategy(IoStrategy ioStrategy) {
+    public OncRpcSvcBuilderItf<SVC_T> withIoStrategy(IoStrategy ioStrategy) {
         _ioStrategy = ioStrategy;
         return this;
     }
 
     @Override
-    public GenItfOncRpcSvcBuilder<SVC_T> withJMX() {
+    public OncRpcSvcBuilderItf<SVC_T> withJMX() {
         _withJMX = true;
         return this;
     }
 
     @Override
-    public GenItfOncRpcSvcBuilder<SVC_T> withBacklog(int backlog) {
+    public OncRpcSvcBuilderItf<SVC_T> withBacklog(int backlog) {
         _backlog = backlog;
         return this;
     }
 
     @Override
-    public GenItfOncRpcSvcBuilder<SVC_T> withBindAddress(String address) {
+    public OncRpcSvcBuilderItf<SVC_T> withBindAddress(String address) {
         _bindAddress = address;
         return this;
     }
 
     @Override
-    public GenItfOncRpcSvcBuilder<SVC_T> withServiceName(String serviceName) {
+    public OncRpcSvcBuilderItf<SVC_T> withServiceName(String serviceName) {
         _serviceName = serviceName;
         return this;
     }
 
     @Override
-    public GenItfOncRpcSvcBuilder<SVC_T> withWorkerThreadExecutionService(ExecutorService executorService) {
+    public OncRpcSvcBuilderItf<SVC_T> withWorkerThreadExecutionService(ExecutorService executorService) {
         _workerThreadExecutionService = executorService;
         return this;
     }
 
     @Override
-    public GenItfOncRpcSvcBuilder<SVC_T> withClientMode() {
+    public OncRpcSvcBuilderItf<SVC_T> withClientMode() {
         _isClient = true;
         return this;
     }
 
     @Override
-    public GenItfOncRpcSvcBuilder<SVC_T> withRpcService(OncRpcProgram program, GenRpcDispatchable<SVC_T> service) {
+    public OncRpcSvcBuilderItf<SVC_T> withRpcService(OncRpcProgram program, GenRpcDispatchable<SVC_T> service) {
         _programs.put(program, service);
         return this;
     }
 
     @Override
-    public GenItfOncRpcSvcBuilder<SVC_T> withSubjectPropagation() {
+    public OncRpcSvcBuilderItf<SVC_T> withSubjectPropagation() {
         _subjectPropagation = true;
         return this;
     }
 
     @Override
-    public GenItfOncRpcSvcBuilder<SVC_T> withoutSubjectPropagation() {
+    public OncRpcSvcBuilderItf<SVC_T> withoutSubjectPropagation() {
         _subjectPropagation = false;
         return this;
     }

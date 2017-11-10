@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.dcache.xdr.OncRpcException;
-import org.dcache.xdr.model.itf.GenItfReplyQueue;
+import org.dcache.xdr.model.itf.ReplyQueueItf;
 import org.dcache.xdr.model.root.GenAbstractOncRpcSvc;
 import org.glassfish.grizzly.Connection;
 import org.glassfish.grizzly.Transport;
@@ -57,7 +57,7 @@ public final class GenVirOncRpcSvc extends GenAbstractOncRpcSvc<GenVirOncRpcSvc>
         super.start();
     }
     @Override
-    protected GenVirRpcProtocolFilter getRpcProtocolFilter(GenItfReplyQueue<GenVirOncRpcSvc> replyQueue) {
+    protected GenVirRpcProtocolFilter getRpcProtocolFilter(ReplyQueueItf<GenVirOncRpcSvc> replyQueue) {
         return new GenVirRpcProtocolFilter(replyQueue);
     }
 

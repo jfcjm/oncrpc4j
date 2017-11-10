@@ -35,13 +35,13 @@ import org.ietf.jgss.GSSContext;
  *
  * @since 0.0.4
  */
-public class RpcGssCall extends GenRpcCall {
+public class RpcGssCall extends RpcCall {
 
     private final static Logger _log = LoggerFactory.getLogger(RpcGssCall.class);
     private final GSSContext _gssContext;
     private final MessageProp _mop;
 
-    public RpcGssCall(GenRpcCall call, GSSContext gssContext, MessageProp mop) {
+    public RpcGssCall(RpcCall call, GSSContext gssContext, MessageProp mop) {
         super(call.getXid(), call.getProgram(), call.getProgramVersion(),
                 call.getProcedure(), call.getCredential(), call.getXdr(), call.getTransport());
         _gssContext = gssContext;

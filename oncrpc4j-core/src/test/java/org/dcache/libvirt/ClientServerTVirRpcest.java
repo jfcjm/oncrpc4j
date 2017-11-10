@@ -30,8 +30,8 @@ import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcProgram;
 import org.dcache.xdr.XdrString;
 import org.dcache.xdr.XdrVoid;
-import org.dcache.xdr.model.itf.GenItfRpcSvc;
-import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.itf.RpcSvcItf;
+import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.dcache.xdr.model.itf.GenRpcDispatchable;
 import org.junit.After;
 import org.junit.Before;
@@ -54,7 +54,7 @@ public class ClientServerTVirRpcest {
     private static final int SHUTDOWN = 3;
 
     private GenVirOncRpcSvc svc;
-    private GenItfRpcSvc clnt;
+    private RpcSvcItf clnt;
     private GenVirRpcCall clntCall;
 
     @Before
@@ -117,7 +117,7 @@ public class ClientServerTVirRpcest {
                 .withRpcService(new OncRpcProgram(PROGNUM, PROGVER), upper)
                 .build();
         clnt.start();
-        GenItfXdrTransport<GenVirOncRpcSvc> t = clnt.connect(svc.getInetSocketAddress(IpProtocolType.TCP));
+        XdrTransportItf<GenVirOncRpcSvc> t = clnt.connect(svc.getInetSocketAddress(IpProtocolType.TCP));
         clntCall = new GenVirRpcCall(PROGNUM, PROGVER, null, t);
     }
 

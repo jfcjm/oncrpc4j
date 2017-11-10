@@ -21,8 +21,8 @@ import java.net.InetSocketAddress;
 import org.dcache.xdr.IoStrategy;
 import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcException;
-import org.dcache.xdr.model.itf.GenItfOncRpcClient;
-import org.dcache.xdr.model.itf.GenItfOncRpcSvcBuilder;
+import org.dcache.xdr.model.itf.OncRpcClientItf;
+import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
 import org.dcache.xdr.model.root.GenAbstractOncRpcClient;
 
 
@@ -35,7 +35,7 @@ import org.dcache.xdr.model.root.GenAbstractOncRpcClient;
  *
  */
 
-public class GenVirOncRpcClient extends GenAbstractOncRpcClient<GenVirOncRpcSvc> implements GenItfOncRpcClient<GenVirOncRpcSvc> {
+public class GenVirOncRpcClient extends GenAbstractOncRpcClient<GenVirOncRpcSvc> implements OncRpcClientItf<GenVirOncRpcSvc> {
     final static int libvirtTransportProtocol = IpProtocolType.TCP;
     
     
@@ -49,11 +49,11 @@ public class GenVirOncRpcClient extends GenAbstractOncRpcClient<GenVirOncRpcSvc>
         ((GenVirOncRpcSvc) _rpcsvc).setPacketWrapper(sc);
     }
     @Override
-    protected GenItfOncRpcSvcBuilder<GenVirOncRpcSvc> getRpcSvcBuilder() {
+    protected OncRpcSvcBuilderItf<GenVirOncRpcSvc> getRpcSvcBuilder() {
          return new GenVirOncRpcSvcBuilder();
     }
     @Override
-    protected GenItfOncRpcSvcBuilder<GenVirOncRpcSvc> getRpcSvcBuilder(int protocol) {
+    protected OncRpcSvcBuilderItf<GenVirOncRpcSvc> getRpcSvcBuilder(int protocol) {
         //we do not obey protocol requests
         return null;
     }

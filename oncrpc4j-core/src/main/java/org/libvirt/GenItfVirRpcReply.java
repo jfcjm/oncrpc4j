@@ -1,8 +1,8 @@
 package org.libvirt;
 
-import org.dcache.xdr.model.itf.GenItfRpcReply;
+import org.dcache.xdr.model.itf.RpcReplyItf;
 
-public interface GenItfVirRpcReply  extends GenItfRpcReply<GenVirOncRpcSvc> {
+public interface GenItfVirRpcReply  extends RpcReplyItf<GenVirOncRpcSvc> {
 
     @Override
     int getRejectStatus();

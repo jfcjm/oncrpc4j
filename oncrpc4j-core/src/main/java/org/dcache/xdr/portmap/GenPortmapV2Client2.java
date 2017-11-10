@@ -20,7 +20,7 @@
 package org.dcache.xdr.portmap;
 
 import org.dcache.utils.net.InetSocketAddresses;
-import org.dcache.xdr.GenRpcCall;
+import org.dcache.xdr.RpcCall;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.XdrBoolean;
 import org.dcache.xdr.XdrInt;
@@ -39,9 +39,9 @@ import java.util.concurrent.TimeoutException;
 public class GenPortmapV2Client2 implements OncPortmapClient {
 
     private final static Logger _log = LoggerFactory.getLogger(GenPortmapV2Client2.class);
-    private final GenRpcCall _call;
+    private final RpcCall _call;
 
-    public GenPortmapV2Client2(GenRpcCall genRpcCall) {
+    public GenPortmapV2Client2(RpcCall genRpcCall) {
         _call = genRpcCall;
     }
 

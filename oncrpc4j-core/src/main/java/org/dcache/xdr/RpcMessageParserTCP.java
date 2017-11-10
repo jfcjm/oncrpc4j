@@ -27,7 +27,7 @@ import org.dcache.xdr.model.root.GenAbstractRpcMessageParserTCP;
 import org.glassfish.grizzly.Buffer;
 import org.glassfish.grizzly.memory.BuffersBuffer;
 
-public final class GenRpcMessageParserTCP2 extends GenAbstractRpcMessageParserTCP<GenOncRpcSvc>  {
+public final class RpcMessageParserTCP extends GenAbstractRpcMessageParserTCP<OncRpcSvc>  {
 
     /**
      * RPC fragment record marker mask

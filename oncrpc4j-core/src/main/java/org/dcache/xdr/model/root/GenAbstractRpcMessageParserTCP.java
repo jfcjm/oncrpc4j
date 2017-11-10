@@ -5,14 +5,14 @@ import java.nio.ByteOrder;
 
 import org.dcache.xdr.GrizzlyMemoryManager;
 import org.dcache.xdr.Xdr;
-import org.dcache.xdr.model.itf.GenItfRpcMessageParserTCP;
-import org.dcache.xdr.model.itf.GenItfRpcSvc;
+import org.dcache.xdr.model.itf.RpcMessageParserTCPItf;
+import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.glassfish.grizzly.Buffer;
 import org.glassfish.grizzly.filterchain.BaseFilter;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.filterchain.NextAction;
 
-public abstract class GenAbstractRpcMessageParserTCP<SVC_T extends GenItfRpcSvc<SVC_T>> extends BaseFilter implements GenItfRpcMessageParserTCP<SVC_T>{
+public abstract class GenAbstractRpcMessageParserTCP<SVC_T extends RpcSvcItf<SVC_T>> extends BaseFilter implements RpcMessageParserTCPItf<SVC_T>{
 
 
     /**

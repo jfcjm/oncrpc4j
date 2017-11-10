@@ -25,7 +25,7 @@ import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrInt;
 import org.dcache.xdr.XdrLong;
 import org.dcache.xdr.XdrVoid;
-import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -62,7 +62,7 @@ public class ClientIntegrationBaseTest {
                 .build();
         clnt.start();
         InetSocketAddress inetAddress = new InetSocketAddress(LIBVIRT_HOST, LIBVIRT_PORT);
-         GenItfXdrTransport<GenVirOncRpcSvc> t = clnt.connect(inetAddress);
+         XdrTransportItf<GenVirOncRpcSvc> t = clnt.connect(inetAddress);
         clntCall = new GenVirRpcCall(PROGNUM, PROGVER, null, t);
         
         

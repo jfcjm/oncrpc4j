@@ -24,14 +24,14 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 import org.dcache.xdr.OncRpcException;
-import org.dcache.xdr.GenOncRpcSvc;
+import org.dcache.xdr.OncRpcSvc;
 import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrDecodingStream;
 import org.dcache.xdr.XdrEncodingStream;
 import org.dcache.xdr.XdrInt;
 import org.dcache.xdr.XdrString;
 import org.dcache.xdr.XdrVoid;
-import org.dcache.xdr.model.itf.GenItfXdrTransport;
+import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.dcache.xdr.model.root.GenAbstractOncRpcSvc;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -40,7 +40,7 @@ import org.libvirt.GenVirOncRpcSvc;
 import org.libvirt.GenVirOncRpcSvcBuilder;
 import org.libvirt.GenVirRpcCall;
 
-import tests.credentials.TestCredentials4Libvirt;
+//import tests.credentials.TestCredentials4Libvirt;
 
 /**
  * This tests needs a running libvirtd running on localhost. 
@@ -68,9 +68,9 @@ import tests.credentials.TestCredentials4Libvirt;
  */
 @Ignore
 public class ClientIntegrationSequenceNoAuthTest {
-
-    private static final String LIBVIRTD_HOSTNAME   = TestCredentials4Libvirt.LIBVIRTD_INTEGRATION_HOSTNAME;
-    private static final String TARGET_HOST         = TestCredentials4Libvirt.TARHET_HOST;
+    
+    private static final String LIBVIRTD_HOSTNAME   = "localhost"; //TestCredentials4Libvirt.LIBVIRTD_INTEGRATION_HOSTNAME;
+    private static final String TARGET_HOST         = "localhost";//TestCredentials4Libvirt.TARHET_HOST;
     private static final int LIBVIRT_PORT = 16509;
     
     
@@ -85,7 +85,7 @@ public class ClientIntegrationSequenceNoAuthTest {
         clnt = new GenVirOncRpcSvcBuilder().withTCP().withClientMode().withWorkerThreadIoStrategy().build();
         clnt.start();
         InetSocketAddress inetAddress = new InetSocketAddress(TARGET_HOST, 16509);
-        GenItfXdrTransport<GenVirOncRpcSvc> t = clnt.connect(inetAddress);
+        XdrTransportItf<GenVirOncRpcSvc> t = clnt.connect(inetAddress);
         clntCall = new GenVirRpcCall(PROGNUM, PROGVER, null, t);
     }
 
