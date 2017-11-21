@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -66,6 +66,7 @@ import java.util.concurrent.TimeoutException;
 import static com.google.common.base.Throwables.getRootCause;
 import static com.google.common.base.Throwables.propagateIfPossible;
 import java.net.SocketAddress;
+import java.util.stream.Collectors;
 import static org.dcache.xdr.GrizzlyUtils.getSelectorPoolCfg;
 import static org.dcache.xdr.GrizzlyUtils.rpcMessageReceiverFor;
 import static org.dcache.xdr.GrizzlyUtils.transportFor;
@@ -98,6 +99,11 @@ public class OncRpcSvc {
      */
     private final Map<OncRpcProgram, RpcDispatchable> _programs =
             new ConcurrentHashMap<>();
+
+    /**
+     * Name of this service
+     */
+    private final String _svcName;
 
     /**
      * Create new RPC service with defined configuration.
@@ -147,14 +153,15 @@ public class OncRpcSvc {
 
         if (builder.isWithJMX()) {
             final GrizzlyJmxManager jmxManager = GrizzlyJmxManager.instance();
-            for (Transport t : _transports) {
-                jmxManager.registerAtRoot(t.getMonitoringConfig().createManagementObject(), t.getName() + "-" + _portRange);
-            }
+	    _transports.forEach((t) -> {
+		jmxManager.registerAtRoot(t.getMonitoringConfig().createManagementObject(), t.getName() + "-" + _portRange);
+	    });
         }
         _requestExecutor = builder.getWorkerThreadExecutorService();
         _gssSessionManager = builder.getGssSessionManager();
         _programs.putAll(builder.getRpcServices());
         _withSubjectPropagation = builder.getSubjectPropagation();
+	_svcName = builder.getServiceName();
     }
 
     /**
@@ -401,10 +408,26 @@ public class OncRpcSvc {
      */
     public InetSocketAddress getInetSocketAddress(int protocol) {
         Class< ? extends Transport> transportClass = transportFor(protocol);
-        for (Connection<InetSocketAddress> connection: _boundConnections) {
-            if(connection.getTransport().getClass() == transportClass)
-                return connection.getLocalAddress();
-        }
-        return null;
+	return _boundConnections.stream()
+		.filter(c -> c.getTransport().getClass() == transportClass)
+		.map(Connection::getLocalAddress)
+		.findAny()
+		.orElse(null);
+    }
+
+    /**
+     * Get name of this service.
+     * @return name of this service.
+     */
+    public String getName() {
+	return _svcName;
+    }
+
+    @Override
+    public String toString() {
+	return _boundConnections.stream()
+		.map(Connection::getLocalAddress)
+		.map(Object::toString)
+		.collect(Collectors.joining(",", getName() +"-[", "]"));
     }
 }
