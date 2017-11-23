@@ -67,6 +67,7 @@ public class ClientServerTest {
                 .withoutAutoPublish()
                 .withTCP()
                 .withWorkerThreadIoStrategy()
+		.withBindAddress("127.0.0.1")
                 .withRpcService(new OncRpcProgram(PROGNUM, PROGVER), echo)
                 .build();
         svc.start();

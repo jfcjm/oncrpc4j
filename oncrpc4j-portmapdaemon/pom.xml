@@ -9,13 +9,15 @@
     </parent>
 
     <artifactId>oncrpc4j-portmapdaemon</artifactId>
-
+    <properties>
+      <maven-shade-plugin>2.4.3</maven-shade-plugin>
+    </properties>
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>2.4.3</version>
+                <version>${maven-shade-plugin}</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -45,5 +47,15 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
         </dependency>
+      <dependency>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+          <scope>test</scope>
+      </dependency>
+      <dependency>
+          <groupId>org.mockito</groupId>
+          <artifactId>mockito-core</artifactId>
+          <scope>test</scope>
+      </dependency>
     </dependencies>
 </project>

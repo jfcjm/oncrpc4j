@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2016 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -58,6 +58,11 @@ public final class OncRpcSvc extends GenAbstractOncRpcSvc<OncRpcSvc> {
      * Should the srvice register / unregister to/from a portmapper/rpcbind ?
      */
     private final boolean _publish;
+    /**
+     * Name of this service
+     */
+    private final String _svcName;
+
     /**
      * Create new RPC service with defined configuration.
      * @param builder to build this service
