@@ -33,7 +33,7 @@ import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.OncRpcProgram;
 import org.dcache.xdr.RpcException;
 import org.dcache.xdr.model.itf.RpcCallItf;
-import org.dcache.xdr.model.itf.RpcDispatchable;
+import org.dcache.xdr.model.itf.RpcDispatchableItf;
 import org.dcache.xdr.model.itf.RpcDispatcherItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.glassfish.grizzly.filterchain.BaseFilter;
@@ -49,7 +49,7 @@ public final class RpcDispatcher<SVC_T extends RpcSvcItf<SVC_T>> extends BaseFil
      * List of registered RPC services
      *
      */
-    private final Map<OncRpcProgram, RpcDispatchable<SVC_T>> _programs;
+    private final Map<OncRpcProgram, RpcDispatchableItf<SVC_T>> _programs;
 
     /**
      * {@link ExecutorService} used for request processing
@@ -73,7 +73,7 @@ public final class RpcDispatcher<SVC_T extends RpcSvcItf<SVC_T>> extends BaseFil
      * @throws NullPointerException if executor or program is null
      */
     public RpcDispatcher(ExecutorService executor, Map<OncRpcProgram,
-            RpcDispatchable<SVC_T>> programs, boolean withSubjectPropagation)
+            RpcDispatchableItf<SVC_T>> programs, boolean withSubjectPropagation)
             throws NullPointerException {
 
         _programs = requireNonNull(programs, "Programs is NULL");
@@ -95,7 +95,7 @@ public final class RpcDispatcher<SVC_T extends RpcSvcItf<SVC_T>> extends BaseFil
 
         _log.debug("processing request {}", call);
 
-        final RpcDispatchable<SVC_T> program = _programs.get(new OncRpcProgram(prog, vers));
+        final RpcDispatchableItf<SVC_T> program = _programs.get(new OncRpcProgram(prog, vers));
         if (program == null) {
             _log.debug("no propgram found, call is of type {}", call.getClass());
             call.failProgramUnavailable();

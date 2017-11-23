@@ -30,7 +30,7 @@ import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
 import org.dcache.xdr.model.itf.ReplyQueueItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
-import org.dcache.xdr.model.itf.RpcDispatchable;
+import org.dcache.xdr.model.itf.RpcDispatchableItf;
 import org.dcache.xdr.model.itf.RpcProtocolFilterUtf;
 import org.glassfish.grizzly.CloseType;
 import org.glassfish.grizzly.Connection;
@@ -39,7 +39,6 @@ import org.glassfish.grizzly.GrizzlyFuture;
 import org.glassfish.grizzly.PortRange;
 import org.glassfish.grizzly.SocketBinder;
 import org.glassfish.grizzly.Transport;
-import org.glassfish.grizzly.filterchain.BaseFilter;
 import org.glassfish.grizzly.filterchain.Filter;
 import org.glassfish.grizzly.filterchain.FilterChain;
 import org.glassfish.grizzly.filterchain.FilterChainBuilder;
@@ -54,7 +53,7 @@ import org.glassfish.grizzly.strategies.SameThreadIOStrategy;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> extends BaseFilter implements RpcSvcItf<SVC_T>{
+public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>>  implements RpcSvcItf<SVC_T>{
 
     private static final Logger _log = LoggerFactory.getLogger(AbstractOncRpcSvc.class);
 
@@ -78,7 +77,7 @@ public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> extends 
     /**
      * mapping of registered programs.
      */
-    protected final Map<OncRpcProgram, RpcDispatchable<SVC_T>> _programs = new ConcurrentHashMap<>();
+    protected final Map<OncRpcProgram, RpcDispatchableItf<SVC_T>> _programs = new ConcurrentHashMap<>();
 
     abstract protected void doPreStopActions() throws IOException ;
     public  AbstractOncRpcSvc(OncRpcSvcBuilderItf<SVC_T> builder) {
@@ -174,7 +173,7 @@ public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> extends 
     }
     
     @Override
-    public void register(OncRpcProgram prog, RpcDispatchable<SVC_T> handler) {
+    public void register(OncRpcProgram prog, RpcDispatchableItf<SVC_T> handler) {
         _log.info("Registering new program {} : {}", prog, handler);
         _programs.put(prog, handler);
     }
@@ -187,7 +186,7 @@ public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> extends 
 
     @Override
     @Deprecated
-    public void setPrograms(Map<OncRpcProgram, RpcDispatchable<SVC_T>> services) {
+    public void setPrograms(Map<OncRpcProgram, RpcDispatchableItf<SVC_T>> services) {
         _programs.putAll(services);
     }
 

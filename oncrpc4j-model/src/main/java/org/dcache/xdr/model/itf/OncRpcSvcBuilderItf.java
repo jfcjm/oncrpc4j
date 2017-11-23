@@ -34,7 +34,7 @@ public interface OncRpcSvcBuilderItf<SVC_T extends RpcSvcItf<SVC_T>> {
 
     <T extends OncRpcSvcBuilderItf<SVC_T>> T withClientMode();
 
-    OncRpcSvcBuilderItf<SVC_T> withRpcService(OncRpcProgram program, RpcDispatchable<SVC_T> service);
+    OncRpcSvcBuilderItf<SVC_T> withRpcService(OncRpcProgram program, RpcDispatchableItf<SVC_T> service);
 
     OncRpcSvcBuilderItf<SVC_T> withSubjectPropagation();
 
@@ -66,7 +66,7 @@ public interface OncRpcSvcBuilderItf<SVC_T extends RpcSvcItf<SVC_T>> {
 
     boolean isClient();
 
-    Map<OncRpcProgram, RpcDispatchable<SVC_T>> getRpcServices();
+    Map<OncRpcProgram, RpcDispatchableItf<SVC_T>> getRpcServices();
 
     SVC_T build();
 

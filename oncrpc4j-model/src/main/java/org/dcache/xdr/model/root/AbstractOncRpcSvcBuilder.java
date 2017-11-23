@@ -14,7 +14,7 @@ import org.dcache.xdr.IoStrategy;
 import org.dcache.xdr.OncRpcProgram;
 import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
-import org.dcache.xdr.model.itf.RpcDispatchable;
+import org.dcache.xdr.model.itf.RpcDispatchableItf;
 import org.glassfish.grizzly.threadpool.FixedThreadPool;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
 
@@ -56,7 +56,7 @@ public abstract class AbstractOncRpcSvcBuilder<SVC_T extends RpcSvcItf<SVC_T>> i
     private String _serviceName = "OncRpcSvc";
     private ExecutorService _workerThreadExecutionService;
     private boolean _isClient = false;
-    private final Map<OncRpcProgram, RpcDispatchable<SVC_T>> _programs = new HashMap<>();
+    private final Map<OncRpcProgram, RpcDispatchableItf<SVC_T>> _programs = new HashMap<>();
     private int _selectorThreadPoolSize = 0;
     private int _workerThreadPoolSize = 0;
     private boolean _subjectPropagation = false;
@@ -179,7 +179,7 @@ public abstract class AbstractOncRpcSvcBuilder<SVC_T extends RpcSvcItf<SVC_T>> i
     }
 
     @Override
-    public OncRpcSvcBuilderItf<SVC_T> withRpcService(OncRpcProgram program, RpcDispatchable<SVC_T> service) {
+    public OncRpcSvcBuilderItf<SVC_T> withRpcService(OncRpcProgram program, RpcDispatchableItf<SVC_T> service) {
         _programs.put(program, service);
         return this;
     }
@@ -272,7 +272,7 @@ public abstract class AbstractOncRpcSvcBuilder<SVC_T extends RpcSvcItf<SVC_T>> i
     }
 
     @Override
-    public Map<OncRpcProgram, RpcDispatchable<SVC_T>> getRpcServices() {
+    public Map<OncRpcProgram, RpcDispatchableItf<SVC_T>> getRpcServices() {
         return _programs;
     }
 

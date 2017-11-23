@@ -16,7 +16,7 @@ import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
 import org.dcache.xdr.model.itf.RpcCallItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
-import org.dcache.xdr.model.itf.RpcDispatchable;
+import org.dcache.xdr.model.itf.RpcDispatchableItf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +29,7 @@ public  class EmbeddedGenericServer<SVC_T extends RpcSvcItf<SVC_T>>
     private static final int PROGVER = 1;
     private static final int LIBVIRT_PORT = 16509;
 
-    private final RpcDispatchable<SVC_T> unexpectedFailingAction = new RpcDispatchable<SVC_T>(){
+    private final RpcDispatchableItf<SVC_T> unexpectedFailingAction = new RpcDispatchableItf<SVC_T>(){
 
         @Override
         public void dispatchOncRpcCall(RpcCallItf<SVC_T> call) throws OncRpcException, IOException {
@@ -50,11 +50,11 @@ public  class EmbeddedGenericServer<SVC_T extends RpcSvcItf<SVC_T>>
     
     
     
-    Map<Integer,RpcDispatchable<SVC_T>> srcActions = new ConcurrentHashMap<>();
+    Map<Integer,RpcDispatchableItf<SVC_T>> srcActions = new ConcurrentHashMap<>();
 
-    RpcDispatchable<SVC_T> fakeSrvActions = (RpcCallItf<SVC_T> call) ->
+    RpcDispatchableItf<SVC_T> fakeSrvActions = (RpcCallItf<SVC_T> call) ->
     {
-        RpcDispatchable<SVC_T> action = srcActions.get(call.getProcedure());
+        RpcDispatchableItf<SVC_T> action = srcActions.get(call.getProcedure());
         if (null != action){
             try {
                 _log.info("Calling action for proc " + call.getProcedure());
@@ -90,7 +90,7 @@ public  class EmbeddedGenericServer<SVC_T extends RpcSvcItf<SVC_T>>
         svc.start();
     }
     
-    private void add(int procNumber, RpcDispatchable<SVC_T> action) {
+    private void add(int procNumber, RpcDispatchableItf<SVC_T> action) {
         srcActions.put(procNumber,action );
         System.out.println(srcActions.size());
     }
