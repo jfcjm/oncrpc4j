@@ -1,4 +1,4 @@
-package org.dcache.xdr.model.root;
+package org.dcache.xdr.model.rootold;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.dcache.xdr.GrizzlyUtils.getWorkerPoolCfg;

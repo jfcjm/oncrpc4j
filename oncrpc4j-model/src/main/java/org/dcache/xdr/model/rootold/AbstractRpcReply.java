@@ -1,4 +1,4 @@
-package org.dcache.xdr.model.root;
+package org.dcache.xdr.model.rootold;
 
 import java.io.IOException;
 

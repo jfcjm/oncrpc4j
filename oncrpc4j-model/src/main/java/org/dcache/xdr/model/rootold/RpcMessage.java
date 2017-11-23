@@ -17,7 +17,7 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.xdr.model.root;
+package org.dcache.xdr.model.rootold;
 
 import org.dcache.xdr.BadXdrOncRpcException;
 import org.dcache.xdr.XdrAble;
