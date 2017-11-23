@@ -24,7 +24,7 @@ public class RpcMessage implements XdrAble {
     private int _xid;
     private int _type;
 
-    RpcMessage(XdrDecodingStream xdr) throws BadXdrOncRpcException {
+    public RpcMessage(XdrDecodingStream xdr) throws BadXdrOncRpcException {
         this.xdrDecode(xdr);
     }
 
