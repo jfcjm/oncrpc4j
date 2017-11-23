@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 import org.dcache.xdr.OncRpcProgram;
 import org.glassfish.grizzly.filterchain.Filter;
 
-public interface RpcSvcItf<SVC_T extends RpcSvcItf<SVC_T>> extends Filter {
+public interface RpcSvcItf<SVC_T extends RpcSvcItf<SVC_T>>  {
 
     /**
      * Register a new PRC service. Existing registration will be overwritten.
@@ -16,7 +16,7 @@ public interface RpcSvcItf<SVC_T extends RpcSvcItf<SVC_T>> extends Filter {
      * @param prog program number
      * @param handler RPC requests handler.
      */
-    void register(OncRpcProgram prog, RpcDispatchable<SVC_T> handler);
+    void register(OncRpcProgram prog, RpcDispatchableItf<SVC_T> handler);
 
     /**
      * Unregister program.
@@ -30,7 +30,7 @@ public interface RpcSvcItf<SVC_T extends RpcSvcItf<SVC_T>> extends Filter {
      * @param services
      * @deprecated use {@link OncRpcSvcBuilder#withRpcService} instead.
      */
-    void setPrograms(Map<OncRpcProgram, RpcDispatchable<SVC_T>> services);
+    void setPrograms(Map<OncRpcProgram, RpcDispatchableItf<SVC_T>> services);
 
     void start() throws IOException;
 
