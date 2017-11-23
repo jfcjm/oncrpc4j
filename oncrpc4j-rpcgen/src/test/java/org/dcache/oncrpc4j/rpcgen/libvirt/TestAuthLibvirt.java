@@ -26,6 +26,7 @@ import javax.security.sasl.SaslClientFactory;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcAuth;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +34,7 @@ import tests.credentials.TestCredentials4Libvirt;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+@Ignore
 public class TestAuthLibvirt {
 	
 	private static final String TEST_USER = TestCredentials4Libvirt.TEST_USER;
@@ -95,19 +96,19 @@ public class TestAuthLibvirt {
 			 while(factories.hasMoreElements()){
 				 System.out.println(factories.nextElement().getClass().getName());
 			 }
-		   remote_auth_list_ret ret = client.AuthList_1(10,TimeUnit.SECONDS,null);
+		   remote_auth_list_ret ret = client.AuthList_1(10,TimeUnit.SECONDS);
 		   assertNotNull(ret);
 		   assertNotNull(ret.getTypes());
 		   assertEquals(1,ret.getTypes().length);
 		   assertEquals(1,ret.getTypes()[0]);
 		   assertEquals(1,remote_auth_type.REMOTE_AUTH_SASL);
 		   
-		   remote_auth_sasl_init_ret resAuthInit = client.AuthSaslInit_1(10, TimeUnit.SECONDS, null);
+		   remote_auth_sasl_init_ret resAuthInit = client.AuthSaslInit_1(10, TimeUnit.SECONDS);
 		   assertEquals("DIGEST-MD5",resAuthInit.mechlist.value);
 		   remote_auth_sasl_start_args arg1 = new remote_auth_sasl_start_args();
 		   arg1.mech=resAuthInit.mechlist;
 		   arg1.data=new byte[0];
-		   remote_auth_sasl_start_ret resStart = client.AuthSaslStart_1(arg1, 10, TimeUnit.SECONDS, null);
+		   remote_auth_sasl_start_ret resStart = client.AuthSaslStart_1(arg1, 10, TimeUnit.SECONDS);
 		   assertNotNull(resStart);
 			
 		   
@@ -134,7 +135,7 @@ public class TestAuthLibvirt {
 		System.out.println(new String(resSaslEval));;
 		remote_auth_sasl_step_args arg2 = new remote_auth_sasl_step_args();
 		arg2.data=resSaslEval;
-		remote_auth_sasl_step_ret resStep = client.AuthSaslStep_1(arg2, 10, TimeUnit.SECONDS, null);
+		remote_auth_sasl_step_ret resStep = client.AuthSaslStep_1(arg2, 10, TimeUnit.SECONDS);
 		assertNotNull(resStep);
 		assertTrue(resStep.complete==1);
 		sc.evaluateChallenge(resStep.getData());
@@ -167,56 +168,40 @@ public class TestAuthLibvirt {
 		long _timeoutValue = 10;
 		TimeUnit _timeoutUnit = TimeUnit.SECONDS;
 		RpcAuth _auth = null;
-		client.ConnectOpen_1(arg4, _timeoutValue, _timeoutUnit, _auth);
+		client.ConnectOpen_1(arg4, _timeoutValue, _timeoutUnit);
 		}
 
 		
 		}
 		System.out.println("Before version");
-		remote_connect_get_version_ret resVersion = client.ConnectGetVersion_1(10, TimeUnit.SECONDS, null);
+		remote_connect_get_version_ret resVersion = client.ConnectGetVersion_1(10, TimeUnit.SECONDS);
 		assertEquals(isLibVirtLocal?2:2001002,resVersion.getHv_ver());
 		
 		System.out.println("Before domains");
-		remote_connect_num_of_domains_ret resNum = client.ConnectNumOfDomains_1(10, TimeUnit.SECONDS, null);
+		remote_connect_num_of_domains_ret resNum = client.ConnectNumOfDomains_1(10, TimeUnit.SECONDS);
 		assertEquals(isLibVirtLocal?1:15,resNum.getNum());
 
 		
 		remote_connect_list_defined_domains_args arg6 = new remote_connect_list_defined_domains_args();
 		arg6.maxnames=10;
-		remote_connect_list_defined_domains_ret resDefDomains = client.ConnectListDefinedDomains_1(arg6,10, TimeUnit.SECONDS,null);
+		remote_connect_list_defined_domains_ret resDefDomains = client.ConnectListDefinedDomains_1(arg6,10, TimeUnit.SECONDS);
 		//pourquoi 0 ?
 		assertEquals(isLibVirtLocal?0:7,resDefDomains.names.length);
 		
 		
 		remote_connect_list_all_domains_args arg3 = new remote_connect_list_all_domains_args();
 		arg3.need_results=1;
-		remote_connect_list_all_domains_ret resListDomains = client.ConnectListAllDomains_1(arg3,10 , TimeUnit.SECONDS, null);
+		remote_connect_list_all_domains_ret resListDomains = client.ConnectListAllDomains_1(arg3,10 , TimeUnit.SECONDS);
 		assertEquals(isLibVirtLocal?1:22,resListDomains.domains.length);
 		for (remote_nonnull_domain dom: resListDomains.domains){
 			System.out.println(dom.name.value);
-		}
-		if (! isLibVirtLocal){
-			remote_connect_list_all_interfaces_args argItfIn = new
-					remote_connect_list_all_interfaces_args();
-			argItfIn.need_results=1;
-			remote_connect_list_all_interfaces_ret resItf = client.ConnectListAllInterfaces_1(argItfIn, _timeoutValue, _timeoutUnit, _auth);
-			assertEquals(15,resItf.ifaces.length);
-			for (remote_nonnull_interface itf: resItf.ifaces){
-				System.out.println(itf.mac.value);
-				System.out.println(itf.name.value);
-				 remote_interface_is_active_args argActive = new remote_interface_is_active_args();
-				 argActive.iface=itf;
-				 
-				remote_interface_is_active_ret resAct = client.InterfaceIsActive_1(argActive, _timeoutValue, _timeoutUnit, _auth);
-				System.out.println(resAct.active);
-			}
 		}
 	}
 	@Test
 	public void TestSASLOpenClose() throws OncRpcException, UnknownHostException, IOException, TimeoutException{
 		LibvirtProtocolClient client = virSASLConnect(VIRT_URI,InetAddress.getByName(TARHET_HOST), 16509,mkUserName(),TEST_PASSWORD);
 		
-		client.ConnectClose_1(10, TimeUnit.SECONDS, null);
+		client.ConnectClose_1(10, TimeUnit.SECONDS);
 		
 	}
 	@Test
@@ -234,7 +219,7 @@ public class TestAuthLibvirt {
 					new remote_connect_list_all_interfaces_args();
 			arg1.need_results=1;
 			remote_connect_list_all_interfaces_ret res1 = 
-					client.ConnectListAllInterfaces_1(arg1, _timeoutValue, _timeoutUnit, _auth);
+					client.ConnectListAllInterfaces_1(arg1, _timeoutValue, _timeoutUnit);
 			assertEquals(isLibVirtLocal ? 1 : 15,res1.ret);
 			
 		}
@@ -248,7 +233,7 @@ public class TestAuthLibvirt {
 		{
 			remote_connect_list_all_domains_args arg3 = new remote_connect_list_all_domains_args();
 			arg3.need_results=1;
-			remote_connect_list_all_domains_ret resListDomains = client.ConnectListAllDomains_1(arg3,10 , TimeUnit.SECONDS, null);
+			remote_connect_list_all_domains_ret resListDomains = client.ConnectListAllDomains_1(arg3,10 , TimeUnit.SECONDS);
 			assertEquals(22,resListDomains.ret);
 			assertEquals(22,resListDomains.getDomains().length);
 			remote_nonnull_domain dom = resListDomains.getDomains(0);
@@ -263,10 +248,6 @@ public class TestAuthLibvirt {
 			TimeUnit _timeoutUnit =TimeUnit.SECONDS;
 			RpcAuth _auth = null;
 			
-			remote_domain_get_state_args argState = new remote_domain_get_state_args();
-			argState.dom=dom;
-			remote_domain_get_state_ret resState = client.DomainGetState_1(argState, _timeoutValue, _timeoutUnit, _auth);
-			assertEquals(1,resState.state);
 		}
 	}
 	
@@ -306,7 +287,7 @@ public class TestAuthLibvirt {
 		};
 		
 		LibvirtProtocolClient client = new LibvirtProtocolClient(address, port);
-		remote_auth_sasl_init_ret resAuthInit = client.AuthSaslInit_1(10, TimeUnit.SECONDS, null);
+		remote_auth_sasl_init_ret resAuthInit = client.AuthSaslInit_1(10, TimeUnit.SECONDS);
 		   assertEquals("DIGEST-MD5",resAuthInit.mechlist.value);
 		   remote_auth_sasl_start_args arg1 = new remote_auth_sasl_start_args();
 		   arg1.mech=resAuthInit.mechlist;
@@ -316,7 +297,7 @@ public class TestAuthLibvirt {
 				   resAuthInit.mechlist.value
 		   };
 		   
-		   remote_auth_sasl_start_ret resStart = client.AuthSaslStart_1(arg1, 10, TimeUnit.SECONDS, null);
+		   remote_auth_sasl_start_ret resStart = client.AuthSaslStart_1(arg1, 10, TimeUnit.SECONDS);
 		   assertNotNull(resStart);
 		   byte[] startData = resStart.getData();
 		   Map<String, String> props = new TreeMap();
@@ -329,7 +310,7 @@ public class TestAuthLibvirt {
 			System.out.println(new String(resSaslEval));;
 			remote_auth_sasl_step_args arg2 = new remote_auth_sasl_step_args();
 			arg2.data=resSaslEval;
-			remote_auth_sasl_step_ret resStep = client.AuthSaslStep_1(arg2, 10, TimeUnit.SECONDS, null);
+			remote_auth_sasl_step_ret resStep = client.AuthSaslStep_1(arg2, 10, TimeUnit.SECONDS);
 			assertNotNull(resStep);
 			assertTrue(resStep.complete==1);
 			sc.evaluateChallenge(resStep.getData());
@@ -358,7 +339,7 @@ public class TestAuthLibvirt {
 			long _timeoutValue = 10;
 			TimeUnit _timeoutUnit = TimeUnit.SECONDS;
 			RpcAuth _auth = null;
-			client.ConnectOpen_1(arg4, _timeoutValue, _timeoutUnit, _auth);
+			client.ConnectOpen_1(arg4, _timeoutValue, _timeoutUnit);
 			
 			return client;
 		   

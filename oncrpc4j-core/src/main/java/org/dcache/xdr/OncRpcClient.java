@@ -18,21 +18,20 @@
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 package org.dcache.xdr;
-
+import static org.dcache.utils.ConversionUtils.helperCAST;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-
-import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
-import org.dcache.xdr.model.itf.RpcSvcItf;
+import org.dcache.xdr.IoStrategy;
+import org.dcache.xdr.model.impl.AbstractGrizzlyXdrTransport;
 import org.dcache.xdr.model.itf.XdrTransportItf;
-import org.dcache.xdr.model.itf.GenXdrTransport;
-import org.dcache.xdr.model.root.GenAbstractOncRpcClient;
+import org.dcache.xdr.model.root.AbstractOncRpcClient;
 
-public class OncRpcClient extends GenAbstractOncRpcClient<OncRpcSvc> {
+public class OncRpcClient extends AbstractOncRpcClient<OncRpcSvc> implements IOncRpcClient{
 
     public OncRpcClient(InetAddress address, int protocol, int port) {
-        this(new InetSocketAddress(address, port), protocol, 0, IoStrategy.SAME_THREAD, DEFAULT_SERVICE_NAME);
+        super(address, protocol, port);
+        // TODO Auto-generated constructor stub
     }
 
     public OncRpcClient(InetAddress address, int protocol, int port, int localPort) {
@@ -56,16 +55,16 @@ public class OncRpcClient extends GenAbstractOncRpcClient<OncRpcSvc> {
     }
     
     @Override
-    protected OncRpcSvcBuilderItf<OncRpcSvc> getRpcSvcBuilder() {
-        return new OncRpcSvcBuilder().withTCP().withUDP();
+    protected IOncRpcSvcBuilder getRpcSvcBuilder() {
+        return  IOncRpcSvcBuilder.getImpl().withTCP().withUDP();
     }
     
     @Override
-    protected OncRpcSvcBuilderItf<OncRpcSvc> getRpcSvcBuilder(int protocol) {
-        return new OncRpcSvcBuilder().withIpProtocolType(protocol);
+    protected IOncRpcSvcBuilder getRpcSvcBuilder(int protocol) {
+        return IOncRpcSvcBuilder.getImpl().withIpProtocolType(protocol);
     }
     @Override
-    public  GenXdrTransport<OncRpcSvc> connect() throws IOException {
-        return (GenXdrTransport<OncRpcSvc>) super.connect();
+    public   XdrTransport  connect() throws IOException {
+        return   helperCAST(super.connect());
     }
 }

@@ -21,7 +21,7 @@ package org.dcache.xdr;
 
 import java.io.IOException;
 
-import org.dcache.xdr.model.impl.ReplyQueue;
+import org.dcache.xdr.model.impl.AbstractReplyQueue;
 import org.dcache.xdr.model.root.RpcMessage;
 import org.glassfish.grizzly.Connection;
 import org.glassfish.grizzly.filterchain.Filter;
@@ -37,14 +37,16 @@ import static org.mockito.Mockito.mock;
  */
 public class RpcProtocolFilterTest {
 
+    @SuppressWarnings("unused")
     private final static int INVOKE = 0;
     private final static int STOP = 1;
-    private Filter filter;
+   
     private FilterChainContext mockedContext;
+    private IRpcProtocolFilter filter;
 
     @Before
     public void setUp() {
-        filter = new RpcProtocolFilter( new ReplyQueue<OncRpcSvc>());
+        filter =  IRpcProtocolFilter.getImpl( new AbstractReplyQueue<OncRpcSvc>());
         mockedContext = FilterChainContext.create(mock(Connection.class));
     }
 

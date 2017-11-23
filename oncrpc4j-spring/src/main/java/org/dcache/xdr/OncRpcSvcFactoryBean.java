@@ -21,36 +21,33 @@ package org.dcache.xdr;
 
 import org.springframework.beans.factory.FactoryBean;
 
-import deprecatedclasses.oncrpc.OncRpcSvcBuilder;
-import deprecatedclasses.oncrpc.RpcDispatchable;
-
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 import org.dcache.xdr.gss.GssSessionManager;
 
 /**
- * A {@link FactoryBean} to use {@link OncRpcSvcBuilder}
+ * A {@link FactoryBean} to use {@link IOncRpcSvcBuilder}
  * within Spring framework.
  *
  * @since 2.1
  */
-public class OncRpcSvcFactoryBean implements FactoryBean<OncRpcSvcBuilder> {
+public class OncRpcSvcFactoryBean implements FactoryBean<IOncRpcSvcBuilder> {
 
-    private final OncRpcSvcBuilder builder;
+    private final IOncRpcSvcBuilder builder;
 
     public OncRpcSvcFactoryBean() {
-        builder = new OncRpcSvcBuilder();
+        builder = IOncRpcSvcBuilder.getImpl();
     }
 
     @Override
-    public OncRpcSvcBuilder getObject() throws Exception {
+    public IOncRpcSvcBuilder getObject() throws Exception {
         return builder;
     }
 
     @Override
-    public Class<? extends OncRpcSvcBuilder> getObjectType() {
-        return OncRpcSvcBuilder.class;
+    public Class<? extends IOncRpcSvcBuilder> getObjectType() {
+        return IOncRpcSvcBuilder.class;
     }
 
     @Override

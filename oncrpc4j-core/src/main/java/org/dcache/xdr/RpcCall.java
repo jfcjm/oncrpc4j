@@ -25,16 +25,26 @@ import java.net.InetSocketAddress;
 import java.nio.channels.CompletionHandler;
 import java.util.concurrent.TimeUnit;
 
+import org.dcache.xdr.MismatchInfo;
+import org.dcache.xdr.OncRpcException;
+import org.dcache.xdr.RpcAccepsStatus;
+import org.dcache.xdr.RpcAuth;
+import org.dcache.xdr.RpcMessageType;
+import org.dcache.xdr.RpcMismatchReply;
+import org.dcache.xdr.RpcReplyStatus;
+import org.dcache.xdr.Xdr;
+import org.dcache.xdr.XdrAble;
+import org.dcache.xdr.XdrEncodingStream;
+import org.dcache.xdr.XdrVoid;
 import org.dcache.xdr.model.itf.ReplyQueueItf;
 import org.dcache.xdr.model.itf.RpcReplyItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
-import org.dcache.xdr.model.itf.GenXdrTransport;
-import org.dcache.xdr.model.root.GenAbstractRpcCall;
+import org.dcache.xdr.model.root.AbstractRpcCall;
 import org.dcache.xdr.model.root.RpcMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RpcCall extends GenAbstractRpcCall<OncRpcSvc>  {
+public class RpcCall extends AbstractRpcCall<OncRpcSvc>  implements IRpcCall{
     final static Logger _log = LoggerFactory.getLogger(RpcCall.class);
     
 
@@ -42,11 +52,11 @@ public class RpcCall extends GenAbstractRpcCall<OncRpcSvc>  {
         super(prog, ver, cred, new Xdr(Xdr.INITIAL_XDR_SIZE), transport);
     }
 
-    public RpcCall(int prog, int ver, RpcAuth cred, Xdr xdr, GenXdrTransport<OncRpcSvc> transport) {
+    public RpcCall(int prog, int ver, RpcAuth cred, Xdr xdr, XdrTransportItf<OncRpcSvc> transport) {
         super(prog, ver, cred, xdr, transport);
     }
 
-    public RpcCall(int xid, Xdr xdr, GenXdrTransport<OncRpcSvc> transport) {
+    public RpcCall(int xid, Xdr xdr, XdrTransportItf<OncRpcSvc> transport) {
         super(xid,xdr,transport);
     }
 
@@ -151,7 +161,7 @@ public class RpcCall extends GenAbstractRpcCall<OncRpcSvc>  {
 
         Xdr xdr = new Xdr(Xdr.INITIAL_XDR_SIZE);
         xdr.beginEncoding();
-        RpcMessage rpcMessage = GenAbstractRpcCall.createMessage(xid, RpcMessageType.CALL);
+        RpcMessage rpcMessage = AbstractRpcCall.createMessage(xid, RpcMessageType.CALL);
         rpcMessage.xdrEncode(xdr);
         xdr.xdrEncodeInt(RPCVERS);
         xdr.xdrEncodeInt(_prog);

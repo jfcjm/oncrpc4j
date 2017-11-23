@@ -1,0 +1,64 @@
+package org.dcache.utils;
+
+import static org.junit.Assert.*;
+
+import java.io.IOException;
+
+import org.dcache.libvirt.EmbeddedVirtServer;
+import org.dcache.xdr.XdrInt;
+import org.dcache.xdr.XdrVoid;
+import org.junit.Test;
+import org.libvirt.VirRpcRejectedException;
+import org.libvirt.IVirRpcCall;
+/**
+ * Non generic version 
+ * @author jmk
+ *
+ */
+public class runEmbeddedServerTest {
+
+    @Test(timeout=10000,expected=VirRpcRejectedException.class)
+    public void testProcUnavailable() throws IOException {
+        try ( EmbeddedVirtServer srv = new EmbeddedVirtServer(0)){
+            assertTrue("Server should listen on a port != 0",srv.getListeningPort()>0);
+            System.out.println(srv.getListeningPort());
+            IVirRpcCall caller = srv.getClientCall();
+            int procNumber = srv.getUnavailableProc();
+            System.out.println(procNumber);
+            caller.call(procNumber,XdrVoid.XDR_VOID,new XdrInt());
+        }
+        fail();
+    }
+
+
+    @Test(timeout=10000,expected=VirRpcRejectedException.class)
+    public void testVersionUnavailable() throws IOException {
+        try ( EmbeddedVirtServer srv = new EmbeddedVirtServer(0)){
+            assertTrue("Server should listen on a port != 0",srv.getListeningPort()>0);
+            System.out.println(srv.getListeningPort());
+            IVirRpcCall caller = srv.getBadVersionClientCall();
+            
+            
+            int procNumber = srv.getAnyProc();
+            System.out.println(procNumber);
+            caller.call(procNumber,XdrVoid.XDR_VOID,new XdrInt());
+        }
+        fail();
+    }
+
+
+    @Test(timeout=10000,expected=VirRpcRejectedException.class)
+    public void testProgUnavailable() throws IOException {
+        try ( EmbeddedVirtServer srv = new EmbeddedVirtServer(0)){
+            assertTrue("Server should listen on a port != 0",srv.getListeningPort()>0);
+            System.out.println(srv.getListeningPort());
+            IVirRpcCall caller = srv.getBadProgClientCall();
+            
+            
+            int procNumber = srv.getAnyProc();
+            System.out.println(procNumber);
+            caller.call(procNumber,XdrVoid.XDR_VOID,new XdrInt());
+        }
+        fail();
+    }
+}

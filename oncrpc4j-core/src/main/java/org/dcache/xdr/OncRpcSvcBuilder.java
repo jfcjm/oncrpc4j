@@ -19,30 +19,30 @@
  */
 package org.dcache.xdr;
 
-import static org.dcache.xdr.ConversionUtils.helperCAST;
+import static org.dcache.utils.ConversionUtils.helperCAST;
+
 import org.dcache.xdr.gss.GssSessionManager;
-import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
-import org.dcache.xdr.model.root.GenAbstractOncRpcSvcBuilder;
+import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
 /**
  * 
  * Implémentation du builder de service adapté pour les ONC-RPC.
  * Les méthodes redéfines (ou ajoutéesà doivent être utilisées en premier
- * dans l'invocation du builder.
+ * dans l'invocation .
  * @author jmk
  *
  */
-public  final class OncRpcSvcBuilder  extends GenAbstractOncRpcSvcBuilder<OncRpcSvc> {
+public  final class OncRpcSvcBuilder  extends AbstractOncRpcSvcBuilder<OncRpcSvc> implements IOncRpcSvcBuilder{
 
     private GssSessionManager _gssSessionManager;
     private boolean _autoPublish = true;
     
     @Override
     protected OncRpcSvc getNewOncRpcSvc() {
-        return new OncRpcSvc(this);
+        return  OncRpcSvc.getImpl(this);
     }
 
    
-    public OncRpcSvcBuilder withGssSessionManager(GssSessionManager gssSessionManager) {
+    public IOncRpcSvcBuilder withGssSessionManager(GssSessionManager gssSessionManager) {
         _gssSessionManager = gssSessionManager;
         return this;
     }
@@ -52,30 +52,30 @@ public  final class OncRpcSvcBuilder  extends GenAbstractOncRpcSvcBuilder<OncRpc
         return _gssSessionManager;
     }
     
-
+    
     @Override
-    public OncRpcSvcBuilder withUDP() {
+    public IOncRpcSvcBuilder withUDP() {
         return helperCAST(super.withUDP());
     }
     
 
     @Override
-    public OncRpcSvcBuilder withTCP() {
+    public IOncRpcSvcBuilder withTCP() {
         return helperCAST(super.withTCP());
     }
 
     @Override
-    public  OncRpcSvcBuilder withIpProtocolType(int protocolType) {
+    public  IOncRpcSvcBuilder withIpProtocolType(int protocolType) {
         return helperCAST(super.withIpProtocolType(protocolType));
     }
     
-    public OncRpcSvcBuilder  withAutoPublish() {
+    public IOncRpcSvcBuilder  withAutoPublish() {
         _autoPublish = true;
         return this;
     }
 
    
-    public OncRpcSvcBuilder withoutAutoPublish() {
+    public IOncRpcSvcBuilder withoutAutoPublish() {
         _autoPublish = false;
         return this;
     }

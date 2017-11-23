@@ -19,9 +19,10 @@
  */
 package org.dcache.jarpcbind;
 
+import org.dcache.xdr.OncRpcDispatchable;
 import org.dcache.xdr.OncRpcProgram;
 import org.dcache.xdr.OncRpcSvc;
-import org.dcache.xdr.OncRpcSvcBuilder;
+import org.dcache.xdr.IOncRpcSvcBuilder;
 import org.dcache.xdr.RpcDispatchable;
 import org.dcache.xdr.portmap.OncRpcPortmap;
 import org.dcache.xdr.portmap.OncRpcbindServer;
@@ -54,13 +55,13 @@ public class Main {
                 logger.info("exiting");
             }
         });
-        RpcDispatchable rpcbind = new OncRpcbindServer();
-        OncRpcSvc server  = new OncRpcSvcBuilder()
-                .withPort(OncRpcPortmap.PORTMAP_PORT)
+        OncRpcDispatchable rpcbind = new OncRpcbindServer();
+        OncRpcSvc server  = IOncRpcSvcBuilder.getImpl()
                 .withTCP()
                 .withUDP()
-                .withSameThreadIoStrategy()
                 .withoutAutoPublish()
+                .withPort(OncRpcPortmap.PORTMAP_PORT)
+                .withSameThreadIoStrategy()
                 .build();
         server.register(new OncRpcProgram(OncRpcPortmap.PORTMAP_PROGRAMM, OncRpcPortmap.PORTMAP_V2), rpcbind);
         server.start();

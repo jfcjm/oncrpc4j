@@ -8,7 +8,6 @@ import org.dcache.xdr.model.itf.RpcCallItf;
 import org.dcache.xdr.model.itf.RpcReplyItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
-import org.dcache.xdr.model.itf.OncRpcDispatchableItf;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,8 +31,7 @@ public class ClientServerTest {
 
     @Before
     public void setUp() throws IOException {
-
-        OncRpcDispatchableItf echo = (call) -> {
+        OncRpcDispatchable echo = (call) -> {
             switch (call.getProcedure()) {
 
                 case ECHO: {
@@ -43,7 +41,7 @@ public class ClientServerTest {
                     break;
                 }
                 case UPPER: {
-                    RpcCall cb = new RpcCall(PROGNUM, PROGVER, new RpcAuthTypeNone(), call.getTransport());
+                    IRpcCall cb =  IRpcCall.getImpl(PROGNUM, PROGVER, new RpcAuthTypeNone(), call.getTransport());
                     XdrString s = new XdrString();
                     call.retrieveCall(s);
                     cb.call(ECHO, s, s);
@@ -56,14 +54,14 @@ public class ClientServerTest {
             }
         };
 
-        OncRpcDispatchableItf upper = ( call) -> {
+        OncRpcDispatchable upper = ( call) -> {
             XdrString s = new XdrString();
             call.retrieveCall(s);
             XdrString u = new XdrString(s.stringValue().toUpperCase());
             call.reply(u);
         };
 
-        svc = new OncRpcSvcBuilder()
+        svc = IOncRpcSvcBuilder.getImpl()
                 .withoutAutoPublish()
                 .withTCP()
                 .withWorkerThreadIoStrategy()
@@ -72,7 +70,7 @@ public class ClientServerTest {
                 .build();
         svc.start();
 
-        clnt = new OncRpcSvcBuilder()
+        clnt = IOncRpcSvcBuilder.getImpl()
                 .withoutAutoPublish()
                 .withTCP()
                 .withClientMode()
@@ -81,7 +79,7 @@ public class ClientServerTest {
                 .build();
         clnt.start();
            XdrTransportItf<OncRpcSvc> t = clnt.connect(svc.getInetSocketAddress(IpProtocolType.TCP));
-         clntCall = new RpcCall(PROGNUM, PROGVER, new RpcAuthTypeNone(), t);
+         clntCall =  IRpcCall.getImpl(PROGNUM, PROGVER, new RpcAuthTypeNone(), t);
     }
 
     @After
@@ -137,7 +135,7 @@ public class ClientServerTest {
     @Test
     public void shouldTriggerClientCallbackEvenIfOtherClientDisconnected() throws IOException {
 
-        OncRpcSvc clnt2 = new OncRpcSvcBuilder()
+        OncRpcSvc clnt2 = IOncRpcSvcBuilder.getImpl()
                 .withTCP()
                 .withClientMode()
                 .withWorkerThreadIoStrategy()

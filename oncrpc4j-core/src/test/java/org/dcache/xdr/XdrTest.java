@@ -309,6 +309,7 @@ public class XdrTest {
     public void testBadXdrOnNegativeArraySize() throws BadXdrOncRpcException {
         CompositeBuffer buffer = BuffersBuffer.create();
         buffer.append(allocateBuffer(10));
+        @SuppressWarnings("unused")
         int[] b = new int[10];
         Xdr xdr = new Xdr(buffer);
         xdr.beginEncoding();

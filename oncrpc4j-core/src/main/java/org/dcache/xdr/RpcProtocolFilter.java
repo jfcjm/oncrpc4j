@@ -24,19 +24,27 @@ import java.net.InetSocketAddress;
 import java.nio.channels.CompletionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.dcache.xdr.model.impl.GrizzlyXdrTransport;
+import org.dcache.xdr.OncRpcAcceptedException;
+import org.dcache.xdr.OncRpcException;
+import org.dcache.xdr.OncRpcRejectedException;
+import org.dcache.xdr.OncRpcSvc;
+import org.dcache.xdr.RpcAccepsStatus;
+import org.dcache.xdr.RpcException;
+import org.dcache.xdr.RpcMessageType;
+import org.dcache.xdr.RpcProtocolFilter;
+import org.dcache.xdr.RpcReply;
+import org.dcache.xdr.Xdr;
+import org.dcache.xdr.XdrTransport;
 import org.dcache.xdr.model.itf.ReplyQueueItf;
 import org.dcache.xdr.model.itf.RpcCallItf;
 import org.dcache.xdr.model.itf.RpcReplyItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
-import org.dcache.xdr.model.itf.GenXdrTransport;
-import org.dcache.xdr.model.root.GenAbstractRpcProtocolFilter;
+import org.dcache.xdr.model.root.AbstractRpcProtocolFilter;
 import org.dcache.xdr.model.root.RpcMessage;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.filterchain.NextAction;
 
-@SuppressWarnings("deprecation")
-public final class RpcProtocolFilter extends GenAbstractRpcProtocolFilter<OncRpcSvc>  {
+public final class RpcProtocolFilter extends AbstractRpcProtocolFilter<OncRpcSvc> implements  IRpcProtocolFilter{
 
     private final static Logger _log = LoggerFactory.getLogger(RpcProtocolFilter.class);
 
@@ -65,12 +73,12 @@ public final class RpcProtocolFilter extends GenAbstractRpcProtocolFilter<OncRpc
          * We have to get peer address from the request context, which will contain SocketAddress where from
          * request was coming.
          */
-        GenXdrTransport transport = new GrizzlyXdrTransport<OncRpcSvc>(ctx.getConnection(), (InetSocketAddress)ctx.getAddress(), _replyQueue);
-
+        //XdrTransportItf<OncRpcSvc> transport = new OncGrizzlyXdrTransportImpl<OncRpcSvc>(ctx.getConnection(), (InetSocketAddress)ctx.getAddress(), _replyQueue);
+        XdrTransportItf<OncRpcSvc> transport = XdrTransport.getImpl(ctx.getConnection(), (InetSocketAddress)ctx.getAddress(), _replyQueue);
         switch (message.type()) {
             case RpcMessageType.CALL:
-            	_log.debug("Received a CALL message");
-            	RpcCallItf<OncRpcSvc> call = new RpcCall(message.xid(), xdr, transport);
+                _log.debug("Received a CALL message");
+                RpcCallItf<OncRpcSvc> call = new RpcCall(message.xid(), xdr, transport);
                 try {
                     call.accept();
                     ctx.setMessage(call);
@@ -85,26 +93,26 @@ public final class RpcProtocolFilter extends GenAbstractRpcProtocolFilter<OncRpc
                 }
                 return ctx.getInvokeAction();
             case RpcMessageType.REPLY:
-            	_log.debug("Received a Reply message with xid {} ",message.xid());
+                _log.debug("Received a Reply message with xid {} ",message.xid());
                 try {
-                    RpcReply reply = new RpcReply(message.xid(), xdr, transport);
+                    RpcReply reply =  RpcReply.getImpl(message.xid(), xdr, transport);
                     _log.debug("Got a reply, status {}",reply.getAcceptStatus());
                     _log.debug("Rpc reply is {}",reply);
                      CompletionHandler<RpcReplyItf<OncRpcSvc>, XdrTransportItf<OncRpcSvc>> callback = _replyQueue.get(message.xid());
                     if (callback != null) {
-                    	_log.debug("Processing callback");
+                        _log.debug("Processing callback");
                         if (!reply.isAccepted()) {
-                        	_log.debug("Reply is not accepted");
+                            _log.debug("Reply is not accepted");
                             callback.failed(new OncRpcRejectedException(reply.getRejectStatus()), transport);
                         } else if (reply.getAcceptStatus() != RpcAccepsStatus.SUCCESS) {
-                        	_log.debug("Accept status failed");
+                            _log.debug("Accept status failed");
                             callback.failed(new OncRpcAcceptedException(reply.getAcceptStatus()), transport);
                         } else {
-                        	_log.debug("Callback completed");
+                            _log.debug("Callback completed");
                             callback.completed(reply, transport);
                         }
                     } else {
-                    	_log.debug("No callback to process");
+                        _log.debug("No callback to process");
                     }
                 } catch (OncRpcException e) {
                     _log.warn("failed to decode reply:", e);
@@ -120,6 +128,6 @@ public final class RpcProtocolFilter extends GenAbstractRpcProtocolFilter<OncRpc
     @Override
     protected RpcReplyItf<OncRpcSvc> createReply(Xdr xdr, RpcMessage message,
             XdrTransportItf<OncRpcSvc> transport) throws OncRpcException, IOException {
-        return new RpcReply(message.xid(), xdr, transport);
+        return  RpcReply.getImpl(message.xid(), xdr, transport);
     }
 }

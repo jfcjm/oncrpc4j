@@ -73,9 +73,10 @@ public class jrpcgen {
         System.out.println("  -d <dir>        specify directory where to place generated source code files");
         System.out.println("  -p <package>    specify package name for generated source code files");
         System.out.println("  -s <classname>  specify class name of server proxy stub");
-        System.out.println("  -rpccallclass <classname>  use rpccall class in generated client library");
-        System.out.println("  -oncsvcclass <classname>  use oncsvcclass class in generated client library");
-        System.out.println("  -virtrpc        implies both -rpccallclass  VirRpcCall and -oncsvcclass VirOncRpcClient");
+        System.out.println("  -rpccallclass   <classname>  use rpccall class in generated client library");
+        System.out.println("  -svcclass    <classname>  use oncsvcclass class in generated client library");
+        System.out.println("  -clientclass <classname>  use  clientclass class in generated client library");
+        System.out.println("  -virtrpc        implies -rpccallclass  VirRpcCall, -svcclass VirRpcClient, ");
         System.out.println("  -ser            tag generated XDR classes as serializable");
         System.out.println("  -bean           generate accessors for usage as bean, implies -ser");
         System.out.println("  -noclamp        do not clamp version number in client method stubs");
@@ -130,9 +131,11 @@ public class jrpcgen {
     /**
      * Default RpcCall in generated package *
      */
-	private static final String DEFAULT_RPC_CALL_IN_CLIENT = "RpcCall";
+	private static final String DEFAULT_RPC_CALL_CLASS = "RpcCall";
 	
-    private static final String DEFAULT_ONC_SVC_IN_CLIENT = "OncRpcClient";
+    private static final String DEFAULT_RPC_CLIENT_CLASS = "OncRpcClient";
+    
+    private static final String DEFAULT_RPC_SVC_CLASS ="OncRpcSvc";
     /**
      * Contains all global identifiers for type, structure and union specifiers
      * as well as for constants and enumeration members. This static attribute
@@ -254,12 +257,19 @@ public class jrpcgen {
     /**
      * use this class name for rpccall in generated client
      */
-    public static String useRpcCallClass = DEFAULT_RPC_CALL_IN_CLIENT;
+    private static String useRpcCallClass = DEFAULT_RPC_CALL_CLASS;
     /**
      * use this class name for OncSvcClient in generated client
      */
-    public static String useOncSvcClass = DEFAULT_ONC_SVC_IN_CLIENT;
-    
+    private static String useOncSvcClass = DEFAULT_RPC_SVC_CLASS;
+    /**
+     * use this class name for rpccall in generated client
+     */
+    private static String useRpcClientClass = DEFAULT_RPC_CLIENT_CLASS;
+    /**
+     * indicate if we are generating for libvirt rpc
+     */
+    public static boolean isGeneratingForLibvirt = false;
     /**
      * Creates a new source code file for a Java class based on its class
      * name. Same as {@link #createJavaSourceFile(String, boolean)} with
@@ -631,6 +641,7 @@ public class jrpcgen {
         "double",
         "String"
     };
+    
 
     /**
      * Given a name of a data type return the name of the equivalent Java
@@ -1881,7 +1892,7 @@ public class jrpcgen {
                         + ", " + xdrParamsName + ", " + boxForTransport(resultType) + ".class" + authArgBit + ");");
                 break;
             case CALLBACK:
-                out.println("        client.call(" + baseClassname + "." + proc.procedureId + ", " + xdrParamsName + ", completionHandler" + timeoutArgsBit + authArgBit + ");");
+                out.println("        client.call(" + baseClassname + "." + proc.procedureId + ", " + xdrParamsName + ", (CompletionHandler)completionHandler" + timeoutArgsBit + authArgBit + ");");
                 break;
             case ONE_WAY:
                 out.println("        client.call(" + baseClassname + "." + proc.procedureId + ", " + xdrParamsName + ", (CompletionHandler) null" + authArgBit + ");");
@@ -1936,12 +1947,13 @@ public class jrpcgen {
             System.out.println("CLIENT: " + clientClass);
         }
         PrintWriter out = createJavaSourceFile(clientClass);
-        if (! DEFAULT_RPC_CALL_IN_CLIENT.equals(useRpcCallClass)){
+        if (! DEFAULT_RPC_CALL_CLASS.equals(useRpcCallClass)){
         	out.println("import " + useRpcCallClass +";");
         }
-        if (! DEFAULT_ONC_SVC_IN_CLIENT .equals(useOncSvcClass)){
-            out.println("import " + useOncSvcClass  +";");
+        if (! DEFAULT_RPC_CLIENT_CLASS .equals(useRpcClientClass)){
+            out.println("import " + useRpcClientClass  +";");
         }
+        
         out.println("import java.io.Closeable;");
         out.println("import java.net.InetAddress;");
         if (generateAsyncFutureClient) {
@@ -1954,6 +1966,11 @@ public class jrpcgen {
             out.println("import java.util.concurrent.TimeUnit;");
             out.println("import java.util.concurrent.TimeoutException;");
         }
+        if (isGeneratingForLibvirt){
+            out.println("import javax.security.sasl.SaslClient; ");
+            out.println("import org.libvirt.SASLPacketWrapper; ");
+        }
+        
         out.println();
 
         out.println("/**");
@@ -1967,7 +1984,7 @@ public class jrpcgen {
         // constants
         out.println("    private static final String DEFAULT_SERVICE_NAME = null;");
         // generated class fields
-        out.println("    private final OncRpcClient rpcClient;");
+        out.println("    private final " + useRpcClientClass +" rpcClient;");
         out.println("    private final " + useRpcCallClass + " client;");
         out.println();
 
@@ -2045,7 +2062,7 @@ public class jrpcgen {
         out.println("     */");
         out.println("    public " + clientClass + "(InetAddress host, int port, RpcAuth auth, int program, int version, int protocol, int localPort, IoStrategy ioStrategy, String serviceName)");
         out.println("           throws OncRpcException, IOException {");
-        out.println("        rpcClient = new OncRpcClient(host, protocol, port, localPort, ioStrategy, serviceName);");
+        out.println("        rpcClient =  new "+  useRpcClientClass +"(host, protocol, port, localPort, ioStrategy, serviceName);");
         out.println("        try {");
         out.println("            client = new " + useRpcCallClass + "(program, version, auth, rpcClient.connect());");
         out.println("        } catch (IOException e) {");
@@ -2069,6 +2086,18 @@ public class jrpcgen {
         out.println("    public void close() throws IOException {");
         out.println("        shutdown();");
         out.println("    }");
+        if (isGeneratingForLibvirt) {
+            out.println("   /**");
+            out.println("     * Activate SASL data");
+            out.println("     *");
+            out.println("     * @throws IOException");
+            out.println("     */");
+            out.println("     public void setPacketWrapper(SaslClient sc) throws OncRpcException {");
+            out.println("        rpcClient.setPacketWrapper(new SASLPacketWrapper(sc));");
+            out.println("    }");
+            out.println();
+        }
+        
         out.println();
 
         //
@@ -2315,7 +2344,7 @@ public class jrpcgen {
                     + proc.procedureId + "(");
             if (proc.parameters != null) {
 
-                out.print(useRpcCallClass+" call$, ");
+                out.print("RpcCallItf<"+useOncSvcClass+"> call$, ");
 
                 int psize = proc.parameters.size();
                 for (int pidx = 0; pidx < psize; ++pidx) {
@@ -2328,7 +2357,7 @@ public class jrpcgen {
                     out.print(paramInfo.parameterName);
                 }
             } else {
-                out.print(useRpcCallClass+" call$");
+                out.print("RpcCallItf<"+useOncSvcClass+"> call$");
             }
             out.println(");");
             out.println();
@@ -2352,15 +2381,16 @@ public class jrpcgen {
         }
         PrintWriter out = createJavaSourceFile(serverClass);
 
+        out.println("import org.dcache.xdr.model.itf.RpcCallItf;");
+        out.println("import org.dcache.xdr.model.itf.RpcDispatchable;");
         out.println("import org.dcache.xdr.*;");
         out.println();
-        if (! DEFAULT_RPC_CALL_IN_CLIENT.equals(useRpcCallClass)){
-        	out.println("import " + useRpcCallClass +";");
+        if (! DEFAULT_RPC_SVC_CLASS .equals(useOncSvcClass)){
+            out.println("import " + useOncSvcClass  +";");
         }
-
         out.println("/**");
         out.println(" */");
-        out.println("public abstract class " + serverClass + " implements RpcDispatchable {");
+        out.println("public abstract class " + serverClass + " implements RpcDispatchable<"+useOncSvcClass+">{");
         out.println();
 
         int versionSize = programInfo.versions.size();
@@ -2368,7 +2398,7 @@ public class jrpcgen {
         //
         // Generate dispatcher code...
         //
-        out.println("    public void dispatchOncRpcCall("+ useRpcCallClass +" call)");
+        out.println("    public void dispatchOncRpcCall(RpcCallItf<"+useOncSvcClass+"> call)");
         out.println("           throws OncRpcException, IOException {");
         out.println();
         out.println("        int version = call.getProgramVersion();");
@@ -2527,16 +2557,24 @@ public class jrpcgen {
                     System.exit(1);
                 }
                 useRpcCallClass = args[argIdx];
-            } else if (arg.equals("-oncsvcclass")) {
+            } else if (arg.equals("-rpcclientclass")) {
                 if (++argIdx >= argc) {
-                    System.out.println("jrpcgen: missing oncsvcclient class name");
+                    System.out.println("jrpcgen: missing oncsvc class name");
+                    System.exit(1);
+                }
+                useRpcClientClass = args[argIdx];
+            } else if (arg.equals("-rpcsvcclass")) {
+                if (++argIdx >= argc) {
+                    System.out.println("jrpcgen: missing oncclientclass name");
                     System.exit(1);
                 }
                 useOncSvcClass = args[argIdx];
             } else if (arg.equals("-virtrpc")) {
-                useRpcCallClass = "org.libvirt.VirOncRpcClient";
-                useOncSvcClass  = "org.libvirt.VirRpcCall";
-                        
+                useRpcCallClass = "org.libvirt.VirRpcCall";
+                useRpcClientClass  = "org.libvirt.VirRpcClient";
+                useOncSvcClass  = "org.libvirt.VirRpcSvc";
+                generatePerCallAuthSupport = false;
+                isGeneratingForLibvirt = true;
             } else if (arg.equals("-help") || arg.equals("-?")) {
                 printHelp();
                 System.exit(1);

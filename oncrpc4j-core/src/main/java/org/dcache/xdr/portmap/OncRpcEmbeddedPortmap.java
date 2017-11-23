@@ -19,17 +19,18 @@
  */
 package org.dcache.xdr.portmap;
 
-import org.dcache.xdr.OncRpcClient;
+import org.dcache.xdr.IOncRpcClient;
 import org.dcache.xdr.OncRpcSvc;
-import org.dcache.xdr.OncRpcSvcBuilder;
-import org.dcache.xdr.RpcCall;
+import org.dcache.xdr.IOncRpcSvcBuilder;
+import org.dcache.xdr.IRpcCall;
+import org.dcache.xdr.XdrTransport;
 import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.OncRpcProgram;
 import org.dcache.xdr.RpcAuth;
 import org.dcache.xdr.RpcAuthTypeNone;
 import org.dcache.xdr.XdrVoid;
-import org.dcache.xdr.model.itf.GenXdrTransport;
+import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,12 +58,12 @@ public class OncRpcEmbeddedPortmap {
 
         // we start embedded portmap only if there no other one is running
         boolean localPortmapperRunning = false;
-        try(OncRpcClient rpcClient = new OncRpcClient(InetAddress.getByName(null), IpProtocolType.UDP, OncRpcPortmap.PORTMAP_PORT)) {
+        try(IOncRpcClient rpcClient =  IOncRpcClient.getImpl(InetAddress.getByName(null), IpProtocolType.UDP, OncRpcPortmap.PORTMAP_PORT)) {
 
-            GenXdrTransport<OncRpcSvc> transport = rpcClient.connect();
+             XdrTransportItf<OncRpcSvc> transport = rpcClient.connect();
             /* check for version 2, 3 and 4 */
             for (int i = 4; i > 1 && !localPortmapperRunning; i--) {
-                RpcCall call = new RpcCall(OncRpcPortmap.PORTMAP_PROGRAMM, i, _auth, transport);
+                IRpcCall call =  IRpcCall.getImpl(OncRpcPortmap.PORTMAP_PROGRAMM, i, _auth, transport);
                 try {
                     call.call(0, XdrVoid.XDR_VOID, XdrVoid.XDR_VOID, timeoutValue, timeoutUnit);
                     localPortmapperRunning = true;
@@ -78,12 +79,12 @@ public class OncRpcEmbeddedPortmap {
         if (!localPortmapperRunning) {
             try {
                 LOG.info("Starting embedded portmap service");
-                OncRpcSvc rpcbindServer = new OncRpcSvcBuilder()
+                OncRpcSvc rpcbindServer =  IOncRpcSvcBuilder.getImpl()
                         .withTCP()
                         .withUDP()
                         .withoutAutoPublish()
                         .withPort(OncRpcPortmap.PORTMAP_PORT)
-                        .withRpcService(new OncRpcProgram(OncRpcPortmap.PORTMAP_PROGRAMM, OncRpcPortmap.PORTMAP_V2), new GenOncRpcbindServer())
+                        .withRpcService(new OncRpcProgram(OncRpcPortmap.PORTMAP_PROGRAMM, OncRpcPortmap.PORTMAP_V2), new OncRpcbindServer())
                         .build();
                 rpcbindServer.start();
                 optionalEmbeddedServer = rpcbindServer;

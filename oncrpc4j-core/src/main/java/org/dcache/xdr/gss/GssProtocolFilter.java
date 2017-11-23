@@ -28,7 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.dcache.utils.Bytes;
 import org.dcache.xdr.BadXdrOncRpcException;
-import org.dcache.xdr.RpcCall;
+import org.dcache.xdr.IRpcCall;
 import org.dcache.xdr.RpcAuthError;
 import org.dcache.xdr.RpcAuthStat;
 import org.dcache.xdr.RpcAuthType;
@@ -42,7 +42,6 @@ import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.filterchain.NextAction;
 import org.ietf.jgss.GSSContext;
 import org.ietf.jgss.GSSException;
-import org.ietf.jgss.GSSName;
 import org.ietf.jgss.MessageProp;
 
 /**
@@ -82,7 +81,7 @@ public class GssProtocolFilter extends BaseFilter {
     @Override
     public NextAction handleRead(FilterChainContext ctx) throws IOException {
 
-        RpcCall call = ctx.getMessage();
+        IRpcCall call = ctx.getMessage();
 
         if (call.getCredential().type() != RpcAuthType.RPCGSS_SEC) {
             return ctx.getInvokeAction();
@@ -139,7 +138,7 @@ public class GssProtocolFilter extends BaseFilter {
                     byte[] crc = Ints.toByteArray(authGss.getSequence());
                     crc = gssContext.getMIC(crc, 0, 4, new MessageProp(false));
                     authGss.setVerifier(new RpcAuthVerifier(authGss.type(), crc));
-                    ctx.setMessage(new RpcGssCall(call, gssContext, new MessageProp(false)));
+                    ctx.setMessage(new RpcGssCalImpl(call, gssContext, new MessageProp(false)));
                     hasContext = true;
             }
 

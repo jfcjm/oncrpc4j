@@ -23,11 +23,13 @@ import java.io.IOException;
 
 import java.nio.ByteOrder;
 
-import org.dcache.xdr.model.root.GenAbstractRpcMessageParserTCP;
+import org.dcache.xdr.GrizzlyMemoryManager;
+import org.dcache.xdr.Xdr;
+import org.dcache.xdr.model.root.AbstractRpcMessageParserTCP;
 import org.glassfish.grizzly.Buffer;
 import org.glassfish.grizzly.memory.BuffersBuffer;
 
-public final class RpcMessageParserTCP extends GenAbstractRpcMessageParserTCP<OncRpcSvc>  {
+public final class RpcMessageParserTCP extends AbstractRpcMessageParserTCP<OncRpcSvc>  implements IRpcMessageParserTCP{
 
     /**
      * RPC fragment record marker mask

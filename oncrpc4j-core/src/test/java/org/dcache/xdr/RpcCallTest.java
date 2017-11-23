@@ -22,10 +22,11 @@ package org.dcache.xdr;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+@SuppressWarnings("unused")
 public class RpcCallTest {
 
     private Xdr _xdr = new XdrBuffer(1024);
-    private RpcCall _call = new RpcCall(0, _xdr, null);
+    private IRpcCall _call =  IRpcCall.getImpl(0, _xdr, null);
 
     @Test(expected=RpcMismatchReply.class)
     public void testBadRpcVerion() throws Exception {

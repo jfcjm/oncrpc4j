@@ -20,7 +20,6 @@
 package org.dcache.xdr;
 
 import org.dcache.xdr.model.itf.XdrTransportItf;
-import org.dcache.xdr.model.itf.GenXdrTransport;
 import org.ietf.jgss.GSSContext;
 
 

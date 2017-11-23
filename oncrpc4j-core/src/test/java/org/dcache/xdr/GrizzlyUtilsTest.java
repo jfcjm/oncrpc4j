@@ -50,11 +50,13 @@ public class GrizzlyUtilsTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void souldThrowExceptionIfNegativeSizeProvidedForWorker() {
+        @SuppressWarnings("unused")
         ThreadPoolConfig tpc = GrizzlyUtils.getWorkerPoolCfg(IoStrategy.WORKER_THREAD, "aService", -1);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void souldThrowExceptionIfNegativeSizeProvidedForSelector() {
+        @SuppressWarnings("unused")
         ThreadPoolConfig tpc = GrizzlyUtils.getSelectorPoolCfg(IoStrategy.WORKER_THREAD, "aService", -1);
     }
 

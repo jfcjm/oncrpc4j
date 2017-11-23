@@ -27,7 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.security.auth.Subject;
-import javax.security.auth.kerberos.KerberosPrincipal;
 
 import org.dcache.xdr.OncRpcSvc;
 import org.dcache.xdr.RpcLoginService;
@@ -38,7 +37,6 @@ import org.ietf.jgss.GSSContext;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
 import org.ietf.jgss.GSSManager;
-import org.ietf.jgss.GSSName;
 import org.ietf.jgss.Oid;
 
 public class GssSessionManager {

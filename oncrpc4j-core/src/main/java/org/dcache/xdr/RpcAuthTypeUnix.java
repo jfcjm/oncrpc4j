@@ -28,6 +28,9 @@ import org.dcache.auth.Subjects;
 
 public class RpcAuthTypeUnix implements RpcAuth, XdrAble {
 
+    @SuppressWarnings("unused")
+    private final static Logger _log = LoggerFactory.getLogger(RpcAuthTypeUnix.class);
+
     private final int _type =  RpcAuthType.UNIX;
     private RpcAuthVerifier _verifier = new RpcAuthVerifier(RpcAuthType.NONE, new byte[0]);
 
@@ -38,8 +41,6 @@ public class RpcAuthTypeUnix implements RpcAuth, XdrAble {
     private int _stamp;
     private String _machine;
     private Subject _subject;
-
-    private final static Logger _log = LoggerFactory.getLogger(RpcAuthTypeUnix.class);
 
     public RpcAuthTypeUnix() {}
 

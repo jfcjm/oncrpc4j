@@ -17,7 +17,7 @@ public abstract class AbstractBlobStoreTest {
 
     @Before
     public void setup() throws Exception{
-        server = new OncRpcSvcBuilder()
+        server =  new OncRpcSvcBuilder()
                 .withTCP()
                 .withoutAutoPublish() //so we dont need rpcbind
                 .withPort(port)

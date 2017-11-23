@@ -1,8 +1,13 @@
 package org.dcache.oncrpc4j.rpcgen;
 
+import org.dcache.xdr.OncRpcException;
+import org.dcache.xdr.OncRpcSvc;
 import org.dcache.xdr.RpcCall;
+import org.dcache.xdr.model.itf.RpcCallItf;
 
 import javax.security.auth.Subject;
+
+import java.io.IOException;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -14,7 +19,7 @@ public class CalculatorServerImpl extends CalculatorServer {
     private List<MethodCall> methodCalls = new ArrayList<>();
 
     @Override
-    public CalculationResult add_1(RpcCall call$, long arg1, long arg2) {
+    public CalculationResult add_1(RpcCallItf<OncRpcSvc> call$, long arg1, long arg2) {
         long start = System.currentTimeMillis();
         CalculationResult result = new CalculationResult();
         result.setStartMillis(start);
@@ -31,7 +36,7 @@ public class CalculatorServerImpl extends CalculatorServer {
     }
 
     @Override
-    public long addSimple_1(RpcCall call$, long arg1, long arg2) {
+    public long addSimple_1(RpcCallItf<OncRpcSvc>  call$, long arg1, long arg2) {
         long start = System.currentTimeMillis();
         try {
             Thread.sleep(SLEEP_MILLIS);
@@ -44,7 +49,7 @@ public class CalculatorServerImpl extends CalculatorServer {
         return result;
     }
 
-    private void recordAddCall(RpcCall call, long start, long finish, long arg1, long arg2, long result, Throwable throwable) {
+    private void recordAddCall(RpcCallItf<OncRpcSvc> call, long start, long finish, long arg1, long arg2, long result, Throwable throwable) {
         System.err.println(arg1 + " + " + arg2 + " = " + result);
         Object[] args = new Object[2];
         args[0] = arg1;

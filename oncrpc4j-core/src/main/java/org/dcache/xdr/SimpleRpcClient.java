@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -22,7 +22,7 @@ package org.dcache.xdr;
 import java.net.InetAddress;
 import java.util.concurrent.Future;
 
-import org.dcache.xdr.model.itf.GenXdrTransport;
+import org.dcache.xdr.model.itf.XdrTransportItf;
 //TODO à génériser
 public class SimpleRpcClient {
 
@@ -36,19 +36,19 @@ public class SimpleRpcClient {
         InetAddress address = InetAddress.getByName(args[0]);
         int port = Integer.parseInt(args[1]);
 
-        OncRpcClient rpcClient = new OncRpcClient(address, IpProtocolType.TCP, port);
-        GenXdrTransport<OncRpcSvc> transport = rpcClient.connect();
+        IOncRpcClient rpcClient = IOncRpcClient.getImpl(address, IpProtocolType.TCP, port);
+        XdrTransportItf<OncRpcSvc> transport = rpcClient.connect();
         RpcAuth auth = new RpcAuthTypeNone();
 
-	    RpcCall call = new RpcCall(100017, 1, auth, transport);
+        IRpcCall call =  IRpcCall.getImpl(100017, 1, auth, transport);
 
-	    /*
-	    * call PROC_NULL (ping)
-	    */
-	    call.call(0, XdrVoid.XDR_VOID, XdrVoid.XDR_VOID);
+        /*
+         * call PROC_NULL (ping)
+         */
+        call.call(0, XdrVoid.XDR_VOID, XdrVoid.XDR_VOID);
 
-	    Future<XdrVoid> r = call.call(0, XdrVoid.XDR_VOID, XdrVoid.class);
-	    r.get();
-	}
+        Future<XdrVoid> r = call.call(0, XdrVoid.XDR_VOID, XdrVoid.class);
+        r.get();
+        rpcClient.close();
     }
 }
