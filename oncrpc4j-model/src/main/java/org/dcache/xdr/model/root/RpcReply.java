@@ -17,10 +17,19 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.xdr;
+package org.dcache.xdr.model.root;
 
 import java.io.IOException;
 
+import org.dcache.xdr.MismatchInfo;
+import org.dcache.xdr.OncRpcException;
+import org.dcache.xdr.RpcAccepsStatus;
+import org.dcache.xdr.RpcAuthStat;
+import org.dcache.xdr.RpcAuthVerifier;
+import org.dcache.xdr.RpcRejectStatus;
+import org.dcache.xdr.RpcReplyStatus;
+import org.dcache.xdr.Xdr;
+import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.model.itf.RpcReplyItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;

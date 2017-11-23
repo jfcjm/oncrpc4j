@@ -17,9 +17,16 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.xdr;
+package org.dcache.xdr.model.root;
 
 import org.dcache.utils.net.InetSocketAddresses;
+import org.dcache.xdr.IoStrategy;
+import org.dcache.xdr.IpProtocolType;
+import org.dcache.xdr.OncRpcException;
+import org.dcache.xdr.OncRpcProgram;
+import org.dcache.xdr.RpcMessageParserTCP;
+import org.dcache.xdr.RpcMessageParserUDP;
+import org.dcache.xdr.RpcProgUnavailable;
 import org.dcache.xdr.gss.GssProtocolFilter;
 import org.dcache.xdr.gss.GssSessionManager;
 import org.dcache.xdr.model.impl.AbstractGrizzlyXdrTransport;

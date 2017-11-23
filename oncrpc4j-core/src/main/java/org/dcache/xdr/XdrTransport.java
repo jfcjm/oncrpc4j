@@ -22,6 +22,8 @@ package org.dcache.xdr;
 import java.net.InetSocketAddress;
 import java.nio.channels.CompletionHandler;
 
+import org.dcache.xdr.model.root.ReplyQueue;
+
 /**
  *
  * Abstraction for sending reply to clients

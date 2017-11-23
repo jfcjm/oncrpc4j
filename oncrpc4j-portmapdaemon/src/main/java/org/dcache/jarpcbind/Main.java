@@ -22,11 +22,11 @@ package org.dcache.jarpcbind;
 import java.io.IOException;
 
 import org.dcache.xdr.OncRpcProgram;
-import org.dcache.xdr.OncRpcSvc;
-import org.dcache.xdr.OncRpcSvcBuilder;
 import org.dcache.xdr.RpcDispatchable;
 import org.dcache.xdr.model.itf.RpcDispatchableItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
+import org.dcache.xdr.model.root.OncRpcSvc;
+import org.dcache.xdr.model.root.OncRpcSvcBuilder;
 import org.dcache.xdr.portmap.OncRpcPortmap;
 import org.dcache.xdr.portmap.OncRpcbindServer;
 import org.slf4j.Logger;

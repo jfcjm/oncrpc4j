@@ -20,6 +20,8 @@
 package org.dcache.xdr;
 
 import java.io.IOException;
+
+import org.dcache.xdr.model.root.OncRpcSvc;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;

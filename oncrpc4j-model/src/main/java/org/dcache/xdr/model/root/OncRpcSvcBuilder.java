@@ -17,9 +17,13 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.xdr;
+package org.dcache.xdr.model.root;
 
 import com.google.common.util.concurrent.MoreExecutors;
+
+import org.dcache.xdr.IoStrategy;
+import org.dcache.xdr.OncRpcProgram;
+import org.dcache.xdr.OncRpcSvc;
 import org.dcache.xdr.gss.GssSessionManager;
 import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
 import org.dcache.xdr.model.itf.RpcDispatchableItf;

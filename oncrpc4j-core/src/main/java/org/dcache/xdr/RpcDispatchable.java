@@ -21,6 +21,8 @@ package org.dcache.xdr;
 
 import java.io.IOException;
 
+import org.dcache.xdr.model.root.RpcCall;
+
 /**
  *
  * Interface for RPC servers

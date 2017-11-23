@@ -22,11 +22,11 @@ package org.dcache.xdr.portmap;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcAuth;
 import org.dcache.xdr.RpcAuthTypeNone;
-import org.dcache.xdr.RpcCall;
 import org.dcache.xdr.XdrBoolean;
 import org.dcache.xdr.XdrString;
 import org.dcache.xdr.XdrVoid;
 import org.dcache.xdr.model.itf.RpcSvcItf;
+import org.dcache.xdr.model.root.RpcCall;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

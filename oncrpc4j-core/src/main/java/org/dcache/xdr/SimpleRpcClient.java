@@ -23,6 +23,8 @@ import java.net.InetAddress;
 import java.util.concurrent.Future;
 
 import org.dcache.xdr.model.itf.XdrTransportItf;
+import org.dcache.xdr.model.root.OncRpcClient;
+import org.dcache.xdr.model.root.RpcCall;
 
 public class SimpleRpcClient {
 

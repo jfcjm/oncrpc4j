@@ -1,8 +1,8 @@
 package org.dcache.oncrpc4j.rpcgen;
 
-import org.dcache.xdr.RpcCall;
 import org.dcache.xdr.model.itf.RpcCallItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
+import org.dcache.xdr.model.root.RpcCall;
 
 import javax.security.auth.Subject;
 import java.security.Principal;

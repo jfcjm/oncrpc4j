@@ -20,17 +20,17 @@
 package org.dcache.xdr.portmap;
 
 import org.dcache.xdr.IpProtocolType;
-import org.dcache.xdr.OncRpcClient;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.OncRpcProgram;
-import org.dcache.xdr.OncRpcSvc;
-import org.dcache.xdr.OncRpcSvcBuilder;
 import org.dcache.xdr.RpcAuth;
 import org.dcache.xdr.RpcAuthTypeNone;
-import org.dcache.xdr.RpcCall;
 import org.dcache.xdr.XdrTransport;
 import org.dcache.xdr.XdrVoid;
 import org.dcache.xdr.model.itf.XdrTransportItf;
+import org.dcache.xdr.model.root.OncRpcClient;
+import org.dcache.xdr.model.root.OncRpcSvc;
+import org.dcache.xdr.model.root.OncRpcSvcBuilder;
+import org.dcache.xdr.model.root.RpcCall;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

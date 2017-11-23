@@ -7,6 +7,8 @@ import java.nio.channels.CompletionHandler;
 import org.dcache.xdr.model.itf.RpcDispatchableItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
+import org.dcache.xdr.model.root.OncRpcSvcBuilder;
+import org.dcache.xdr.model.root.RpcCall;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

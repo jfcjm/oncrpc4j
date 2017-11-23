@@ -25,6 +25,8 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.TimeoutException;
 import org.dcache.utils.net.InetSocketAddresses;
 import org.dcache.xdr.model.itf.RpcSvcItf;
+import org.dcache.xdr.model.root.OncRpcClient;
+import org.dcache.xdr.model.root.OncRpcSvcBuilder;
 import org.dcache.xdr.portmap.GenericPortmapClient;
 import org.dcache.xdr.portmap.OncPortmapClient;
 import org.dcache.xdr.portmap.OncRpcPortmap;

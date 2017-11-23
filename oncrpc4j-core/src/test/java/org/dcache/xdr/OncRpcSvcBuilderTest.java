@@ -21,6 +21,9 @@ package org.dcache.xdr;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import org.dcache.xdr.model.root.OncRpcSvc;
+import org.dcache.xdr.model.root.OncRpcSvcBuilder;
 import org.junit.Test;
 
 import static org.mockito.Mockito.mock;

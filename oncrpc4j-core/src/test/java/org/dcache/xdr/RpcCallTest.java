@@ -22,6 +22,8 @@ package org.dcache.xdr;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+import org.dcache.xdr.model.root.RpcCall;
+
 public class RpcCallTest {
 
     private Xdr _xdr = new XdrBuffer(1024);

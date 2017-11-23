@@ -17,7 +17,7 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.xdr;
+package org.dcache.xdr.model.root;
 
 import javax.security.auth.Subject;
 import java.io.IOException;
@@ -29,6 +29,9 @@ import java.util.concurrent.ExecutorService;
 import com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.dcache.xdr.OncRpcException;
+import org.dcache.xdr.OncRpcProgram;
+import org.dcache.xdr.RpcException;
 import org.dcache.xdr.model.itf.RpcDispatchableItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.glassfish.grizzly.filterchain.BaseFilter;

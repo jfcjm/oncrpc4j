@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 import org.dcache.xdr.gss.GssSessionManager;
+import org.dcache.xdr.model.root.OncRpcSvcBuilder;
 
 /**
  * A {@link FactoryBean} to use {@link OncRpcSvcBuilder}

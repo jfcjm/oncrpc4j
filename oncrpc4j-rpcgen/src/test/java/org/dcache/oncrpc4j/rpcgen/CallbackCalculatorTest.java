@@ -1,8 +1,8 @@
 package org.dcache.oncrpc4j.rpcgen;
 
-import org.dcache.xdr.RpcReply;
 import org.dcache.xdr.XdrLong;
 import org.dcache.xdr.XdrTransport;
+import org.dcache.xdr.model.root.RpcReply;
 import org.junit.Assert;
 import org.junit.Test;
 

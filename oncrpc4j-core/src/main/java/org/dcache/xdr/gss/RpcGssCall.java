@@ -25,6 +25,7 @@ import org.ietf.jgss.MessageProp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.dcache.xdr.*;
+import org.dcache.xdr.model.root.RpcCall;
 import org.glassfish.grizzly.Buffer;
 import org.ietf.jgss.GSSContext;
 
