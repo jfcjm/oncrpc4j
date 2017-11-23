@@ -40,6 +40,8 @@ import org.ietf.jgss.GSSName;
 import org.ietf.jgss.Oid;
 
 import org.dcache.xdr.XdrTransport;
+import org.dcache.xdr.model.itf.RpcSvcItf;
+import org.dcache.xdr.model.itf.XdrTransportItf;
 
 public class GssSessionManager {
 
@@ -103,7 +105,7 @@ public class GssSessionManager {
         return context;
     }
 
-    public Subject subjectOf(XdrTransport transport, GSSContext context) {
+    public <SVC_T extends RpcSvcItf<SVC_T>> Subject subjectOf(XdrTransportItf<SVC_T> transport, GSSContext context) {
         return _loginService.login(transport, context);
     }
 }

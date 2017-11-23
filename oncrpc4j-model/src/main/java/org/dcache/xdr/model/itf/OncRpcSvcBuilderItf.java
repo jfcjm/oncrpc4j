@@ -68,6 +68,6 @@ public interface OncRpcSvcBuilderItf<SVC_T extends RpcSvcItf<SVC_T>> {
 
     Map<OncRpcProgram, RpcDispatchableItf<SVC_T>> getRpcServices();
 
-    SVC_T build();
+    RpcSvcItf<SVC_T> build();
 
 }

@@ -26,6 +26,7 @@ import org.dcache.xdr.RpcCall;
 import org.dcache.xdr.XdrBoolean;
 import org.dcache.xdr.XdrString;
 import org.dcache.xdr.XdrVoid;
+import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,14 +36,14 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class RpcbindV4Client implements OncPortmapClient {
+public class RpcbindV4Client<SVC_T extends RpcSvcItf<SVC_T>> implements OncPortmapClient<SVC_T> {
 
     private final static Logger _log = LoggerFactory.getLogger(RpcbindV4Client.class);
 
     private final RpcAuth _auth = new RpcAuthTypeNone();
-    private final RpcCall _call;
+    private final RpcCall<SVC_T>_call;
 
-    public RpcbindV4Client(RpcCall call) {
+    public RpcbindV4Client(RpcCall<SVC_T> call) {
         _call = call;
     }
 

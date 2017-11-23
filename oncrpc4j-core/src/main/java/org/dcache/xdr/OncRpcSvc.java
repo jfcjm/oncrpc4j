@@ -22,6 +22,10 @@ package org.dcache.xdr;
 import org.dcache.utils.net.InetSocketAddresses;
 import org.dcache.xdr.gss.GssProtocolFilter;
 import org.dcache.xdr.gss.GssSessionManager;
+import org.dcache.xdr.model.impl.AbstractGrizzlyXdrTransport;
+import org.dcache.xdr.model.itf.RpcDispatchableItf;
+import org.dcache.xdr.model.itf.RpcSvcItf;
+import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.dcache.xdr.portmap.GenericPortmapClient;
 import org.dcache.xdr.portmap.OncPortmapClient;
 import org.dcache.xdr.portmap.OncRpcPortmap;
@@ -71,7 +75,7 @@ import java.util.stream.Collectors;
 import static org.dcache.xdr.GrizzlyUtils.getSelectorPoolCfg;
 import static org.dcache.xdr.GrizzlyUtils.transportFor;
 
-public class OncRpcSvc {
+public class OncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implements  RpcSvcItf<SVC_T>{
     
     private final static Logger _log = LoggerFactory.getLogger(OncRpcSvc.class);
     
@@ -100,7 +104,7 @@ public class OncRpcSvc {
 
     private final ExecutorService _requestExecutor;
 
-    private final ReplyQueue _replyQueue = new ReplyQueue();
+    private final ReplyQueue<SVC_T> _replyQueue = new ReplyQueue();
 
     private final boolean _withSubjectPropagation;
     /**
@@ -111,7 +115,7 @@ public class OncRpcSvc {
     /**
      * mapping of registered programs.
      */
-    private final Map<OncRpcProgram, RpcDispatchable> _programs =
+    private final Map<OncRpcProgram, RpcDispatchableItf<SVC_T>> _programs =
             new ConcurrentHashMap<>();
 
     /**
@@ -123,7 +127,7 @@ public class OncRpcSvc {
      * Create new RPC service with defined configuration.
      * @param builder to build this service
      */
-    OncRpcSvc(OncRpcSvcBuilder builder) {
+    OncRpcSvc(OncRpcSvcBuilder<SVC_T> builder) {
         _publish = builder.isAutoPublish();
         final int protocol = builder.getProtocol();
 
@@ -184,7 +188,7 @@ public class OncRpcSvc {
      * @param prog program number
      * @param handler RPC requests handler.
      */
-    public void register(OncRpcProgram prog, RpcDispatchable handler) {
+    public void register(OncRpcProgram prog, RpcDispatchableItf<SVC_T> handler) {
         _log.info("Registering new program {} : {}", prog, handler);
         _programs.put(prog, handler);
     }
@@ -205,7 +209,7 @@ public class OncRpcSvc {
      * @deprecated use {@link OncRpcSvcBuilder#withRpcService} instead.
      */
     @Deprecated
-    public void setPrograms(Map<OncRpcProgram, RpcDispatchable> services) {
+    public void setPrograms(Map<OncRpcProgram, RpcDispatchableItf<SVC_T>> services) {
         _programs.putAll(services);
     }
 
@@ -217,9 +221,9 @@ public class OncRpcSvc {
      */
     private void publishToPortmap(Connection<InetSocketAddress> connection, Set<OncRpcProgram> programs) throws IOException {
 
-        OncRpcClient rpcClient = new OncRpcClient(InetAddress.getByName(null),
+        OncRpcClient<SVC_T> rpcClient = new OncRpcClient<SVC_T>(InetAddress.getByName(null),
                 IpProtocolType.UDP, OncRpcPortmap.PORTMAP_PORT);
-        XdrTransport transport = rpcClient.connect();
+        XdrTransportItf<SVC_T> transport = rpcClient.connect();
 
         try {
             OncPortmapClient portmapClient = new GenericPortmapClient(transport);
@@ -274,9 +278,9 @@ public class OncRpcSvc {
      */
     private void clearPortmap(Set<OncRpcProgram> programs) throws IOException {
 
-        OncRpcClient rpcClient = new OncRpcClient(InetAddress.getByName(null),
+        OncRpcClient<SVC_T> rpcClient = new OncRpcClient<SVC_T>(InetAddress.getByName(null),
                 IpProtocolType.UDP, OncRpcPortmap.PORTMAP_PORT);
-        XdrTransport transport = rpcClient.connect();
+        XdrTransportItf<SVC_T> transport = rpcClient.connect();
 
         try {
             OncPortmapClient portmapClient = new GenericPortmapClient(transport);
@@ -383,11 +387,11 @@ public class OncRpcSvc {
         _requestExecutor.shutdown();
     }
 
-    public XdrTransport connect(InetSocketAddress socketAddress) throws IOException {
+    public XdrTransportItf<SVC_T> connect(InetSocketAddress socketAddress) throws IOException {
         return connect(socketAddress, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
 
-    public XdrTransport connect(InetSocketAddress socketAddress, long timeout, TimeUnit timeUnit) throws IOException {
+    public XdrTransportItf<SVC_T> connect(InetSocketAddress socketAddress, long timeout, TimeUnit timeUnit) throws IOException {
 
         // in client mode only one transport is defined
         NIOTransport transport = _transports.get(0);
@@ -403,7 +407,7 @@ public class OncRpcSvc {
         try {
             //noinspection unchecked
             Connection<InetSocketAddress> connection = connectFuture.get(timeout, timeUnit);
-            return new GrizzlyXdrTransport(connection, _replyQueue);
+            return new AbstractGrizzlyXdrTransport<SVC_T>(connection, _replyQueue);
         } catch (ExecutionException e) {
             Throwable t = getRootCause(e);
             propagateIfPossible(t, IOException.class);

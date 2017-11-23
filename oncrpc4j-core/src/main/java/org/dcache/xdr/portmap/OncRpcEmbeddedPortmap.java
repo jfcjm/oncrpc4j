@@ -30,7 +30,7 @@ import org.dcache.xdr.RpcAuthTypeNone;
 import org.dcache.xdr.RpcCall;
 import org.dcache.xdr.XdrTransport;
 import org.dcache.xdr.XdrVoid;
-
+import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +48,7 @@ public class OncRpcEmbeddedPortmap {
     private static final Logger LOG = LoggerFactory.getLogger(OncRpcEmbeddedPortmap.class);
 
     private static final RpcAuth _auth = new RpcAuthTypeNone();
-    private OncRpcSvc optionalEmbeddedServer = null;
+    private OncRpcSvc<?> optionalEmbeddedServer = null;
 
     public OncRpcEmbeddedPortmap() {
         this(2, TimeUnit.SECONDS);
@@ -58,12 +58,12 @@ public class OncRpcEmbeddedPortmap {
 
         // we start embedded portmap only if there no other one is running
         boolean localPortmapperRunning = false;
-        try(OncRpcClient rpcClient = new OncRpcClient(InetAddress.getByName(null), IpProtocolType.UDP, OncRpcPortmap.PORTMAP_PORT)) {
+        try(OncRpcClient<?> rpcClient = new OncRpcClient<>(InetAddress.getByName(null), IpProtocolType.UDP, OncRpcPortmap.PORTMAP_PORT)) {
 
-            XdrTransport transport = rpcClient.connect();
+            XdrTransportItf<?> transport = rpcClient.connect();
             /* check for version 2, 3 and 4 */
             for (int i = 4; i > 1 && !localPortmapperRunning; i--) {
-                RpcCall call = new RpcCall(OncRpcPortmap.PORTMAP_PROGRAMM, i, _auth, transport);
+                RpcCall<?> call = new RpcCall<>(OncRpcPortmap.PORTMAP_PROGRAMM, i, _auth, transport);
                 try {
                     call.call(0, XdrVoid.XDR_VOID, XdrVoid.XDR_VOID, timeoutValue, timeoutUnit);
                     localPortmapperRunning = true;
@@ -79,7 +79,7 @@ public class OncRpcEmbeddedPortmap {
         if (!localPortmapperRunning) {
             try {
                 LOG.info("Starting embedded portmap service");
-                OncRpcSvc rpcbindServer = new OncRpcSvcBuilder()
+                OncRpcSvc<?> rpcbindServer = (OncRpcSvc<?>) new OncRpcSvcBuilder<>()
                         .withPort(OncRpcPortmap.PORTMAP_PORT)
                         .withTCP()
                         .withUDP()

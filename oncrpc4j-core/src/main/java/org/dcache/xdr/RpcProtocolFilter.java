@@ -24,16 +24,20 @@ import java.net.InetSocketAddress;
 import java.nio.channels.CompletionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.dcache.xdr.model.impl.AbstractGrizzlyXdrTransport;
+import org.dcache.xdr.model.itf.RpcReplyItf;
+import org.dcache.xdr.model.itf.RpcSvcItf;
+import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.glassfish.grizzly.filterchain.BaseFilter;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.filterchain.NextAction;
 
-public class RpcProtocolFilter extends BaseFilter {
+public class RpcProtocolFilter<SVC_T extends RpcSvcItf<SVC_T>> extends BaseFilter {
 
     private final static Logger _log = LoggerFactory.getLogger(RpcProtocolFilter.class);
-    private final ReplyQueue _replyQueue;
+    private final ReplyQueue<SVC_T> _replyQueue;
 
-    public RpcProtocolFilter(ReplyQueue replyQueue) {
+    public RpcProtocolFilter(ReplyQueue<SVC_T> replyQueue) {
         _replyQueue = replyQueue;
     }
 
@@ -54,11 +58,11 @@ public class RpcProtocolFilter extends BaseFilter {
          * We have to get peer address from the request context, which will contain SocketAddress where from
          * request was coming.
          */
-        XdrTransport transport = new GrizzlyXdrTransport(ctx.getConnection(), (InetSocketAddress)ctx.getAddress(), _replyQueue);
+        XdrTransportItf<SVC_T> transport = new AbstractGrizzlyXdrTransport<>(ctx.getConnection(), (InetSocketAddress)ctx.getAddress(), _replyQueue);
 
         switch (message.type()) {
             case RpcMessageType.CALL:
-                RpcCall call = new RpcCall(message.xid(), xdr, transport);
+                RpcCall<SVC_T> call = new RpcCall<SVC_T>(message.xid(), xdr, transport);
                 try {
                     call.accept();
                     ctx.setMessage(call);
@@ -74,8 +78,8 @@ public class RpcProtocolFilter extends BaseFilter {
                 return ctx.getInvokeAction();
             case RpcMessageType.REPLY:
                 try {
-                    RpcReply reply = new RpcReply(message.xid(), xdr, transport);
-                    CompletionHandler<RpcReply, XdrTransport> callback = _replyQueue.get(message.xid());
+                    RpcReplyItf<SVC_T> reply = new RpcReply<SVC_T>(message.xid(), xdr, transport);
+                    CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback = _replyQueue.get(message.xid());
                     if (callback != null) {
                         if (!reply.isAccepted()) {
                             callback.failed(new OncRpcRejectedException(reply.getRejectStatus()), transport);

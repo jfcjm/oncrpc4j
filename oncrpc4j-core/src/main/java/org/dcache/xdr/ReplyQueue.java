@@ -32,7 +32,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class ReplyQueue {
+import org.dcache.xdr.model.itf.ReplyQueueItf;
+import org.dcache.xdr.model.itf.RpcReplyItf;
+import org.dcache.xdr.model.itf.RpcSvcItf;
+import org.dcache.xdr.model.itf.XdrTransportItf;
+
+public class ReplyQueue<SVC_T extends RpcSvcItf<SVC_T>> implements ReplyQueueItf<SVC_T>{
 
     private final ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(1, new ThreadFactory() {
         private final AtomicInteger counter = new AtomicInteger();
@@ -56,7 +61,7 @@ public class ReplyQueue {
      * finished.
      * @throws EOFException if disconnected
      */
-    public void registerKey(int xid, SocketAddress addr, CompletionHandler<RpcReply, XdrTransport> callback) throws EOFException {
+    public void registerKey(int xid, SocketAddress addr, CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback) throws EOFException {
         registerKey(xid, addr, callback, 0, null);
     }
 
@@ -72,11 +77,11 @@ public class ReplyQueue {
      * @param timeoutUnits units in which timeout value is expressed.
      * @throws EOFException if disconnected
      */
-    public void registerKey(int xid, SocketAddress addr, CompletionHandler<RpcReply, XdrTransport> callback, final long timeout, final TimeUnit timeoutUnits) throws EOFException {
+    public void registerKey(int xid, SocketAddress addr, CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback, final long timeout, final TimeUnit timeoutUnits) throws EOFException {
         ScheduledFuture<?> scheduledTimeout = null;
         if (timeout > 0 && timeoutUnits != null) {
             scheduledTimeout = executorService.schedule(() -> {
-                CompletionHandler<RpcReply, XdrTransport> handler = get(xid);
+                 CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> handler = get(xid);
                 if (handler != null) { //means we're 1st, no response yet
                     handler.failed(new TimeoutException("did not get a response within " + timeout + " " + timeoutUnits), null);
                 }
@@ -103,7 +108,7 @@ public class ReplyQueue {
      * @param xid of rpc request.
      * @return completion handler for given xid or {@code null} if xid is unknown.
      */
-    public CompletionHandler<RpcReply, XdrTransport> get(int xid) {
+    public CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> get(int xid) {
         PendingRequest request = _queue.remove(xid);
         if (request != null) { //means we're first. call off any pending timeouts
             request.cancelTimeout();
@@ -112,13 +117,17 @@ public class ReplyQueue {
             return null;
         }
     }
-
-    private static class PendingRequest {
-        private final CompletionHandler<RpcReply, XdrTransport> handler;
+    /**
+     * JMK Needed to convert this class to non-static
+     * @author jmk
+     *
+     */
+    private class PendingRequest {
+        private final CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> handler;
         private final ScheduledFuture<?> scheduledTimeout;
         private final SocketAddress addr;
 
-        public PendingRequest(SocketAddress addr, CompletionHandler<RpcReply, XdrTransport> handler, ScheduledFuture<?> scheduledTimeout) {
+        public PendingRequest(SocketAddress addr, CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> handler, ScheduledFuture<?> scheduledTimeout) {
             this.handler = handler;
             this.scheduledTimeout = scheduledTimeout;
             this.addr = addr;

@@ -40,8 +40,8 @@ public class SimpleRpcServer {
         }
 
         new OncRpcEmbeddedPortmap();
-
-        OncRpcSvc svc = new OncRpcSvcBuilder()
+        //JMK
+        OncRpcSvc<?> svc =  (OncRpcSvc<?>) new OncRpcSvcBuilder<>()
                 .withTCP()
                 .withAutoPublish()
                 .withPort(port)

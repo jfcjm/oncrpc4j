@@ -22,6 +22,8 @@ package org.dcache.xdr;
 import java.net.InetAddress;
 import java.util.concurrent.Future;
 
+import org.dcache.xdr.model.itf.XdrTransportItf;
+
 public class SimpleRpcClient {
 
     public static void main(String[] args) throws Exception {
@@ -33,12 +35,12 @@ public class SimpleRpcClient {
 
         InetAddress address = InetAddress.getByName(args[0]);
         int port = Integer.parseInt(args[1]);
-
-	try (OncRpcClient rpcClient = new OncRpcClient(address, IpProtocolType.TCP, port)) {
-	    XdrTransport transport = rpcClient.connect();
+    //JMK
+	try (OncRpcClient<?> rpcClient = new OncRpcClient<>(address, IpProtocolType.TCP, port)) {
+	    XdrTransportItf<?> transport = rpcClient.connect();
 	    RpcAuth auth = new RpcAuthTypeNone();
 
-	    RpcCall call = new RpcCall(100017, 1, auth, transport);
+	    RpcCall<?> call = new RpcCall<>(100017, 1, auth, transport);
 
 	    /*
 	    * call PROC_NULL (ping)

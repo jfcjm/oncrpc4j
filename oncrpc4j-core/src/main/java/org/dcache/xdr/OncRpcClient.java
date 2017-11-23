@@ -24,12 +24,16 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
-public class OncRpcClient implements AutoCloseable {
+import org.dcache.xdr.model.itf.OncRpcClientItf;
+import org.dcache.xdr.model.itf.RpcSvcItf;
+import org.dcache.xdr.model.itf.XdrTransportItf;
+
+public class OncRpcClient<SVC_T extends RpcSvcItf<SVC_T>> implements AutoCloseable, OncRpcClientItf<SVC_T> {
 
     private static final String DEFAULT_SERVICE_NAME = null;
 
     private final InetSocketAddress _socketAddress;
-    private final OncRpcSvc _rpcsvc;
+    private final OncRpcSvc<SVC_T> _rpcsvc;
 
     public OncRpcClient(InetAddress address, int protocol, int port) {
         this(new InetSocketAddress(address, port), protocol, 0, IoStrategy.SAME_THREAD, DEFAULT_SERVICE_NAME);
@@ -50,10 +54,10 @@ public class OncRpcClient implements AutoCloseable {
     public OncRpcClient(InetSocketAddress socketAddress, int protocol) {
         this(socketAddress, protocol, 0, IoStrategy.SAME_THREAD, DEFAULT_SERVICE_NAME);
     }
-
+    //JMK : type cast
     public OncRpcClient(InetSocketAddress socketAddress, int protocol, int localPort, IoStrategy ioStrategy, String serviceName) {
         _socketAddress = socketAddress;
-        _rpcsvc = new OncRpcSvcBuilder()
+        _rpcsvc = (OncRpcSvc<SVC_T>) new OncRpcSvcBuilder<SVC_T>()
                 .withClientMode()
                 .withPort(localPort)
                 .withIpProtocolType(protocol)
@@ -62,12 +66,12 @@ public class OncRpcClient implements AutoCloseable {
                 .build();
     }
 
-    public XdrTransport connect() throws IOException {
+    public XdrTransportItf<SVC_T> connect() throws IOException {
         return connect(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
 
-    public XdrTransport connect(long timeout, TimeUnit timeUnit) throws IOException {
-        XdrTransport t;
+    public XdrTransportItf<SVC_T> connect(long timeout, TimeUnit timeUnit) throws IOException {
+        XdrTransportItf<SVC_T> t;
         try {
         _rpcsvc.start();
             t =_rpcsvc.connect(_socketAddress, timeout, timeUnit);

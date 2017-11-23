@@ -69,9 +69,9 @@ public  class EmbeddedGenericServer<SVC_T extends RpcSvcItf<SVC_T>>
         }
     };
 
-    private  SVC_T svc;
+    private  RpcSvcItf<SVC_T> svc;
 
-    private  SVC_T client;
+    private  RpcSvcItf<SVC_T> client;
 
     
     
@@ -126,8 +126,8 @@ public  class EmbeddedGenericServer<SVC_T extends RpcSvcItf<SVC_T>>
         close(svc);
     }
 
-    private void close(SVC_T svc) throws IOException {
-        if (svc != null) svc.stop();
+    private void close(RpcSvcItf<SVC_T> client2) throws IOException {
+        if (client2 != null) client2.stop();
     }
     //TODO Modifier le nom des variables (available est ambigu
     public int getUnavailableProc() {

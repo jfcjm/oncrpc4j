@@ -1,6 +1,8 @@
 package org.dcache.oncrpc4j.rpcgen;
 
 import org.dcache.xdr.RpcCall;
+import org.dcache.xdr.model.itf.RpcCallItf;
+import org.dcache.xdr.model.itf.RpcSvcItf;
 
 import javax.security.auth.Subject;
 import java.security.Principal;
@@ -9,12 +11,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class CalculatorServerImpl extends CalculatorServer {
+public class CalculatorServerImpl<SVC_T extends RpcSvcItf<SVC_T>> extends CalculatorServer<SVC_T> {
     public static final int SLEEP_MILLIS = 100;
     private List<MethodCall> methodCalls = new ArrayList<>();
 
     @Override
-    public CalculationResult add_1(RpcCall call$, long arg1, long arg2) {
+    public CalculationResult add_1(RpcCallItf<SVC_T> call$, long arg1, long arg2) {
         long start = System.currentTimeMillis();
         CalculationResult result = new CalculationResult();
         result.setStartMillis(start);
@@ -31,7 +33,7 @@ public class CalculatorServerImpl extends CalculatorServer {
     }
 
     @Override
-    public long addSimple_1(RpcCall call$, long arg1, long arg2) {
+    public long addSimple_1(RpcCallItf<SVC_T> call$, long arg1, long arg2) {
         long start = System.currentTimeMillis();
         try {
             Thread.sleep(SLEEP_MILLIS);
@@ -44,7 +46,7 @@ public class CalculatorServerImpl extends CalculatorServer {
         return result;
     }
 
-    private void recordAddCall(RpcCall call, long start, long finish, long arg1, long arg2, long result, Throwable throwable) {
+    private void recordAddCall(RpcCallItf<SVC_T> call, long start, long finish, long arg1, long arg2, long result, Throwable throwable) {
         System.err.println(arg1 + " + " + arg2 + " = " + result);
         Object[] args = new Object[2];
         args[0] = arg1;

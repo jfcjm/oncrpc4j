@@ -20,10 +20,14 @@
 package org.dcache.xdr;
 
 import java.io.IOException;
+
+import org.dcache.xdr.model.itf.RpcReplyItf;
+import org.dcache.xdr.model.itf.RpcSvcItf;
+import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RpcReply {
+public class RpcReply<SVC_T extends RpcSvcItf<SVC_T>> implements RpcReplyItf<SVC_T>{
 
     private final static Logger _log = LoggerFactory.getLogger(RpcReply.class);
     /**
@@ -41,9 +45,9 @@ public class RpcReply {
     private int _authStatus;
 
     private RpcAuthVerifier _verf;
-    private final XdrTransport _transport;
+    private final XdrTransportItf<SVC_T> _transport;
 
-    public RpcReply(int xid, Xdr xdr, XdrTransport transport) throws OncRpcException, IOException {
+    public RpcReply(int xid, Xdr xdr, XdrTransportItf<SVC_T> transport) throws OncRpcException, IOException {
         _xid = xid;
         _xdr = xdr;
         _transport = transport;

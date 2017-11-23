@@ -29,20 +29,22 @@ import java.util.concurrent.ExecutorService;
 import com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.dcache.xdr.model.itf.RpcDispatchableItf;
+import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.glassfish.grizzly.filterchain.BaseFilter;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.filterchain.NextAction;
 
 import static java.util.Objects.requireNonNull;
 
-public class RpcDispatcher extends BaseFilter {
+public class RpcDispatcher<SVC_T extends RpcSvcItf<SVC_T>> extends BaseFilter {
 
     private final static Logger _log = LoggerFactory.getLogger(RpcDispatcher.class);
     /**
      * List of registered RPC services
      *
      */
-    private final Map<OncRpcProgram, RpcDispatchable> _programs;
+    private final Map<OncRpcProgram, RpcDispatchableItf<SVC_T>> _programs;
 
     /**
      * {@link ExecutorService} used for request processing
@@ -66,7 +68,7 @@ public class RpcDispatcher extends BaseFilter {
      * @throws NullPointerException if executor or program is null
      */
     public RpcDispatcher(ExecutorService executor, Map<OncRpcProgram,
-            RpcDispatchable> programs, boolean withSubjectPropagation)
+            RpcDispatchableItf<SVC_T>> programs, boolean withSubjectPropagation)
             throws NullPointerException {
 
         _programs = requireNonNull(programs, "Programs is NULL");
@@ -77,14 +79,14 @@ public class RpcDispatcher extends BaseFilter {
     @Override
     public NextAction handleRead(final FilterChainContext ctx) throws IOException {
 
-        final RpcCall call = ctx.getMessage();
+        final RpcCall<SVC_T> call = ctx.getMessage();
         final int prog = call.getProgram();
         final int vers = call.getProgramVersion();
         final int proc = call.getProcedure();
 
         _log.debug("processing request {}", call);
 
-        final RpcDispatchable program = _programs.get(new OncRpcProgram(prog, vers));
+        final RpcDispatchableItf<SVC_T> program = _programs.get(new OncRpcProgram(prog, vers));
         if (program == null) {
             call.failProgramUnavailable();
         } else {

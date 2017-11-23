@@ -22,6 +22,4 @@ public interface RpcReplyItf<SVC_T extends RpcSvcItf<SVC_T>> {
 
     String toString();
 
-    <ERR_T> ERR_T getError();
-
 }

@@ -36,9 +36,12 @@ import org.dcache.xdr.OncRpcProgram;
 import org.dcache.xdr.OncRpcSvcBuilder;
 import org.dcache.xdr.XdrBoolean;
 import org.dcache.xdr.XdrVoid;
+import org.dcache.xdr.model.itf.RpcCallItf;
+import org.dcache.xdr.model.itf.RpcDispatchableItf;
+import org.dcache.xdr.model.itf.RpcSvcItf;
 
 
-public class OncRpcbindServer implements RpcDispatchable {
+public class OncRpcbindServer<SVC_T extends RpcSvcItf<SVC_T>> implements RpcDispatchableItf<SVC_T> {
 	static final ArrayList<String> v2NetIDs = new ArrayList<String>() {{
 		add("tcp");
 		add("udp");
@@ -56,7 +59,8 @@ public class OncRpcbindServer implements RpcDispatchable {
         _services.add(new rpcb(OncRpcPortmap.PORTMAP_PROGRAMM, OncRpcPortmap.PORTMAP_V2, "udp", "0.0.0.0.0.111", "superuser"));
         //_services.add(new rpcb(100000, 4, "tcp", "0.0.0.0.0.111", "superuser"));
     }
-    public void dispatchOncRpcCall(RpcCall call) throws OncRpcException, IOException {
+    
+    public void dispatchOncRpcCall(RpcCallItf<SVC_T> call) throws OncRpcException, IOException {
         int version = call.getProgramVersion();
 
         switch(version) {
@@ -71,7 +75,7 @@ public class OncRpcbindServer implements RpcDispatchable {
         }
     }
 
-    private void processV2Call(RpcCall call) throws OncRpcException, IOException {
+    private void processV2Call(RpcCallItf<SVC_T> call) throws OncRpcException, IOException {
         switch(call.getProcedure()) {
             case OncRpcPortmap.PMAPPROC_NULL:
                 call.reply(XdrVoid.XDR_VOID);
@@ -171,20 +175,26 @@ public class OncRpcbindServer implements RpcDispatchable {
         }
 
 
-        RpcDispatchable rpcbind = new OncRpcbindServer();
+        OncRpcbindServer<?> rpcbind = new OncRpcbindServer<>();
+        RpcSvcItf<?> server = rpcbind.createServer(port);
 
-        OncRpcSvc server  = new OncRpcSvcBuilder()
+        server.start();
+        System.in.read();
+
+    }
+    //JMK
+    private  RpcSvcItf<SVC_T> createServer(int port) {
+
+        RpcSvcItf<SVC_T> server  =  new OncRpcSvcBuilder<SVC_T>()
                 .withPort(port)
                 .withTCP()
                 .withUDP()
                 .withSameThreadIoStrategy()
                 .withoutAutoPublish()
                 .build();
+        
         server.register(new OncRpcProgram( OncRpcPortmap.PORTMAP_PROGRAMM,
-                OncRpcPortmap.PORTMAP_V2), rpcbind);
-
-        server.start();
-        System.in.read();
-
+                OncRpcPortmap.PORTMAP_V2), this);
+        return server;
     }
 }

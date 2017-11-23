@@ -34,7 +34,7 @@ public class OncRpcSvcBuilderTest {
     @Test
     public void shouldReturnSameThreadExecutorForSameThreadStrategy() {
 
-        OncRpcSvcBuilder builder = new OncRpcSvcBuilder();
+        OncRpcSvcBuilder<?> builder = new OncRpcSvcBuilder<>();
 
         ExecutorService executorService = builder.getWorkerThreadExecutorService();
         final Object[] holder = new Object[1];
@@ -49,7 +49,7 @@ public class OncRpcSvcBuilderTest {
     @Test
     public void shouldReturnDifferentExecutorForWorkerThreadStrategy() {
 
-        OncRpcSvcBuilder builder = new OncRpcSvcBuilder()
+        OncRpcSvcBuilder<?>  builder = new OncRpcSvcBuilder<>()
                 .withWorkerThreadIoStrategy();
 
         ExecutorService executorService = builder.getWorkerThreadExecutorService();
@@ -66,7 +66,7 @@ public class OncRpcSvcBuilderTest {
     public void shouldReturnGivenExecutorForWorkerThreadStrategy() {
 
         ExecutorService mockedExecutorService = mock(ExecutorService.class);
-        OncRpcSvcBuilder builder = new OncRpcSvcBuilder()
+        OncRpcSvcBuilder<?> builder = new OncRpcSvcBuilder<>()
                 .withWorkerThreadIoStrategy()
                 .withWorkerThreadExecutionService(mockedExecutorService);
 
@@ -77,7 +77,7 @@ public class OncRpcSvcBuilderTest {
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionOnInvalidProtocol() {
 
-        OncRpcSvc svc = new OncRpcSvcBuilder()
+        OncRpcSvc<?> svc = (OncRpcSvc<?>) new OncRpcSvcBuilder<>()
                 .withIpProtocolType(1)
                 .build();
     }
@@ -85,7 +85,7 @@ public class OncRpcSvcBuilderTest {
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionIfClientUsesTwoProtocols() {
 
-        OncRpcSvc svc = new OncRpcSvcBuilder()
+        OncRpcSvc<?> svc = (OncRpcSvc<?>) new OncRpcSvcBuilder<>()
                 .withClientMode()
                 .withTCP()
                 .withUDP()
@@ -95,7 +95,7 @@ public class OncRpcSvcBuilderTest {
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionDefinedWorkerThreadPoolWithExtern() {
 
-        OncRpcSvc svc = new OncRpcSvcBuilder()
+        OncRpcSvc<?> svc = (OncRpcSvc<?>)new OncRpcSvcBuilder()
                 .withTCP()
                 .withUDP()
                 .withWorkerThreadExecutionService(Executors.newCachedThreadPool())
