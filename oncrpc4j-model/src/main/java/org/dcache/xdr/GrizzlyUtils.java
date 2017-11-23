@@ -50,7 +50,7 @@ public class GrizzlyUtils {
     final static int CPUS = Runtime.getRuntime().availableProcessors();
 
     private GrizzlyUtils(){}
-
+    /*
     public static Filter rpcMessageReceiverFor(Transport t) {
         if (t instanceof TCPNIOTransport) {
             return new RpcMessageParserTCP();
@@ -62,7 +62,7 @@ public class GrizzlyUtils {
 
         throw new RuntimeException("Unsupported transport: " + t.getClass().getName());
     }
-
+    */
     public static Class< ? extends Transport> transportFor(int protocol) {
         switch(protocol) {
             case IpProtocolType.TCP:
@@ -94,7 +94,7 @@ public class GrizzlyUtils {
      * @param poolSize thread pool size. If zero, default thread pool is used.
      * @return thread pool configuration.
      */
-    static ThreadPoolConfig getSelectorPoolCfg(IoStrategy ioStrategy, String serviceName, int poolSize) {
+    public static ThreadPoolConfig getSelectorPoolCfg(IoStrategy ioStrategy, String serviceName, int poolSize) {
 
         checkArgument(poolSize >= 0, "Negative  thread pool size");
 
@@ -120,7 +120,7 @@ public class GrizzlyUtils {
      * @return thread pool configuration or {@code null}, if ioStrategy don't
      * supports worker threads.
      */
-    static ThreadPoolConfig getWorkerPoolCfg(IoStrategy ioStrategy, String serviceName, int poolSize) {
+    public static ThreadPoolConfig getWorkerPoolCfg(IoStrategy ioStrategy, String serviceName, int poolSize) {
 
         if (ioStrategy == SAME_THREAD) {
             return null;

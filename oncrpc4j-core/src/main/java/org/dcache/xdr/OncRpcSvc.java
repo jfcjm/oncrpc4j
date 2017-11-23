@@ -32,6 +32,7 @@ import org.glassfish.grizzly.GrizzlyFuture;
 import org.glassfish.grizzly.PortRange;
 import org.glassfish.grizzly.SocketBinder;
 import org.glassfish.grizzly.Transport;
+import org.glassfish.grizzly.filterchain.Filter;
 import org.glassfish.grizzly.filterchain.FilterChain;
 import org.glassfish.grizzly.filterchain.FilterChainBuilder;
 import org.glassfish.grizzly.filterchain.TransportFilter;
@@ -68,13 +69,26 @@ import static com.google.common.base.Throwables.propagateIfPossible;
 import java.net.SocketAddress;
 import java.util.stream.Collectors;
 import static org.dcache.xdr.GrizzlyUtils.getSelectorPoolCfg;
-import static org.dcache.xdr.GrizzlyUtils.rpcMessageReceiverFor;
 import static org.dcache.xdr.GrizzlyUtils.transportFor;
 
 public class OncRpcSvc {
-
+    
     private final static Logger _log = LoggerFactory.getLogger(OncRpcSvc.class);
+    
+    
+    public static Filter rpcMessageReceiverFor(Transport t) {
+        if (t instanceof TCPNIOTransport) {
+            return new RpcMessageParserTCP();
+        }
 
+        if (t instanceof UDPNIOTransport) {
+            return new RpcMessageParserUDP();
+        }
+
+        throw new RuntimeException("Unsupported transport: " + t.getClass().getName());
+    }
+    
+    
     private final int _backlog;
     private final boolean _publish;
     private final PortRange _portRange;
