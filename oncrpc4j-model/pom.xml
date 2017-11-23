@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.dcache</groupId>
     <artifactId>oncrpc4j</artifactId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>3.0.0.factory-SNAPSHOT</version>
   </parent>
   <artifactId>oncrpc4j-model</artifactId>
 

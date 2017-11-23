@@ -45,5 +45,10 @@
           <artifactId>mockito-core</artifactId>
           <scope>test</scope>
       </dependency>
+      <dependency>
+        <groupId>org.dcache</groupId>
+        <artifactId>oncrpc4j-model</artifactId>
+        <version>3.0.0.factory-SNAPSHOT</version>
+      </dependency>
   </dependencies>
 </project>
