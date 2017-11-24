@@ -40,5 +40,6 @@ public interface HeaderItf<SVC_T extends RpcSvcItf<SVC_T>> extends XdrAble{
     void encodeAsAcceptedReply(XdrEncodingStream xdr, int state, XdrAble reply)throws OncRpcException, IOException;
 
     void xdrEncodeAsCall(Xdr xdr) throws OncRpcException, IOException;
+	void update(int xid, int call, int rpcvers, int procedure, RpcAuth auth, XdrAble args);
 
 }

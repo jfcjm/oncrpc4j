@@ -68,36 +68,13 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
      */
     private final AtomicInteger xidGenerator = new AtomicInteger(RND.nextInt());
 
+    private  final HeaderItf<SVC_T> _header;
+    
     /**
      * Supported RPC protocol version
      */
     private final static int RPCVERS = 2;
-
-    /**
-     * RPC program number
-     */
-    private int _prog;
-
-    /**
-     * RPC program version number
-     */
-    private int _version;
-
-    /**
-     * RPC program procedure number
-     */
-    private int _proc;
-
-    /**
-     *  RPC protocol version number
-     */
-    private int _rpcvers;
-
-    /**
-     * Authentication credential.
-     */
-    private RpcAuth _cred;
-
+    
     /**
      * RPC call transport.
      */
@@ -175,20 +152,13 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
 
     private ProtocolFactoryItf<SVC_T> _protoFactory;
 
-    private HeaderItf<SVC_T> _header = null;
-
     public AbstractRpcCall(int prog, int ver, RpcAuth cred, XdrTransportItf<SVC_T> transport) {
-        this(prog, ver, cred, new Xdr(Xdr.INITIAL_XDR_SIZE), transport);
+        this(new AbstractRpcMessage<>(prog, ver, 0, cred), new Xdr(Xdr.INITIAL_XDR_SIZE), transport);
     }
-
-    public AbstractRpcCall(int prog, int ver, RpcAuth cred, Xdr xdr, XdrTransportItf<SVC_T> transport) {
-        _prog = prog;
-        _version = ver;
-        _cred = cred;
-        _transport = transport;
-        _protoFactory = transport.getProtocolFactory();
-        _xdr = xdr;
-        _proc = 0;
+    
+    //* call from gss
+    public AbstractRpcCall(AbstractRpcCall<SVC_T> call) {
+    	this(call._header,call._xdr,call._transport);
     }
 
     public AbstractRpcCall(HeaderItf<SVC_T> header, Xdr xdr, XdrTransportItf<SVC_T> transport) {
@@ -196,25 +166,6 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
         _xdr = xdr;
         _transport = transport;
         _protoFactory = transport.getProtocolFactory();
-    }
-  //* call from gss
-    private AbstractRpcCall(HeaderItf<SVC_T> header,int prog, int ver, int proc, RpcAuth cred, Xdr xdr, XdrTransportItf<SVC_T> transport) {
-        _prog = prog;
-        _version = ver;
-        _proc = proc;
-        _cred = cred;
-        _xdr = xdr;
-         //on définit ( temporairement )le header
-        _header = new AbstractRpcMessage<>(0,prog,ver,proc,cred);
-        
-        
-        _transport = transport;
-        _protoFactory = transport.getProtocolFactory();
-        _rpcvers = RPCVERS;
-    }
-    //* call from gss
-    public AbstractRpcCall(AbstractRpcCall<SVC_T> call) {
-        this(call._header,call._prog, call._version,call._proc,call._cred,call._xdr,call._transport);
     }
 
     /**
@@ -226,12 +177,6 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
        _log.info("In accept");
        _header.decodeAsReply(_xdr);
        _log.info("ecoded");
-       //JMK HeaderItf<SVC_T> header= _protoFactory.decode(_xdr);
-        _rpcvers    = _header.getRpcVers();
-        _prog       = _header.getProg();
-        _version    = _header.getVersion();
-        _proc       = _header.getProc();
-        _cred = _header.getCredential(); 
         /*
         
          _rpcvers = _xdr.xdrDecodeInt();
@@ -253,25 +198,25 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
      * @return version number
      */
     public int getProgram() {
-        return _prog;
+        return _header.getProg();
     }
 
     /**
      * @return the RPC call program version
      */
     public int getProgramVersion() {
-        return _version;
+        return _header.getVersion();
     }
 
     /**
      * @return the RPC call program procedure
      */
     public int getProcedure() {
-        return _proc;
+        return _header.getProc();
     }
 
     public RpcAuth getCredential() {
-        return _cred;
+        return _header.getCredential();
     }
 
     /**
@@ -301,7 +246,7 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
     @Override
     public String toString() {
         return String.format("RPCv%d call: program=%d, version=%d, procedure=%d",
-                _rpcvers, _prog, _version, _proc);
+        		_header.getRpcVers(), _header.getProg(), _header.getVersion(), _header.getProc());
     }
 
     /**
@@ -348,7 +293,7 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
             _header.encodeAsAcceptedReply(xdr,state,reply);
             //replyMessage.xdrEncode(_xdr);
             xdr.xdrEncodeInt(RpcReplyStatus.MSG_ACCEPTED);
-            _cred.getVerifier().xdrEncode(xdr);
+            _header.getCredential().getVerifier().xdrEncode(xdr);
             xdr.xdrEncodeInt(state);
             reply.xdrEncode(xdr);
             xdr.endEncoding();
@@ -481,9 +426,9 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
         Xdr xdr = new Xdr(Xdr.INITIAL_XDR_SIZE);
         xdr.beginEncoding();
         
-        AbstractRpcMessage header = new AbstractRpcMessage(xid, RpcMessageType.CALL, RPCVERS, _prog,_version,procedure,args,auth,_cred);
-        
-        header.xdrEncodeAsCall(xdr);
+        //AbstractRpcMessage header = new AbstractRpcMessage(xid, RpcMessageType.CALL, RPCVERS, _prog,_version,procedure,args,auth,_cred);
+        _header.update(xid, RpcMessageType.CALL, RPCVERS, procedure, auth,args);
+        _header.xdrEncodeAsCall(xdr);
         xdr.endEncoding();
 
         ReplyQueueItf<SVC_T> replyQueue = _transport.getReplyQueue();

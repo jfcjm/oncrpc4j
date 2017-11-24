@@ -31,14 +31,47 @@ public class AbstractRpcMessage<SVC_T extends RpcSvcItf<SVC_T>> implements  Head
     private int _proc;
     private RpcAuth _cred;
     private XdrAble _args;
-  //appel de protcolfilter
+    
+  //appel de protcolfilter when receiving a message
     public AbstractRpcMessage(Xdr xdr) throws OncRpcException, IOException {
             minimalDecode(xdr);
         
     }
+    
+    // Call when doing an initial call
+    // ne fonctionne que si utilisé pour un appel
+    public AbstractRpcMessage(int xid, int type,  int rpcvers, int prog, int version,
+            int proc, XdrAble args, RpcAuth auth, RpcAuth cred) {
+        _xid = xid;
+        _messageType = 	RpcMessageType.CALL;
+        _rpcvers = 	rpcvers;
+        _prog = prog;
+        _version = version;
+        _proc = proc;
+        _cred = (null != auth ) ? auth :cred;
+        _args = args;
+    }
 
 
-    /**
+    public AbstractRpcMessage(int prog, int ver, int procedure, RpcAuth cred) {
+    	_prog = prog;
+    	_version = ver;
+    	_proc = procedure;
+    	_cred = cred;
+	}
+
+	@Override
+	public void update(int xid, int mType, int rpcvers, int procedure, RpcAuth auth,XdrAble args) {
+		_xid = xid;
+		_messageType = mType;
+		_rpcvers = rpcvers;
+		_proc = procedure;
+		if (null != auth ){
+			_cred = auth;
+		}
+		_args = args;
+	}
+	/**
      * Replace RpcmessageEncoding
      * @param xdr
      */
@@ -55,45 +88,6 @@ public class AbstractRpcMessage<SVC_T extends RpcSvcItf<SVC_T>> implements  Head
     private void minimalDecode(XdrDecodingStream xdr) throws BadXdrOncRpcException {
          _xid = xdr.xdrDecodeInt();
          _messageType = xdr.xdrDecodeInt();
-    }
-    
-    
-    
-    /**
-     * Appel en venant de gss , temporaire on remlit le message
-     * @param xid
-     * @param prog
-     * @param ver
-     * @param proc
-     * @param cred
-     * @param xdr
-     */
-    public AbstractRpcMessage(int xid, int prog, int ver, int proc, RpcAuth cred) {
-        _xid = xid;
-        _messageType = RpcMessageType.CALL;
-        _prog = prog;
-        _version = ver;
-        _proc = proc;
-        _cred = cred;
-    }
-    // Call when doing an initial call
-    // ne fonctionne que si utilisé pour un appel
-    public AbstractRpcMessage(int xid, int type,  int rpcvers2, int _prog2, int _version2,
-            int procedure, XdrAble args, RpcAuth auth, RpcAuth cred2) {
-        this(xid,_prog2,_version2,procedure,(null != auth) ? auth : cred2);
-        // xid super 
-        // type is akready set by super
-        // _prog2 super
-        // _version2 super 
-        //auth super
-        //cred2super 
-        // procedure super
-        // rpcvers2 OK
-        // args OK
-        _args = args;
-        _rpcvers = rpcvers2;
-        
-        
     }
     /* (non-Javadoc)
      * @see org.dcache.xdr.model.root.HeaderItf2#getRpcVers()
@@ -219,5 +213,4 @@ public class AbstractRpcMessage<SVC_T extends RpcSvcItf<SVC_T>> implements  Head
         reply.xdrEncode(xdr);
         
     }
-    
 }
