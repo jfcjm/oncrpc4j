@@ -26,6 +26,8 @@ import org.dcache.xdr.MismatchInfo;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcAccepsStatus;
 import org.dcache.xdr.RpcAuth;
+import org.dcache.xdr.RpcAuthTypeNone;
+import org.dcache.xdr.RpcAuthTypeUnix;
 import org.dcache.xdr.RpcCredential;
 import org.dcache.xdr.RpcMessage;
 import org.dcache.xdr.RpcMessageType;
@@ -70,8 +72,6 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
      * XID number generator
      */
     private final AtomicInteger xidGenerator = new AtomicInteger(RND.nextInt());
-
-    private int _xid;
 
     /**
      * Supported RPC protocol version
@@ -180,6 +180,8 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
 
     private ProtocolFactoryItf<SVC_T> _protoFactory;
 
+    private HeaderItf<SVC_T> _header = null;
+
     public AbstractRpcCall(int prog, int ver, RpcAuth cred, XdrTransportItf<SVC_T> transport) {
         this(prog, ver, cred, new Xdr(Xdr.INITIAL_XDR_SIZE), transport);
     }
@@ -194,23 +196,30 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
         _proc = 0;
     }
 
-    public AbstractRpcCall(int xid, Xdr xdr, XdrTransportItf<SVC_T> transport) {
-        _xid = xid;
+    public AbstractRpcCall(HeaderItf<SVC_T> header, Xdr xdr, XdrTransportItf<SVC_T> transport) {
+        _header = header;
         _xdr = xdr;
         _transport = transport;
         _protoFactory = transport.getProtocolFactory();
     }
-
-    public AbstractRpcCall(int xid, int prog, int ver, int proc, RpcAuth cred, Xdr xdr, XdrTransportItf<SVC_T> transport) {
-        _xid = xid;
+  //* call from gss
+    private AbstractRpcCall(HeaderItf<SVC_T> header,int prog, int ver, int proc, RpcAuth cred, Xdr xdr, XdrTransportItf<SVC_T> transport) {
         _prog = prog;
         _version = ver;
         _proc = proc;
         _cred = cred;
         _xdr = xdr;
+         //on définit ( temporairement )le header
+        _header = new AbstractHeader<>(0,prog,ver,proc,cred);
+        
+        
         _transport = transport;
         _protoFactory = transport.getProtocolFactory();
         _rpcvers = RPCVERS;
+    }
+    //* call from gss
+    public AbstractRpcCall(AbstractRpcCall<SVC_T> call) {
+        this(call._header,call._prog, call._version,call._proc,call._cred,call._xdr,call._transport);
     }
 
     /**
@@ -219,13 +228,16 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
      * @throws OncRpcException
      */
     public void accept() throws IOException, OncRpcException {
-       /* HeaderItf<SVC_T> header= _protoFactory.decode(_xdr);
-
-        _rpcvers    = header.getRpcVers();
-        _prog       = header.getProg();
-        _version    = header.getVersion();
-        _proc       = header.getProc();
-        _cred = header.getCredential(); */
+       _log.info("In accept");
+       _header.decodeAsReply(_xdr);
+       _log.info("ecoded");
+       //JMK HeaderItf<SVC_T> header= _protoFactory.decode(_xdr);
+        _rpcvers    = _header.getRpcVers();
+        _prog       = _header.getProg();
+        _version    = _header.getVersion();
+        _proc       = _header.getProc();
+        _cred = _header.getCredential(); 
+        /*
         
          _rpcvers = _xdr.xdrDecodeInt();
          if (_rpcvers != RPCVERS) {
@@ -235,9 +247,9 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
         _prog = _xdr.xdrDecodeInt();
         _version = _xdr.xdrDecodeInt();
         _proc = _xdr.xdrDecodeInt();
-        //JMK
-        _cred = RpcCredential.decode(_xdr);
-        
+        //JMK : on ne traite pas le credential pour le moment
+        _cred =RpcCredential.decode(_xdr);
+        */
      }
 
     /**
@@ -278,10 +290,11 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
     /**
      * Get xid associated with this rpc message.
      */
+    /* JMK
     public int getXid() {
         return _xid;
     }
-
+    */
     /**
      * Get {@link Xdr} stream used by this message.
      * @return xdr stream
@@ -309,12 +322,16 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
     public void reject(int status, XdrAble reason) {
         XdrEncodingStream xdr = _xdr;
         try {
-            RpcMessage replyMessage = new RpcMessage(_xid, RpcMessageType.REPLY);
+            //RpcMessage replyMessage = new RpcMessage(_xid, RpcMessageType.REPLY);
+            _header.asReply();
             xdr.beginEncoding();
-            replyMessage.xdrEncode(_xdr);
+            //replyMessage.xdrEncode(_xdr);
+            _header.encodeAsReject(xdr,status,reason);
+            /*
             xdr.xdrEncodeInt(RpcReplyStatus.MSG_DENIED);
             xdr.xdrEncodeInt(status);
             reason.xdrEncode(_xdr);
+            */
             xdr.endEncoding();
 
             _transport.send((Xdr)xdr, _transport.getRemoteSocketAddress(), _sendNotificationHandler);
@@ -338,9 +355,11 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
 
         XdrEncodingStream xdr = _xdr;
         try {
-            RpcMessage replyMessage = new RpcMessage(_xid, RpcMessageType.REPLY);
+            //RpcMessage replyMessage = new RpcMessage(_xid, RpcMessageType.REPLY);
+            _header.asReply();
             xdr.beginEncoding();
-            replyMessage.xdrEncode(_xdr);
+            _header.encodeAsAcceptedReply(xdr,state,reply);
+            //replyMessage.xdrEncode(_xdr);
             xdr.xdrEncodeInt(RpcReplyStatus.MSG_ACCEPTED);
             _cred.getVerifier().xdrEncode(xdr);
             xdr.xdrEncodeInt(state);
@@ -469,12 +488,15 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
     private int callInternal(int procedure, XdrAble args, CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback,
                              long timeoutValue, TimeUnit timeoutUnits, RpcAuth auth)
             throws IOException {
-
+        
         int xid = nextXid();
 
         Xdr xdr = new Xdr(Xdr.INITIAL_XDR_SIZE);
         xdr.beginEncoding();
+        
         RpcMessage rpcMessage = new RpcMessage(xid, RpcMessageType.CALL);
+        HeaderItf<SVC_T> header = new AbstractHeader<SVC_T> (rpcMessage,RPCVERS,_prog,_version,procedure,args,auth,_cred);
+        /*
         rpcMessage.xdrEncode(xdr);
         xdr.xdrEncodeInt(RPCVERS);
         xdr.xdrEncodeInt(_prog);
@@ -485,7 +507,8 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
         } else {
             _cred.xdrEncode(xdr);
         }
-        args.xdrEncode(xdr);
+        */
+        header.xdrEncodeAsCall(xdr);
         xdr.endEncoding();
 
         ReplyQueueItf<SVC_T> replyQueue = _transport.getReplyQueue();

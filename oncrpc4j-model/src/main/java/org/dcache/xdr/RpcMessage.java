@@ -42,12 +42,16 @@ public class RpcMessage implements XdrAble {
         xdr.xdrEncodeInt(_xid);
         xdr.xdrEncodeInt(_type);
     }
-
+    
     public int xid() {
         return _xid;
     }
 
     public int type() {
         return _type;
+    }
+
+    public void setType(int type) {
+        _type = type;
     }
 }

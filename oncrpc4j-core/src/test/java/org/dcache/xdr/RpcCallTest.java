@@ -19,21 +19,38 @@
  */
 package org.dcache.xdr;
 
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import java.io.IOException;
+
+import org.dcache.xdr.model.itf.HeaderItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
+import org.dcache.xdr.model.root.AbstractHeader;
 import org.dcache.xdr.model.root.AbstractRpcCall;
-@Ignore
 public class RpcCallTest {
+
+    
 
     private Xdr _xdr = new XdrBuffer(1024);
     
     XdrTransportItf t = mock(XdrTransportItf.class);
-    private AbstractRpcCall _call = new AbstractRpcCall(0, _xdr, t);
-
+    AbstractRpcCall _call;
+    /**
+     * need to use a @Before method as AbstractHeader throws an exception
+     * @throws OncRpcException
+     * @throws IOException
+     */
+    @Before
+    public void setup() throws OncRpcException, IOException{
+        HeaderItf<?> header = new AbstractHeader(false,_xdr);
+        _call = new AbstractRpcCall(header, _xdr, t);
+    }
+    
+    
     @Test(expected=RpcMismatchReply.class)
     public void testBadRpcVerion() throws Exception {
         _xdr.beginEncoding();

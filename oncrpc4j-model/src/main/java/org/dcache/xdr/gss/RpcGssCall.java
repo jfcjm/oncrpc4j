@@ -42,8 +42,7 @@ public class RpcGssCall extends AbstractRpcCall {
     private final MessageProp _mop;
 
     public RpcGssCall(AbstractRpcCall call, GSSContext gssContext, MessageProp mop) {
-        super(call.getXid(), call.getProgram(), call.getProgramVersion(),
-                call.getProcedure(), call.getCredential(), call.getXdr(), call.getTransport());
+        super(call);
         _gssContext = gssContext;
         _mop = mop;
     }

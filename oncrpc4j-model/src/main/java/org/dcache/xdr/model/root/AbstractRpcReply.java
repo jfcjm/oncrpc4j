@@ -30,6 +30,7 @@ import org.dcache.xdr.RpcRejectStatus;
 import org.dcache.xdr.RpcReplyStatus;
 import org.dcache.xdr.Xdr;
 import org.dcache.xdr.XdrAble;
+import org.dcache.xdr.model.itf.HeaderItf;
 import org.dcache.xdr.model.itf.RpcReplyItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
@@ -56,6 +57,12 @@ public class AbstractRpcReply<SVC_T extends RpcSvcItf<SVC_T>> implements RpcRepl
     private RpcAuthVerifier _verf;
     private final XdrTransportItf<SVC_T> _transport;
 
+
+
+    public AbstractRpcReply(HeaderItf<SVC_T> header, Xdr xdr, XdrTransportItf<SVC_T> transport) throws OncRpcException, IOException {
+        this(header.getXid(),xdr,transport);
+    }
+    
     public AbstractRpcReply(int xid, Xdr xdr, XdrTransportItf<SVC_T> transport) throws OncRpcException, IOException {
         _xid = xid;
         _xdr = xdr;

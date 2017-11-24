@@ -33,6 +33,7 @@ import org.dcache.xdr.RpcMessage;
 import org.dcache.xdr.RpcMessageType;
 import org.dcache.xdr.Xdr;
 import org.dcache.xdr.model.impl.AbstractGrizzlyXdrTransport;
+import org.dcache.xdr.model.itf.HeaderItf;
 import org.dcache.xdr.model.itf.ProtocolFactoryItf;
 import org.dcache.xdr.model.itf.RpcReplyItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
@@ -62,8 +63,7 @@ public class AbstractRpcProtocolFilter<SVC_T extends RpcSvcItf<SVC_T>> extends B
         }
 
         xdr.beginDecoding();
-
-        RpcMessage message = new RpcMessage(xdr);
+        HeaderItf<SVC_T> header = new AbstractHeader<SVC_T>(false,xdr);
         /**
          * In case of UDP grizzly does not populates connection with correct destination address.
          * We have to get peer address from the request context, which will contain SocketAddress where from
@@ -71,9 +71,9 @@ public class AbstractRpcProtocolFilter<SVC_T extends RpcSvcItf<SVC_T>> extends B
          */
         XdrTransportItf<SVC_T> transport = new AbstractGrizzlyXdrTransport<>(ctx.getConnection(), (InetSocketAddress)ctx.getAddress(), _replyQueue, _protoFactory);
 
-        switch (message.type()) {
+        switch (header.getMessageType()) {
             case RpcMessageType.CALL:
-                AbstractRpcCall<SVC_T> call = new AbstractRpcCall<SVC_T>(message.xid(), xdr, transport);
+                AbstractRpcCall<SVC_T> call = new AbstractRpcCall<SVC_T>(header, xdr, transport);
                 try {
                     call.accept();
                     ctx.setMessage(call);
@@ -89,8 +89,8 @@ public class AbstractRpcProtocolFilter<SVC_T extends RpcSvcItf<SVC_T>> extends B
                 return ctx.getInvokeAction();
             case RpcMessageType.REPLY:
                 try {
-                    RpcReplyItf<SVC_T> reply = new AbstractRpcReply<SVC_T>(message.xid(), xdr, transport);
-                    CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback = _replyQueue.get(message.xid());
+                    RpcReplyItf<SVC_T> reply = new AbstractRpcReply<SVC_T>(header, xdr, transport);
+                    CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback = _replyQueue.get(header.getXid());
                     if (callback != null) {
                         if (!reply.isAccepted()) {
                             callback.failed(new OncRpcRejectedException(reply.getRejectStatus()), transport);

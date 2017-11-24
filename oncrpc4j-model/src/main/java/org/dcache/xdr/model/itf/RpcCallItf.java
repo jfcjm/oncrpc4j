@@ -50,8 +50,9 @@ public interface RpcCallItf<SVC_T extends RpcSvcItf<SVC_T>> {
     /**
      * Get xid associated with this rpc message.
      */
+    /* JMK
     int getXid();
-
+    */
     /**
      * Get {@link Xdr} stream used by this message.
      * @return xdr stream
