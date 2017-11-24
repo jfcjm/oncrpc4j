@@ -21,7 +21,7 @@ public class AbstractRpcProtocolFactory<SVC_T extends RpcSvcItf<SVC_T>> implemen
     private Map<OncRpcProgram, RpcDispatchableItf<SVC_T>> _programs;
     private RpcSvcItf<SVC_T> _svc;
     
-    protected AbstractRpcProtocolFactory(){
+    public AbstractRpcProtocolFactory(){
         try {
             _log.info("Creating a default protocol factory for type {}", getGenericSVC());
         } catch (NoSuchFieldException | SecurityException e) {
