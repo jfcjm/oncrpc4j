@@ -210,7 +210,7 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
         _cred = cred;
         _xdr = xdr;
          //on définit ( temporairement )le header
-        _header = new AbstractHeader<>(0,prog,ver,proc,cred);
+        _header = new AbstractRpcMessage<>(0,prog,ver,proc,cred);
         
         
         _transport = transport;
@@ -495,7 +495,7 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
         xdr.beginEncoding();
         
         RpcMessage rpcMessage = new RpcMessage(xid, RpcMessageType.CALL);
-        HeaderItf<SVC_T> header = new AbstractHeader<SVC_T> (rpcMessage,RPCVERS,_prog,_version,procedure,args,auth,_cred);
+        HeaderItf<SVC_T> header = new AbstractRpcMessage<SVC_T> (rpcMessage,RPCVERS,_prog,_version,procedure,args,auth,_cred);
         /*
         rpcMessage.xdrEncode(xdr);
         xdr.xdrEncodeInt(RPCVERS);

@@ -29,8 +29,8 @@ import java.io.IOException;
 
 import org.dcache.xdr.model.itf.HeaderItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
-import org.dcache.xdr.model.root.AbstractHeader;
 import org.dcache.xdr.model.root.AbstractRpcCall;
+import org.dcache.xdr.model.root.AbstractRpcMessage;
 public class RpcCallTest {
 
     
@@ -46,7 +46,7 @@ public class RpcCallTest {
      */
     @Before
     public void setup() throws OncRpcException, IOException{
-        HeaderItf<?> header = new AbstractHeader(false,_xdr);
+        HeaderItf<?> header = new AbstractRpcMessage(false,_xdr);
         _call = new AbstractRpcCall(header, _xdr, t);
     }
     

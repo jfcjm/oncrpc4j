@@ -18,7 +18,7 @@ import org.dcache.xdr.XdrEncodingStream;
 import org.dcache.xdr.model.itf.HeaderItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 
-public class AbstractHeader<SVC_T extends RpcSvcItf<SVC_T>> implements  HeaderItf<SVC_T> {
+public class AbstractRpcMessage<SVC_T extends RpcSvcItf<SVC_T>> implements  HeaderItf<SVC_T> {
 
     private static final int RPCVERS = 2;
     private int _rpcvers;
@@ -30,11 +30,11 @@ public class AbstractHeader<SVC_T extends RpcSvcItf<SVC_T>> implements  HeaderIt
     private XdrAble _args;
 
 
-    public AbstractHeader(Xdr xdr) throws OncRpcException, IOException {
+    public AbstractRpcMessage(Xdr xdr) throws OncRpcException, IOException {
         this(true,xdr);
     }
     
-    public AbstractHeader(RpcMessage rpcMessage, int rpcvers, int prog, int version, int proc, XdrAble args,RpcAuth auth, RpcAuth cred) {
+    public AbstractRpcMessage(RpcMessage rpcMessage, int rpcvers, int prog, int version, int proc, XdrAble args,RpcAuth auth, RpcAuth cred) {
         _rpcMessage = rpcMessage;
         _rpcvers = rpcvers;
         _prog = prog;
@@ -44,7 +44,7 @@ public class AbstractHeader<SVC_T extends RpcSvcItf<SVC_T>> implements  HeaderIt
         _args = args;
     }
   //appel de protcolfilter
-    public AbstractHeader(boolean shouldDecode, Xdr xdr) throws OncRpcException, IOException {
+    public AbstractRpcMessage(boolean shouldDecode, Xdr xdr) throws OncRpcException, IOException {
         System.out.println("Should decoe : " + shouldDecode);
         if(shouldDecode) {
             xdrFullDecode(xdr);
@@ -64,7 +64,7 @@ public class AbstractHeader<SVC_T extends RpcSvcItf<SVC_T>> implements  HeaderIt
      * @param cred
      * @param xdr
      */
-    public AbstractHeader(int xid, int prog, int ver, int proc, RpcAuth cred) {
+    public AbstractRpcMessage(int xid, int prog, int ver, int proc, RpcAuth cred) {
         _rpcMessage = new RpcMessage(xid,RpcMessageType.CALL); // on sait que c'est un appel
         _prog = prog;
         _version = ver;

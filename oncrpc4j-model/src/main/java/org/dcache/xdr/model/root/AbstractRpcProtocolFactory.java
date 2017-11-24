@@ -49,7 +49,7 @@ public class AbstractRpcProtocolFactory<SVC_T extends RpcSvcItf<SVC_T>> implemen
     }
     @Override
     public HeaderItf decode(Xdr xdr) throws OncRpcException, IOException {
-        return new AbstractHeader(xdr);
+        return new AbstractRpcMessage(xdr);
     }
     @Override
     public void processBuilder(OncRpcSvcBuilderItf<SVC_T> builder) {
