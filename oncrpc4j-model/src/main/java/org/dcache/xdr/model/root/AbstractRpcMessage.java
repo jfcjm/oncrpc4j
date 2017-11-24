@@ -5,7 +5,6 @@ import java.io.IOException;
 import org.dcache.xdr.BadXdrOncRpcException;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcAuth;
-import org.dcache.xdr.RpcAuthTypeNone;
 import org.dcache.xdr.RpcCredential;
 import org.dcache.xdr.RpcMessageType;
 import org.dcache.xdr.RpcMismatchReply;

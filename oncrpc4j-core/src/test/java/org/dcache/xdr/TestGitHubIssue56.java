@@ -3,12 +3,10 @@ package org.dcache.xdr;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.concurrent.TimeoutException;
 
 import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcProgram;
-import org.dcache.xdr.XdrTransport;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.dcache.xdr.model.root.AbstractOncRpcClient;

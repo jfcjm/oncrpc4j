@@ -21,7 +21,6 @@ package org.dcache.xdr.portmap;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
@@ -31,12 +30,9 @@ import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcAuth;
 import org.dcache.xdr.RpcAuthTypeNone;
 import org.dcache.xdr.RpcProgUnavailable;
-import org.dcache.xdr.XdrTransport;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.dcache.xdr.model.root.AbstractOncRpcClient;
-import org.dcache.xdr.model.root.AbstractOncRpcSvc;
-import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
 import org.dcache.xdr.model.root.AbstractRpcCall;
 
 public class GenericPortmapClient<SVC_T extends RpcSvcItf<SVC_T>> implements OncPortmapClient<SVC_T> {

@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.dcache.xdr.OncRpcProgram;
-import org.glassfish.grizzly.filterchain.Filter;
 
 public interface RpcSvcItf<SVC_T extends RpcSvcItf<SVC_T>>  {
 

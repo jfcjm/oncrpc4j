@@ -98,7 +98,7 @@ public class OncRpcSvcBuilderTest {
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionDefinedWorkerThreadPoolWithExtern() {
 
-        AbstractOncRpcSvc<?> svc = (AbstractOncRpcSvc<?>)new AbstractOncRpcSvcBuilder()
+        AbstractOncRpcSvc<?> svc = (AbstractOncRpcSvc<?>)new AbstractOncRpcSvcBuilder<>()
                 .withTCP()
                 .withUDP()
                 .withWorkerThreadExecutionService(Executors.newCachedThreadPool())
