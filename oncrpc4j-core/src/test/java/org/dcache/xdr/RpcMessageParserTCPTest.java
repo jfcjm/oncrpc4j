@@ -139,8 +139,15 @@ public class RpcMessageParserTCPTest {
             Xdr xdr = new Xdr(Xdr.MAX_XDR_SIZE);
             xdr.beginEncoding();
 
-            RpcMessage rpcMessage = new RpcMessage(xid, RpcMessageType.CALL);
-            rpcMessage.xdrEncode(xdr);
+            /**
+             * RpcMessage rpcMessage = new RpcMessage(xid, RpcMessageType.CALL);
+             *  Should create a test for AbstractMessage#AbstractMessage ? 
+             *  
+             */
+            //
+            //rpcMessage.xdrEncode(xdr);
+            xdr.xdrEncodeInt(xid);
+            xdr.xdrEncodeInt(RpcMessageType.CALL);
             xdr.xdrEncodeInt(rpcvers);
             xdr.xdrEncodeInt(prog);
             xdr.xdrEncodeInt(vers);

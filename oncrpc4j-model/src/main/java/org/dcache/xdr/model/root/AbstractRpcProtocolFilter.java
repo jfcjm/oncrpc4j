@@ -29,7 +29,6 @@ import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.OncRpcRejectedException;
 import org.dcache.xdr.RpcAccepsStatus;
 import org.dcache.xdr.RpcException;
-import org.dcache.xdr.RpcMessage;
 import org.dcache.xdr.RpcMessageType;
 import org.dcache.xdr.Xdr;
 import org.dcache.xdr.model.impl.AbstractGrizzlyXdrTransport;
@@ -63,7 +62,7 @@ public class AbstractRpcProtocolFilter<SVC_T extends RpcSvcItf<SVC_T>> extends B
         }
 
         xdr.beginDecoding();
-        HeaderItf<SVC_T> header = new AbstractRpcMessage<SVC_T>(false,xdr);
+        HeaderItf<SVC_T> header = new AbstractRpcMessage<SVC_T>(xdr);
         /**
          * In case of UDP grizzly does not populates connection with correct destination address.
          * We have to get peer address from the request context, which will contain SocketAddress where from

@@ -46,7 +46,7 @@ public class RpcCallTest {
      */
     @Before
     public void setup() throws OncRpcException, IOException{
-        HeaderItf<?> header = new AbstractRpcMessage(false,_xdr);
+        HeaderItf<?> header = new AbstractRpcMessage(_xdr);
         _call = new AbstractRpcCall(header, _xdr, t);
     }
     

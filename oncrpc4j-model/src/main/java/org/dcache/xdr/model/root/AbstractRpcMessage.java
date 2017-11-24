@@ -7,7 +7,6 @@ import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcAuth;
 import org.dcache.xdr.RpcAuthTypeNone;
 import org.dcache.xdr.RpcCredential;
-import org.dcache.xdr.RpcMessage;
 import org.dcache.xdr.RpcMessageType;
 import org.dcache.xdr.RpcMismatchReply;
 import org.dcache.xdr.RpcReplyStatus;
@@ -21,40 +20,45 @@ import org.dcache.xdr.model.itf.RpcSvcItf;
 public class AbstractRpcMessage<SVC_T extends RpcSvcItf<SVC_T>> implements  HeaderItf<SVC_T> {
 
     private static final int RPCVERS = 2;
+    
+    // field replacing rpcmessage
+    private int _xid;
+    private int _messageType;
+    
     private int _rpcvers;
     private int _prog;
     private int _version;
     private int _proc;
     private RpcAuth _cred;
-    private RpcMessage _rpcMessage;
     private XdrAble _args;
-
-
-    public AbstractRpcMessage(Xdr xdr) throws OncRpcException, IOException {
-        this(true,xdr);
-    }
-    
-    public AbstractRpcMessage(RpcMessage rpcMessage, int rpcvers, int prog, int version, int proc, XdrAble args,RpcAuth auth, RpcAuth cred) {
-        _rpcMessage = rpcMessage;
-        _rpcvers = rpcvers;
-        _prog = prog;
-        _version = version;
-        _proc = proc;
-        _cred = (null != auth) ? auth : cred;
-        _args = args;
-    }
   //appel de protcolfilter
-    public AbstractRpcMessage(boolean shouldDecode, Xdr xdr) throws OncRpcException, IOException {
-        System.out.println("Should decoe : " + shouldDecode);
-        if(shouldDecode) {
-            xdrFullDecode(xdr);
-            // call from RcCall : we decode
-        } else {
-            _rpcMessage = new RpcMessage(xdr);
-        }
+    public AbstractRpcMessage(Xdr xdr) throws OncRpcException, IOException {
+            minimalDecode(xdr);
         
     }
 
+
+    /**
+     * Replace RpcmessageEncoding
+     * @param xdr
+     */
+    private void minimalEncode(XdrEncodingStream xdr) {
+        xdr.xdrEncodeInt(_xid);
+        xdr.xdrEncodeInt(_messageType);
+    }
+
+
+    /**
+     * Replace Rpcmessage decoding
+     * @param xdr
+     */
+    private void minimalDecode(XdrDecodingStream xdr) throws BadXdrOncRpcException {
+         _xid = xdr.xdrDecodeInt();
+         _messageType = xdr.xdrDecodeInt();
+    }
+    
+    
+    
     /**
      * Appel en venant de gss , temporaire on remlit le message
      * @param xid
@@ -65,13 +69,32 @@ public class AbstractRpcMessage<SVC_T extends RpcSvcItf<SVC_T>> implements  Head
      * @param xdr
      */
     public AbstractRpcMessage(int xid, int prog, int ver, int proc, RpcAuth cred) {
-        _rpcMessage = new RpcMessage(xid,RpcMessageType.CALL); // on sait que c'est un appel
+        _xid = xid;
+        _messageType = RpcMessageType.CALL;
         _prog = prog;
         _version = ver;
         _proc = proc;
         _cred = cred;
     }
-
+    // Call when doing an initial call
+    // ne fonctionne que si utilisé pour un appel
+    public AbstractRpcMessage(int xid, int type,  int rpcvers2, int _prog2, int _version2,
+            int procedure, XdrAble args, RpcAuth auth, RpcAuth cred2) {
+        this(xid,_prog2,_version2,procedure,(null != auth) ? auth : cred2);
+        // xid super 
+        // type is akready set by super
+        // _prog2 super
+        // _version2 super 
+        //auth super
+        //cred2super 
+        // procedure super
+        // rpcvers2 OK
+        // args OK
+        _args = args;
+        _rpcvers = rpcvers2;
+        
+        
+    }
     /* (non-Javadoc)
      * @see org.dcache.xdr.model.root.HeaderItf2#getRpcVers()
      */
@@ -121,7 +144,7 @@ public class AbstractRpcMessage<SVC_T extends RpcSvcItf<SVC_T>> implements  Head
     }
     
     private void xdrFullDecode(XdrDecodingStream xdr) throws OncRpcException, IOException {
-        _rpcMessage =  new RpcMessage(xdr);
+        minimalDecode(xdr);
         xdrDecode(xdr);
     }
     @Override
@@ -141,7 +164,7 @@ public class AbstractRpcMessage<SVC_T extends RpcSvcItf<SVC_T>> implements  Head
 
     @Override
     public void xdrEncode(XdrEncodingStream xdr) throws OncRpcException, IOException {
-        _rpcMessage.xdrEncode(xdr);
+        minimalEncode(xdr);
         xdr.xdrEncodeInt(RPCVERS);
         xdr.xdrEncodeInt(_prog);
         xdr.xdrEncodeInt(_version);
@@ -149,7 +172,7 @@ public class AbstractRpcMessage<SVC_T extends RpcSvcItf<SVC_T>> implements  Head
         _cred.xdrEncode(xdr);
         _args.xdrEncode(xdr);;
     }
-
+    
     @Override
     public void xdrEncodeAsCall(Xdr xdr) throws OncRpcException, IOException {
         xdrEncode(xdr);
@@ -157,18 +180,19 @@ public class AbstractRpcMessage<SVC_T extends RpcSvcItf<SVC_T>> implements  Head
 
     @Override
     public int getMessageType() {
-        return _rpcMessage.type();
+        return _messageType;
     }
 
     @Override
     public int getXid() {
         // TODO Auto-generated method stub
-        return _rpcMessage.xid();
+        return _xid;
     }
 
     @Override
     public void asReply() {
-        _rpcMessage.setType(RpcMessageType.REPLY);    
+        //_rpcMessage.setType(RpcMessageType.REPLY);    
+        _messageType = RpcMessageType.REPLY;
     }
 
     @Override
@@ -178,7 +202,9 @@ public class AbstractRpcMessage<SVC_T extends RpcSvcItf<SVC_T>> implements  Head
         xdr.xdrEncodeInt(status);
         reason.xdrEncode(_xdr);
         */
-        _rpcMessage.xdrEncode(xdr);
+        //_rpcMessage.xdrEncode(xdr);
+        
+        minimalEncode(xdr);
         xdr.xdrEncodeInt(RpcReplyStatus.MSG_DENIED);
         xdr.xdrEncodeInt(status);
         reason.xdrEncode(xdr);
@@ -186,14 +212,7 @@ public class AbstractRpcMessage<SVC_T extends RpcSvcItf<SVC_T>> implements  Head
 
     @Override
     public void encodeAsAcceptedReply(XdrEncodingStream xdr,int state, XdrAble reply) throws OncRpcException, IOException {
-        /*
-        replyMessage.xdrEncode(_xdr);
-        xdr.xdrEncodeInt(RpcReplyStatus.MSG_ACCEPTED);
-        _cred.getVerifier().xdrEncode(xdr);
-        xdr.xdrEncodeInt(state);
-        reply.xdrEncode(xdr);
-        */
-        _rpcMessage.xdrEncode(xdr);
+        minimalEncode(xdr);
         xdr.xdrEncodeInt(RpcReplyStatus.MSG_ACCEPTED);
         _cred.getVerifier().xdrEncode(xdr);
         xdr.xdrEncodeInt(state);

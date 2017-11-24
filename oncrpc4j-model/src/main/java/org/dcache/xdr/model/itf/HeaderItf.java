@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcAuth;
-import org.dcache.xdr.RpcMessage;
 import org.dcache.xdr.Xdr;
 import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrDecodingStream;

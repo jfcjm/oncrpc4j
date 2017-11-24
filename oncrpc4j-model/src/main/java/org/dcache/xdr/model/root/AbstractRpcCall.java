@@ -26,12 +26,7 @@ import org.dcache.xdr.MismatchInfo;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcAccepsStatus;
 import org.dcache.xdr.RpcAuth;
-import org.dcache.xdr.RpcAuthTypeNone;
-import org.dcache.xdr.RpcAuthTypeUnix;
-import org.dcache.xdr.RpcCredential;
-import org.dcache.xdr.RpcMessage;
 import org.dcache.xdr.RpcMessageType;
-import org.dcache.xdr.RpcMismatchReply;
 import org.dcache.xdr.RpcRejectStatus;
 import org.dcache.xdr.RpcReplyStatus;
 import org.dcache.xdr.Xdr;
@@ -322,16 +317,9 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
     public void reject(int status, XdrAble reason) {
         XdrEncodingStream xdr = _xdr;
         try {
-            //RpcMessage replyMessage = new RpcMessage(_xid, RpcMessageType.REPLY);
             _header.asReply();
             xdr.beginEncoding();
-            //replyMessage.xdrEncode(_xdr);
             _header.encodeAsReject(xdr,status,reason);
-            /*
-            xdr.xdrEncodeInt(RpcReplyStatus.MSG_DENIED);
-            xdr.xdrEncodeInt(status);
-            reason.xdrEncode(_xdr);
-            */
             xdr.endEncoding();
 
             _transport.send((Xdr)xdr, _transport.getRemoteSocketAddress(), _sendNotificationHandler);
@@ -355,7 +343,6 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
 
         XdrEncodingStream xdr = _xdr;
         try {
-            //RpcMessage replyMessage = new RpcMessage(_xid, RpcMessageType.REPLY);
             _header.asReply();
             xdr.beginEncoding();
             _header.encodeAsAcceptedReply(xdr,state,reply);
@@ -494,20 +481,8 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
         Xdr xdr = new Xdr(Xdr.INITIAL_XDR_SIZE);
         xdr.beginEncoding();
         
-        RpcMessage rpcMessage = new RpcMessage(xid, RpcMessageType.CALL);
-        HeaderItf<SVC_T> header = new AbstractRpcMessage<SVC_T> (rpcMessage,RPCVERS,_prog,_version,procedure,args,auth,_cred);
-        /*
-        rpcMessage.xdrEncode(xdr);
-        xdr.xdrEncodeInt(RPCVERS);
-        xdr.xdrEncodeInt(_prog);
-        xdr.xdrEncodeInt(_version);
-        xdr.xdrEncodeInt(procedure);
-        if (auth != null) {
-            auth.xdrEncode(xdr);
-        } else {
-            _cred.xdrEncode(xdr);
-        }
-        */
+        AbstractRpcMessage header = new AbstractRpcMessage(xid, RpcMessageType.CALL, RPCVERS, _prog,_version,procedure,args,auth,_cred);
+        
         header.xdrEncodeAsCall(xdr);
         xdr.endEncoding();
 
