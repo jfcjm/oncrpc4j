@@ -62,7 +62,7 @@ public class AbstractRpcProtocolFilter<SVC_T extends RpcSvcItf<SVC_T>> extends B
         }
 
         xdr.beginDecoding();
-        HeaderItf<SVC_T> header = new AbstractRpcMessage<SVC_T>(xdr);
+        final HeaderItf<SVC_T> header = new AbstractRpcMessage<SVC_T>(xdr);
         /**
          * In case of UDP grizzly does not populates connection with correct destination address.
          * We have to get peer address from the request context, which will contain SocketAddress where from

@@ -174,22 +174,7 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
      * @throws OncRpcException
      */
     public void accept() throws IOException, OncRpcException {
-       _log.info("In accept");
        _header.decodeAsReply(_xdr);
-       _log.info("ecoded");
-        /*
-        
-         _rpcvers = _xdr.xdrDecodeInt();
-         if (_rpcvers != RPCVERS) {
-            throw new RpcMismatchReply(_rpcvers, 2);
-         }
-
-        _prog = _xdr.xdrDecodeInt();
-        _version = _xdr.xdrDecodeInt();
-        _proc = _xdr.xdrDecodeInt();
-        //JMK : on ne traite pas le credential pour le moment
-        _cred =RpcCredential.decode(_xdr);
-        */
      }
 
     /**
@@ -422,14 +407,10 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
             throws IOException {
         
         int xid = nextXid();
-
         Xdr xdr = new Xdr(Xdr.INITIAL_XDR_SIZE);
-        xdr.beginEncoding();
         
-        //AbstractRpcMessage header = new AbstractRpcMessage(xid, RpcMessageType.CALL, RPCVERS, _prog,_version,procedure,args,auth,_cred);
         _header.update(xid, RpcMessageType.CALL, RPCVERS, procedure, auth,args);
         _header.xdrEncodeAsCall(xdr);
-        xdr.endEncoding();
 
         ReplyQueueItf<SVC_T> replyQueue = _transport.getReplyQueue();
         if (callback != null) {
