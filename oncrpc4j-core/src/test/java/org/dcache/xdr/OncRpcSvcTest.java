@@ -94,6 +94,7 @@ public class OncRpcSvcTest {
                 .build();
 		svc.register(portMapProg,bindService);
         svc.start();
+        
         try ( AbstractOncRpcClient<?> rpcClient = new AbstractOncRpcClient<>(InetAddress.getByName(null), IpProtocolType.UDP, svc.getInetSocketAddress(IpProtocolType.UDP).getPort() ) ) {
 			OncPortmapClient<?> portmapClient = new GenericPortmapClient<>(rpcClient.connect()); // init portmapper (only v2 atm)
             assertTrue(portmapClient.ping()); // ping portmap
@@ -120,6 +121,6 @@ public class OncRpcSvcTest {
 	
     @After
     public void tearDown() throws IOException {
-        svc.stop();
+        if (null != svc) svc.stop();
     }
 }
