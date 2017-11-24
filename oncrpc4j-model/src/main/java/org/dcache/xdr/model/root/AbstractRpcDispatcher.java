@@ -40,9 +40,9 @@ import org.glassfish.grizzly.filterchain.NextAction;
 
 import static java.util.Objects.requireNonNull;
 
-public class RpcDispatcher<SVC_T extends RpcSvcItf<SVC_T>> extends BaseFilter {
+public class AbstractRpcDispatcher<SVC_T extends RpcSvcItf<SVC_T>> extends BaseFilter {
 
-    private final static Logger _log = LoggerFactory.getLogger(RpcDispatcher.class);
+    private final static Logger _log = LoggerFactory.getLogger(AbstractRpcDispatcher.class);
     /**
      * List of registered RPC services
      *
@@ -70,7 +70,7 @@ public class RpcDispatcher<SVC_T extends RpcSvcItf<SVC_T>> extends BaseFilter {
      *
      * @throws NullPointerException if executor or program is null
      */
-    public RpcDispatcher(ExecutorService executor, Map<OncRpcProgram,
+    public AbstractRpcDispatcher(ExecutorService executor, Map<OncRpcProgram,
             RpcDispatchableItf<SVC_T>> programs, boolean withSubjectPropagation)
             throws NullPointerException {
 
@@ -82,7 +82,7 @@ public class RpcDispatcher<SVC_T extends RpcSvcItf<SVC_T>> extends BaseFilter {
     @Override
     public NextAction handleRead(final FilterChainContext ctx) throws IOException {
 
-        final RpcCall<SVC_T> call = ctx.getMessage();
+        final AbstractRpcCall<SVC_T> call = ctx.getMessage();
         final int prog = call.getProgram();
         final int vers = call.getProgramVersion();
         final int proc = call.getProcedure();

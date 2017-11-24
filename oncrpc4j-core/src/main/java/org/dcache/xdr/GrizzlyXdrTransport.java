@@ -24,7 +24,7 @@ import java.net.InetSocketAddress;
 import java.nio.channels.CompletionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.dcache.xdr.model.root.ReplyQueue;
+import org.dcache.xdr.model.root.AbstractReplyQueue;
 import org.glassfish.grizzly.Buffer;
 import org.glassfish.grizzly.Connection;
 import org.glassfish.grizzly.EmptyCompletionHandler;
@@ -36,17 +36,17 @@ import static java.util.Objects.requireNonNull;
 public class GrizzlyXdrTransport implements XdrTransport {
 
     private final Connection<InetSocketAddress> _connection;
-    private final ReplyQueue _replyQueue;
+    private final AbstractReplyQueue _replyQueue;
     private final InetSocketAddress _localAddress;
     private final InetSocketAddress _remoteAddress;
 
     private final static Logger _log = LoggerFactory.getLogger(GrizzlyXdrTransport.class);
 
-    public GrizzlyXdrTransport(Connection<InetSocketAddress> connection, ReplyQueue replyQueue) {
+    public GrizzlyXdrTransport(Connection<InetSocketAddress> connection, AbstractReplyQueue replyQueue) {
         this(connection, connection.getPeerAddress(), replyQueue);
     }
 
-    public GrizzlyXdrTransport(Connection<InetSocketAddress> connection, InetSocketAddress remoteAddress, ReplyQueue replyQueue) {
+    public GrizzlyXdrTransport(Connection<InetSocketAddress> connection, InetSocketAddress remoteAddress, AbstractReplyQueue replyQueue) {
         _connection = connection;
         _replyQueue = replyQueue;
         _localAddress = _connection.getLocalAddress();
@@ -92,7 +92,7 @@ public class GrizzlyXdrTransport implements XdrTransport {
     }
 
     @Override
-    public ReplyQueue getReplyQueue() {
+    public AbstractReplyQueue getReplyQueue() {
         return _replyQueue;
     }
 

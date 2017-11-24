@@ -23,8 +23,8 @@ import java.net.InetAddress;
 import java.util.concurrent.Future;
 
 import org.dcache.xdr.model.itf.XdrTransportItf;
-import org.dcache.xdr.model.root.OncRpcClient;
-import org.dcache.xdr.model.root.RpcCall;
+import org.dcache.xdr.model.root.AbstractOncRpcClient;
+import org.dcache.xdr.model.root.AbstractRpcCall;
 
 public class SimpleRpcClient {
 
@@ -38,11 +38,11 @@ public class SimpleRpcClient {
         InetAddress address = InetAddress.getByName(args[0]);
         int port = Integer.parseInt(args[1]);
     //JMK
-	try (OncRpcClient<?> rpcClient = new OncRpcClient<>(address, IpProtocolType.TCP, port)) {
+	try (AbstractOncRpcClient<?> rpcClient = new AbstractOncRpcClient<>(address, IpProtocolType.TCP, port)) {
 	    XdrTransportItf<?> transport = rpcClient.connect();
 	    RpcAuth auth = new RpcAuthTypeNone();
 
-	    RpcCall<?> call = new RpcCall<>(100017, 1, auth, transport);
+	    AbstractRpcCall<?> call = new AbstractRpcCall<>(100017, 1, auth, transport);
 
 	    /*
 	    * call PROC_NULL (ping)

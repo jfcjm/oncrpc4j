@@ -25,6 +25,7 @@ import java.nio.channels.CompletionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.dcache.xdr.Xdr;
+import org.dcache.xdr.model.itf.ProtocolFactoryItf;
 import org.dcache.xdr.model.itf.ReplyQueueItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
@@ -45,15 +46,18 @@ public  class AbstractGrizzlyXdrTransport<SVC_T extends RpcSvcItf<SVC_T>> implem
     private final InetSocketAddress _localAddress;
     private final InetSocketAddress _remoteAddress;
 
-    public  AbstractGrizzlyXdrTransport(Connection<InetSocketAddress> connection, ReplyQueueItf<SVC_T> replyQueue) {
-        this(connection, connection.getPeerAddress(), replyQueue);
+    private ProtocolFactoryItf<SVC_T> _factory;
+
+    public  AbstractGrizzlyXdrTransport(Connection<InetSocketAddress> connection, ReplyQueueItf<SVC_T> replyQueue, ProtocolFactoryItf<SVC_T> factory) {
+        this(connection, connection.getPeerAddress(), replyQueue,factory);
     }
 
-    public AbstractGrizzlyXdrTransport(Connection<InetSocketAddress> connection, InetSocketAddress remoteAddress, ReplyQueueItf<SVC_T> replyQueue) {
+    public AbstractGrizzlyXdrTransport(Connection<InetSocketAddress> connection, InetSocketAddress remoteAddress, ReplyQueueItf<SVC_T> replyQueue, ProtocolFactoryItf<SVC_T> factory) {
         _connection = connection;
         _replyQueue = replyQueue;
         _localAddress = _connection.getLocalAddress();
         _remoteAddress = remoteAddress;
+        _factory = factory;
     }
 
     @Override
@@ -101,11 +105,16 @@ public  class AbstractGrizzlyXdrTransport<SVC_T extends RpcSvcItf<SVC_T>> implem
 
     @Override
     public XdrTransportItf<SVC_T> getPeerTransport() {
-        return new AbstractGrizzlyXdrTransport<SVC_T>(_connection, getReplyQueue());
+        return new AbstractGrizzlyXdrTransport<SVC_T>(_connection, getReplyQueue(),_factory);
     }
 
     @Override
     public String toString() {
         return getRemoteSocketAddress() + " <=> " + getLocalSocketAddress();
+    }
+
+    @Override
+    public ProtocolFactoryItf<SVC_T> getProtocolFactory() {
+        return _factory;
     }
 }

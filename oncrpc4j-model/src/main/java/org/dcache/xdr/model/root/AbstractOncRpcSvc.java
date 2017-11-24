@@ -19,23 +19,17 @@
  */
 package org.dcache.xdr.model.root;
 
-import org.dcache.utils.net.InetSocketAddresses;
+import static org.dcache.xdr.GrizzlyUtils.rpcMessageReceiverFor;
+
 import org.dcache.xdr.IoStrategy;
 import org.dcache.xdr.IpProtocolType;
-import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.OncRpcProgram;
-import org.dcache.xdr.RpcMessageParserTCP;
-import org.dcache.xdr.RpcMessageParserUDP;
-import org.dcache.xdr.RpcProgUnavailable;
-import org.dcache.xdr.gss.GssProtocolFilter;
-import org.dcache.xdr.gss.GssSessionManager;
 import org.dcache.xdr.model.impl.AbstractGrizzlyXdrTransport;
+import org.dcache.xdr.model.itf.ProtocolFactoryItf;
 import org.dcache.xdr.model.itf.RpcDispatchableItf;
+import org.dcache.xdr.model.itf.RpcSessionManagerItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
-import org.dcache.xdr.portmap.GenericPortmapClient;
-import org.dcache.xdr.portmap.OncPortmapClient;
-import org.dcache.xdr.portmap.OncRpcPortmap;
 import org.glassfish.grizzly.CloseType;
 import org.glassfish.grizzly.Connection;
 import org.glassfish.grizzly.ConnectionProbe;
@@ -43,7 +37,6 @@ import org.glassfish.grizzly.GrizzlyFuture;
 import org.glassfish.grizzly.PortRange;
 import org.glassfish.grizzly.SocketBinder;
 import org.glassfish.grizzly.Transport;
-import org.glassfish.grizzly.filterchain.Filter;
 import org.glassfish.grizzly.filterchain.FilterChain;
 import org.glassfish.grizzly.filterchain.FilterChainBuilder;
 import org.glassfish.grizzly.filterchain.TransportFilter;
@@ -59,10 +52,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.Inet6Address;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -82,26 +72,17 @@ import java.util.stream.Collectors;
 import static org.dcache.xdr.GrizzlyUtils.getSelectorPoolCfg;
 import static org.dcache.xdr.GrizzlyUtils.transportFor;
 
-public class OncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implements  RpcSvcItf<SVC_T>{
+public class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implements  RpcSvcItf<SVC_T>{
     
-    private final static Logger _log = LoggerFactory.getLogger(OncRpcSvc.class);
+    private final static Logger _log = LoggerFactory.getLogger(AbstractOncRpcSvc.class);
     
     
-    public static Filter rpcMessageReceiverFor(Transport t) {
-        if (t instanceof TCPNIOTransport) {
-            return new RpcMessageParserTCP();
-        }
-
-        if (t instanceof UDPNIOTransport) {
-            return new RpcMessageParserUDP();
-        }
-
-        throw new RuntimeException("Unsupported transport: " + t.getClass().getName());
-    }
     
+    
+    
+    private ProtocolFactoryItf<SVC_T> _protocolFactory = AbstractRpcProtocolFactory();
     
     private final int _backlog;
-    private final boolean _publish;
     private final PortRange _portRange;
     private final String _bindAddress;
     private final boolean _isClient;
@@ -111,13 +92,13 @@ public class OncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implements  RpcSvcItf<SVC
 
     private final ExecutorService _requestExecutor;
 
-    private final ReplyQueue<SVC_T> _replyQueue = new ReplyQueue();
+    private final AbstractReplyQueue<SVC_T> _replyQueue = new AbstractReplyQueue<>();
 
     private final boolean _withSubjectPropagation;
     /**
      * Handle RPCSEC_GSS
      */
-    private final GssSessionManager _gssSessionManager;
+    private RpcSessionManagerItf<SVC_T> _rpcSessionManager;
 
     /**
      * mapping of registered programs.
@@ -134,8 +115,7 @@ public class OncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implements  RpcSvcItf<SVC
      * Create new RPC service with defined configuration.
      * @param builder to build this service
      */
-    OncRpcSvc(OncRpcSvcBuilder<SVC_T> builder) {
-        _publish = builder.isAutoPublish();
+    protected AbstractOncRpcSvc(AbstractOncRpcSvcBuilder<SVC_T> builder) {
         final int protocol = builder.getProtocol();
 
         if ((protocol & (IpProtocolType.TCP | IpProtocolType.UDP)) == 0) {
@@ -169,6 +149,7 @@ public class OncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implements  RpcSvcItf<SVC
                     .build();
             _transports.add(udpTransport);
         }
+        _protocolFactory = builder.getFactory();
         _isClient = builder.isClient();
         _portRange = builder.getMinPort() > 0 ?
                 new PortRange(builder.getMinPort(), builder.getMaxPort()) : null;
@@ -183,10 +164,21 @@ public class OncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implements  RpcSvcItf<SVC
 	    });
         }
         _requestExecutor = builder.getWorkerThreadExecutorService();
-        _gssSessionManager = builder.getGssSessionManager();
+        _rpcSessionManager = builder.getRpcSessionManager();
+        if (null == builder.getRpcSessionManager()) {
+            _rpcSessionManager = new DefaultSessionManager<>();
+        } else {
+            _rpcSessionManager = builder.getRpcSessionManager();
+        }
         _programs.putAll(builder.getRpcServices());
         _withSubjectPropagation = builder.getSubjectPropagation();
 	_svcName = builder.getServiceName();
+	    _protocolFactory.processBuilder(builder);
+    }
+
+    private ProtocolFactoryItf<SVC_T> AbstractRpcProtocolFactory() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
     /**
@@ -213,119 +205,28 @@ public class OncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implements  RpcSvcItf<SVC
     /**
      * Add programs to existing services.
      * @param services
-     * @deprecated use {@link OncRpcSvcBuilder#withRpcService} instead.
+     * @deprecated use {@link AbstractOncRpcSvcBuilder#withRpcService} instead.
      */
     @Deprecated
     public void setPrograms(Map<OncRpcProgram, RpcDispatchableItf<SVC_T>> services) {
         _programs.putAll(services);
     }
 
-    /**
-     * Register services in portmap.
-     *
-     * @throws IOException
-     * @throws UnknownHostException
-     */
-    private void publishToPortmap(Connection<InetSocketAddress> connection, Set<OncRpcProgram> programs) throws IOException {
 
-        OncRpcClient<SVC_T> rpcClient = new OncRpcClient<SVC_T>(InetAddress.getByName(null),
-                IpProtocolType.UDP, OncRpcPortmap.PORTMAP_PORT);
-        XdrTransportItf<SVC_T> transport = rpcClient.connect();
-
-        try {
-            OncPortmapClient portmapClient = new GenericPortmapClient(transport);
-
-            Set<String> netids = new HashSet<>();
-            String username = System.getProperty("user.name");
-            Transport t = connection.getTransport();
-            String uaddr = InetSocketAddresses.uaddrOf(connection.getLocalAddress());
-
-            String netidBase;
-            if (t instanceof TCPNIOTransport) {
-                netidBase = "tcp";
-            } else if (t instanceof UDPNIOTransport) {
-                netidBase = "udp";
-            } else {
-                // must never happens
-                throw new RuntimeException("Unsupported transport type: " + t.getClass().getCanonicalName());
-            }
-
-            InetAddress localAddress = connection.getLocalAddress().getAddress();
-            if (localAddress instanceof Inet6Address) {
-                netids.add(netidBase + "6");
-                if (((Inet6Address)localAddress).isIPv4CompatibleAddress()) {
-                    netids.add(netidBase);
-                }
-            } else {
-                netids.add(netidBase);
-            }
-
-            for (OncRpcProgram program : programs) {
-                for (String netid : netids) {
-                    try {
-                        portmapClient.setPort(program.getNumber(), program.getVersion(),
-                                netid, uaddr, username);
-                    } catch (OncRpcException | TimeoutException e) {
-                        _log.warn("Failed to register program: {}", e.getMessage());
-                    }
-                }
-            }
-        } catch (RpcProgUnavailable e) {
-            _log.warn("Failed to register at portmap: {}", e.getMessage());
-        } finally {
-            rpcClient.close();
-        }
-    }
-
-    /**
-     * UnRegister services in portmap.
-     *
-     * @throws IOException
-     * @throws UnknownHostException
-     */
-    private void clearPortmap(Set<OncRpcProgram> programs) throws IOException {
-
-        OncRpcClient<SVC_T> rpcClient = new OncRpcClient<SVC_T>(InetAddress.getByName(null),
-                IpProtocolType.UDP, OncRpcPortmap.PORTMAP_PORT);
-        XdrTransportItf<SVC_T> transport = rpcClient.connect();
-
-        try {
-            OncPortmapClient portmapClient = new GenericPortmapClient(transport);
-
-            String username = System.getProperty("user.name");
-
-            for (OncRpcProgram program : programs) {
-                try {
-                    portmapClient.unsetPort(program.getNumber(),
-                            program.getVersion(), username);
-                } catch (OncRpcException | TimeoutException e) {
-                    _log.info("Failed to unregister program: {}", e.getMessage());
-                }
-            }
-        } catch (RpcProgUnavailable e) {
-            _log.info("portmap service not available");
-        } finally {
-            rpcClient.close();
-        }
-    }
 
     public void start() throws IOException {
-
-        if(!_isClient && _publish) {
-            clearPortmap(_programs.keySet());
-        }
-
+        _protocolFactory.preStopActions(this);
+        
         for (Transport t : _transports) {
 
             FilterChainBuilder filterChain = FilterChainBuilder.stateless();
             filterChain.add(new TransportFilter());
             filterChain.add(rpcMessageReceiverFor(t));
-            filterChain.add(new RpcProtocolFilter(_replyQueue));
+            org.junit.Assert.assertNotNull(_protocolFactory);;
+            filterChain.add(new AbstractRpcProtocolFilter<>(_replyQueue,_protocolFactory));
             // use GSS if configures
-            if (_gssSessionManager != null) {
-                filterChain.add(new GssProtocolFilter(_gssSessionManager));
-            }
-            filterChain.add(new RpcDispatcher(_requestExecutor, _programs, _withSubjectPropagation));
+            filterChain.add(_rpcSessionManager);
+            filterChain.add(new AbstractRpcDispatcher<>(_requestExecutor, _programs, _withSubjectPropagation));
 
             final FilterChain filters = filterChain.build();
 
@@ -345,21 +246,15 @@ public class OncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implements  RpcSvcItf<SVC
                         ((SocketBinder) t).bind(_bindAddress, _portRange, _backlog);
 
                 _boundConnections.add(connection);
-
-                if (_publish) {
-                    publishToPortmap(connection, _programs.keySet());
-                }
             }
+            _protocolFactory.doPreStartAction(this);
             t.start();
 
         }
     }
 
     public void stop() throws IOException {
-
-        if (!_isClient && _publish) {
-            clearPortmap(_programs.keySet());
-        }
+        _protocolFactory.preStopActions(this);
 
         for (Transport t : _transports) {
             t.shutdownNow();
@@ -370,11 +265,8 @@ public class OncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implements  RpcSvcItf<SVC
     }
 
     public void stop(long gracePeriod, TimeUnit timeUnit) throws IOException {
-
-        if (!_isClient && _publish) {
-            clearPortmap(_programs.keySet());
-        }
-
+        _protocolFactory.preStopActions(this);
+        
         List<GrizzlyFuture<Transport>> transportsShuttingDown = new ArrayList<>();
         for (Transport t : _transports) {
             transportsShuttingDown.add(t.shutdown(gracePeriod, timeUnit));
@@ -414,7 +306,7 @@ public class OncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implements  RpcSvcItf<SVC
         try {
             //noinspection unchecked
             Connection<InetSocketAddress> connection = connectFuture.get(timeout, timeUnit);
-            return new AbstractGrizzlyXdrTransport<SVC_T>(connection, _replyQueue);
+            return new AbstractGrizzlyXdrTransport<SVC_T>(connection, _replyQueue,_protocolFactory);
         } catch (ExecutionException e) {
             Throwable t = getRootCause(e);
             propagateIfPossible(t, IOException.class);

@@ -25,23 +25,23 @@ import org.ietf.jgss.MessageProp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.dcache.xdr.*;
-import org.dcache.xdr.model.root.RpcCall;
+import org.dcache.xdr.model.root.AbstractRpcCall;
 import org.glassfish.grizzly.Buffer;
 import org.ietf.jgss.GSSContext;
 
 /**
- * An extention of {@link RpcCall} which Wrap/Unwrap the data according GSS QOS.
+ * An extention of {@link AbstractRpcCall} which Wrap/Unwrap the data according GSS QOS.
  * The supported QOS are: NONE, INTEGRITY and PRIVACY as specified in rfs 2203.
  *
  * @since 0.0.4
  */
-public class RpcGssCall extends RpcCall {
+public class RpcGssCall extends AbstractRpcCall {
 
     private final static Logger _log = LoggerFactory.getLogger(RpcGssCall.class);
     private final GSSContext _gssContext;
     private final MessageProp _mop;
 
-    public RpcGssCall(RpcCall call, GSSContext gssContext, MessageProp mop) {
+    public RpcGssCall(AbstractRpcCall call, GSSContext gssContext, MessageProp mop) {
         super(call.getXid(), call.getProgram(), call.getProgramVersion(),
                 call.getProcedure(), call.getCredential(), call.getXdr(), call.getTransport());
         _gssContext = gssContext;

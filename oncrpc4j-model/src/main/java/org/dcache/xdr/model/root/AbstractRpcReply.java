@@ -36,9 +36,9 @@ import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RpcReply<SVC_T extends RpcSvcItf<SVC_T>> implements RpcReplyItf<SVC_T>{
+public class AbstractRpcReply<SVC_T extends RpcSvcItf<SVC_T>> implements RpcReplyItf<SVC_T>{
 
-    private final static Logger _log = LoggerFactory.getLogger(RpcReply.class);
+    private final static Logger _log = LoggerFactory.getLogger(AbstractRpcReply.class);
     /**
      * XID of corresponding request
      */
@@ -56,7 +56,7 @@ public class RpcReply<SVC_T extends RpcSvcItf<SVC_T>> implements RpcReplyItf<SVC
     private RpcAuthVerifier _verf;
     private final XdrTransportItf<SVC_T> _transport;
 
-    public RpcReply(int xid, Xdr xdr, XdrTransportItf<SVC_T> transport) throws OncRpcException, IOException {
+    public AbstractRpcReply(int xid, Xdr xdr, XdrTransportItf<SVC_T> transport) throws OncRpcException, IOException {
         _xid = xid;
         _xdr = xdr;
         _transport = transport;

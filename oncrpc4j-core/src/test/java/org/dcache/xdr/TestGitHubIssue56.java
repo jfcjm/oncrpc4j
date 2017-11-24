@@ -11,9 +11,9 @@ import org.dcache.xdr.OncRpcProgram;
 import org.dcache.xdr.XdrTransport;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
-import org.dcache.xdr.model.root.OncRpcClient;
-import org.dcache.xdr.model.root.OncRpcSvc;
-import org.dcache.xdr.model.root.OncRpcSvcBuilder;
+import org.dcache.xdr.model.root.AbstractOncRpcClient;
+import org.dcache.xdr.model.root.AbstractOncRpcSvc;
+import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
 import org.dcache.xdr.portmap.GenericPortmapClient;
 import org.dcache.xdr.portmap.OncRpcPortmap;
 import org.dcache.xdr.portmap.OncRpcbindServer;
@@ -25,7 +25,7 @@ public class TestGitHubIssue56 {
 	@Test
 	public void DumpTest() throws IOException, TimeoutException {
 
-		 RpcSvcItf<?> rpcbindServer = new OncRpcSvcBuilder<>()
+		 RpcSvcItf<?> rpcbindServer = new AbstractOncRpcSvcBuilder<>()
                 .withTCP()
                 .withUDP()
                 .withoutAutoPublish()
@@ -33,7 +33,7 @@ public class TestGitHubIssue56 {
                 .build();
 		rpcbindServer.start();
 		int protoType = IpProtocolType.TCP;
-		OncRpcClient<?> rpcClient = new OncRpcClient<>(rpcbindServer.getInetSocketAddress(protoType),protoType );
+		AbstractOncRpcClient<?> rpcClient = new AbstractOncRpcClient<>(rpcbindServer.getInetSocketAddress(protoType),protoType );
 		XdrTransportItf<?> transport = rpcClient.connect();
 		GenericPortmapClient<?> portmapClient = new GenericPortmapClient<>(transport);
 		for (rpcb r : portmapClient.dump()){
@@ -44,7 +44,7 @@ public class TestGitHubIssue56 {
 	@Test
 	public void UnsetTest() throws IOException, TimeoutException {
 
-		OncRpcSvc<?> rpcbindServer = (OncRpcSvc<?>) new OncRpcSvcBuilder<>()
+		AbstractOncRpcSvc<?> rpcbindServer = (AbstractOncRpcSvc<?>) new AbstractOncRpcSvcBuilder<>()
                 .withTCP()
                 .withUDP()
                 .withoutAutoPublish()
@@ -52,7 +52,7 @@ public class TestGitHubIssue56 {
                 .build();
 		rpcbindServer.start();
 		int protoType = IpProtocolType.TCP;
-		OncRpcClient<?> rpcClient = new OncRpcClient<>(rpcbindServer.getInetSocketAddress(protoType),protoType );
+		AbstractOncRpcClient<?> rpcClient = new AbstractOncRpcClient<>(rpcbindServer.getInetSocketAddress(protoType),protoType );
 		XdrTransportItf<?> transport = rpcClient.connect();
 		GenericPortmapClient<?> portmapClient = new GenericPortmapClient<>(transport);
 		boolean isUnset=portmapClient.unsetPort(OncRpcPortmap.PORTMAP_PROGRAMM, OncRpcPortmap.PORTMAP_V2, "superuser");

@@ -5,9 +5,6 @@ import java.net.SocketAddress;
 import java.nio.channels.CompletionHandler;
 import java.util.concurrent.TimeUnit;
 
-import org.glassfish.grizzly.filterchain.FilterChainContext;
-import org.glassfish.grizzly.filterchain.NextAction;
-
 public interface ReplyQueueItf<SVC_T extends RpcSvcItf<SVC_T>> {
 
     /**

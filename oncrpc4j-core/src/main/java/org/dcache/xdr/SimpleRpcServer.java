@@ -19,8 +19,8 @@
  */
 package org.dcache.xdr;
 
-import org.dcache.xdr.model.root.OncRpcSvc;
-import org.dcache.xdr.model.root.OncRpcSvcBuilder;
+import org.dcache.xdr.model.root.AbstractOncRpcSvc;
+import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
 import org.dcache.xdr.portmap.OncRpcEmbeddedPortmap;
 
 public class SimpleRpcServer {
@@ -43,7 +43,7 @@ public class SimpleRpcServer {
 
         new OncRpcEmbeddedPortmap();
         //JMK
-        OncRpcSvc<?> svc =  (OncRpcSvc<?>) new OncRpcSvcBuilder<>()
+        AbstractOncRpcSvc<?> svc =  (AbstractOncRpcSvc<?>) new AbstractOncRpcSvcBuilder<>()
                 .withTCP()
                 .withAutoPublish()
                 .withPort(port)

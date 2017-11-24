@@ -34,10 +34,10 @@ import org.dcache.xdr.RpcProgUnavailable;
 import org.dcache.xdr.XdrTransport;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
-import org.dcache.xdr.model.root.OncRpcClient;
-import org.dcache.xdr.model.root.OncRpcSvc;
-import org.dcache.xdr.model.root.OncRpcSvcBuilder;
-import org.dcache.xdr.model.root.RpcCall;
+import org.dcache.xdr.model.root.AbstractOncRpcClient;
+import org.dcache.xdr.model.root.AbstractOncRpcSvc;
+import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
+import org.dcache.xdr.model.root.AbstractRpcCall;
 
 public class GenericPortmapClient<SVC_T extends RpcSvcItf<SVC_T>> implements OncPortmapClient<SVC_T> {
 
@@ -47,9 +47,9 @@ public class GenericPortmapClient<SVC_T extends RpcSvcItf<SVC_T>> implements Onc
 
     public GenericPortmapClient(XdrTransportItf<SVC_T> transport) throws RpcProgUnavailable {
 
-       OncPortmapClient<SVC_T> portmapClient = new RpcbindV4Client(new RpcCall<>(100000, 4, _auth, transport));
+       OncPortmapClient<SVC_T> portmapClient = new RpcbindV4Client(new AbstractRpcCall<>(100000, 4, _auth, transport));
         if( !portmapClient.ping() ) {
-            portmapClient = new PortmapV2Client( new RpcCall<>(100000, 2, _auth, transport) );
+            portmapClient = new PortmapV2Client( new AbstractRpcCall<>(100000, 2, _auth, transport) );
             if(!portmapClient.ping()) {
                 // FIXME: return correct exception
                 throw new RpcProgUnavailable("portmap service not available");
@@ -83,7 +83,7 @@ public class GenericPortmapClient<SVC_T extends RpcSvcItf<SVC_T>> implements Onc
 
         int protocol = IpProtocolType.TCP;
 
-        OncRpcClient<?> rpcClient = new OncRpcClient<>(InetAddress.getByName(null), IpProtocolType.UDP, 111);
+        AbstractOncRpcClient<?> rpcClient = new AbstractOncRpcClient<>(InetAddress.getByName(null), IpProtocolType.UDP, 111);
         XdrTransportItf<?> transport = rpcClient.connect();
 
         OncPortmapClient<?> portmapClient = new GenericPortmapClient<>(transport);

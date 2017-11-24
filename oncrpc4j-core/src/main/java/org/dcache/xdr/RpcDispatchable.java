@@ -21,7 +21,7 @@ package org.dcache.xdr;
 
 import java.io.IOException;
 
-import org.dcache.xdr.model.root.RpcCall;
+import org.dcache.xdr.model.root.AbstractRpcCall;
 
 /**
  *
@@ -30,7 +30,7 @@ import org.dcache.xdr.model.root.RpcCall;
  */
 public interface RpcDispatchable {
 
-    public void dispatchOncRpcCall(RpcCall call)
+    public void dispatchOncRpcCall(AbstractRpcCall call)
             throws OncRpcException, IOException;
 
 }

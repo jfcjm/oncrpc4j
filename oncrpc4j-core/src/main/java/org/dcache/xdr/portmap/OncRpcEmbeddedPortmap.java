@@ -27,10 +27,10 @@ import org.dcache.xdr.RpcAuthTypeNone;
 import org.dcache.xdr.XdrTransport;
 import org.dcache.xdr.XdrVoid;
 import org.dcache.xdr.model.itf.XdrTransportItf;
-import org.dcache.xdr.model.root.OncRpcClient;
-import org.dcache.xdr.model.root.OncRpcSvc;
-import org.dcache.xdr.model.root.OncRpcSvcBuilder;
-import org.dcache.xdr.model.root.RpcCall;
+import org.dcache.xdr.model.root.AbstractOncRpcClient;
+import org.dcache.xdr.model.root.AbstractOncRpcSvc;
+import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
+import org.dcache.xdr.model.root.AbstractRpcCall;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +48,7 @@ public class OncRpcEmbeddedPortmap {
     private static final Logger LOG = LoggerFactory.getLogger(OncRpcEmbeddedPortmap.class);
 
     private static final RpcAuth _auth = new RpcAuthTypeNone();
-    private OncRpcSvc<?> optionalEmbeddedServer = null;
+    private AbstractOncRpcSvc<?> optionalEmbeddedServer = null;
 
     public OncRpcEmbeddedPortmap() {
         this(2, TimeUnit.SECONDS);
@@ -58,12 +58,12 @@ public class OncRpcEmbeddedPortmap {
 
         // we start embedded portmap only if there no other one is running
         boolean localPortmapperRunning = false;
-        try(OncRpcClient<?> rpcClient = new OncRpcClient<>(InetAddress.getByName(null), IpProtocolType.UDP, OncRpcPortmap.PORTMAP_PORT)) {
+        try(AbstractOncRpcClient<?> rpcClient = new AbstractOncRpcClient<>(InetAddress.getByName(null), IpProtocolType.UDP, OncRpcPortmap.PORTMAP_PORT)) {
 
             XdrTransportItf<?> transport = rpcClient.connect();
             /* check for version 2, 3 and 4 */
             for (int i = 4; i > 1 && !localPortmapperRunning; i--) {
-                RpcCall<?> call = new RpcCall<>(OncRpcPortmap.PORTMAP_PROGRAMM, i, _auth, transport);
+                AbstractRpcCall<?> call = new AbstractRpcCall<>(OncRpcPortmap.PORTMAP_PROGRAMM, i, _auth, transport);
                 try {
                     call.call(0, XdrVoid.XDR_VOID, XdrVoid.XDR_VOID, timeoutValue, timeoutUnit);
                     localPortmapperRunning = true;
@@ -79,7 +79,7 @@ public class OncRpcEmbeddedPortmap {
         if (!localPortmapperRunning) {
             try {
                 LOG.info("Starting embedded portmap service");
-                OncRpcSvc<?> rpcbindServer = (OncRpcSvc<?>) new OncRpcSvcBuilder<>()
+                AbstractOncRpcSvc<?> rpcbindServer = (AbstractOncRpcSvc<?>) new AbstractOncRpcSvcBuilder<>()
                         .withPort(OncRpcPortmap.PORTMAP_PORT)
                         .withTCP()
                         .withUDP()

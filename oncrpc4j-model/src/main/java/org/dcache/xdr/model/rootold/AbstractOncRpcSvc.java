@@ -31,7 +31,7 @@ import org.dcache.xdr.model.itf.ReplyQueueItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.dcache.xdr.model.itf.RpcDispatchableItf;
-import org.dcache.xdr.model.itf.RpcProtocolFilterUtf;
+
 import org.glassfish.grizzly.CloseType;
 import org.glassfish.grizzly.Connection;
 import org.glassfish.grizzly.ConnectionProbe;
@@ -59,7 +59,7 @@ public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>>  impleme
 
     protected abstract void addPostTransportProtocolFilters(FilterChainBuilder filterChain, Transport t);
     
-    protected abstract RpcProtocolFilterUtf<SVC_T> getRpcProtocolFilter(ReplyQueueItf<SVC_T> replyQueue);
+    protected abstract RpcProtocolFilterItf<SVC_T> getRpcProtocolFilter(ReplyQueueItf<SVC_T> replyQueue);
     protected abstract Filter rpcMessageReceiverFor(Transport t);
     abstract protected void addPostRpcProtocolFilter(FilterChainBuilder filterChain) ;
     abstract protected void doBeforeStart() throws IOException;

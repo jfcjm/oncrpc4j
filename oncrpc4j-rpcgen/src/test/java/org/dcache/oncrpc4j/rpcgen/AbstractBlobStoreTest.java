@@ -2,8 +2,8 @@ package org.dcache.oncrpc4j.rpcgen;
 
 import org.dcache.xdr.OncRpcProgram;
 import org.dcache.xdr.model.itf.RpcSvcItf;
-import org.dcache.xdr.model.root.OncRpcSvc;
-import org.dcache.xdr.model.root.OncRpcSvcBuilder;
+import org.dcache.xdr.model.root.AbstractOncRpcSvc;
+import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
 import org.junit.After;
 import org.junit.Before;
 
@@ -18,7 +18,7 @@ public abstract class AbstractBlobStoreTest {
 
     @Before
     public void setup() throws Exception{
-         server = new OncRpcSvcBuilder<>()
+         server = new AbstractOncRpcSvcBuilder<>()
                 .withTCP()
                 .withoutAutoPublish() //so we dont need rpcbind
                 .withPort(port)

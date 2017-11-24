@@ -29,36 +29,36 @@ import org.dcache.xdr.model.itf.OncRpcClientItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
 
-public class OncRpcClient<SVC_T extends RpcSvcItf<SVC_T>> implements AutoCloseable, OncRpcClientItf<SVC_T> {
+public class AbstractOncRpcClient<SVC_T extends RpcSvcItf<SVC_T>> implements AutoCloseable, OncRpcClientItf<SVC_T> {
 
     private static final String DEFAULT_SERVICE_NAME = null;
 
     private final InetSocketAddress _socketAddress;
-    private final OncRpcSvc<SVC_T> _rpcsvc;
+    private final AbstractOncRpcSvc<SVC_T> _rpcsvc;
 
-    public OncRpcClient(InetAddress address, int protocol, int port) {
+    public AbstractOncRpcClient(InetAddress address, int protocol, int port) {
         this(new InetSocketAddress(address, port), protocol, 0, IoStrategy.SAME_THREAD, DEFAULT_SERVICE_NAME);
     }
 
-    public OncRpcClient(InetAddress address, int protocol, int port, int localPort) {
+    public AbstractOncRpcClient(InetAddress address, int protocol, int port, int localPort) {
         this(new InetSocketAddress(address, port), protocol, localPort, IoStrategy.SAME_THREAD, DEFAULT_SERVICE_NAME);
     }
 
-    public OncRpcClient(InetAddress address, int protocol, int port, int localPort, IoStrategy ioStrategy) {
+    public AbstractOncRpcClient(InetAddress address, int protocol, int port, int localPort, IoStrategy ioStrategy) {
         this(new InetSocketAddress(address, port), protocol, localPort, ioStrategy, DEFAULT_SERVICE_NAME);
     }
 
-    public OncRpcClient(InetAddress address, int protocol, int port, int localPort, IoStrategy ioStrategy, String serviceName) {
+    public AbstractOncRpcClient(InetAddress address, int protocol, int port, int localPort, IoStrategy ioStrategy, String serviceName) {
         this(new InetSocketAddress(address, port), protocol, localPort, ioStrategy, serviceName);
     }
 
-    public OncRpcClient(InetSocketAddress socketAddress, int protocol) {
+    public AbstractOncRpcClient(InetSocketAddress socketAddress, int protocol) {
         this(socketAddress, protocol, 0, IoStrategy.SAME_THREAD, DEFAULT_SERVICE_NAME);
     }
     //JMK : type cast
-    public OncRpcClient(InetSocketAddress socketAddress, int protocol, int localPort, IoStrategy ioStrategy, String serviceName) {
+    public AbstractOncRpcClient(InetSocketAddress socketAddress, int protocol, int localPort, IoStrategy ioStrategy, String serviceName) {
         _socketAddress = socketAddress;
-        _rpcsvc = (OncRpcSvc<SVC_T>) new OncRpcSvcBuilder<SVC_T>()
+        _rpcsvc = (AbstractOncRpcSvc<SVC_T>) new AbstractOncRpcSvcBuilder<SVC_T>()
                 .withClientMode()
                 .withPort(localPort)
                 .withIpProtocolType(protocol)

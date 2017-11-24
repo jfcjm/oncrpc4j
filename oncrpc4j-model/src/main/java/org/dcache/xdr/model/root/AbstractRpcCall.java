@@ -36,6 +36,8 @@ import org.dcache.xdr.Xdr;
 import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrEncodingStream;
 import org.dcache.xdr.XdrVoid;
+import org.dcache.xdr.model.itf.HeaderItf;
+import org.dcache.xdr.model.itf.ProtocolFactoryItf;
 import org.dcache.xdr.model.itf.ReplyQueueItf;
 import org.dcache.xdr.model.itf.RpcCallItf;
 import org.dcache.xdr.model.itf.RpcReplyItf;
@@ -59,12 +61,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class RpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallItf<SVC_T>{
+public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallItf<SVC_T>{
 
-    private final static Logger _log = LoggerFactory.getLogger(RpcCall.class);
+    private final static Logger _log = LoggerFactory.getLogger(AbstractRpcCall.class);
 
     private final static Random RND = new Random();
-
     /**
      * XID number generator
      */
@@ -177,26 +178,30 @@ public class RpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallItf<SVC_T
     private final CompletionHandler<Integer, InetSocketAddress> _sendNotificationHandler
             = new NotifyListenersCompletionHandler();
 
-    public RpcCall(int prog, int ver, RpcAuth cred, XdrTransportItf<SVC_T> transport) {
+    private ProtocolFactoryItf<SVC_T> _protoFactory;
+
+    public AbstractRpcCall(int prog, int ver, RpcAuth cred, XdrTransportItf<SVC_T> transport) {
         this(prog, ver, cred, new Xdr(Xdr.INITIAL_XDR_SIZE), transport);
     }
 
-    public RpcCall(int prog, int ver, RpcAuth cred, Xdr xdr, XdrTransportItf<SVC_T> transport) {
+    public AbstractRpcCall(int prog, int ver, RpcAuth cred, Xdr xdr, XdrTransportItf<SVC_T> transport) {
         _prog = prog;
         _version = ver;
         _cred = cred;
         _transport = transport;
+        _protoFactory = transport.getProtocolFactory();
         _xdr = xdr;
         _proc = 0;
     }
 
-    public RpcCall(int xid, Xdr xdr, XdrTransportItf<SVC_T> transport) {
+    public AbstractRpcCall(int xid, Xdr xdr, XdrTransportItf<SVC_T> transport) {
         _xid = xid;
         _xdr = xdr;
         _transport = transport;
+        _protoFactory = transport.getProtocolFactory();
     }
 
-    public RpcCall(int xid, int prog, int ver, int proc, RpcAuth cred, Xdr xdr, XdrTransportItf<SVC_T> transport) {
+    public AbstractRpcCall(int xid, int prog, int ver, int proc, RpcAuth cred, Xdr xdr, XdrTransportItf<SVC_T> transport) {
         _xid = xid;
         _prog = prog;
         _version = ver;
@@ -204,6 +209,7 @@ public class RpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallItf<SVC_T
         _cred = cred;
         _xdr = xdr;
         _transport = transport;
+        _protoFactory = transport.getProtocolFactory();
         _rpcvers = RPCVERS;
     }
 
@@ -213,6 +219,14 @@ public class RpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallItf<SVC_T
      * @throws OncRpcException
      */
     public void accept() throws IOException, OncRpcException {
+       /* HeaderItf<SVC_T> header= _protoFactory.decode(_xdr);
+
+        _rpcvers    = header.getRpcVers();
+        _prog       = header.getProg();
+        _version    = header.getVersion();
+        _proc       = header.getProc();
+        _cred = header.getCredential(); */
+        
          _rpcvers = _xdr.xdrDecodeInt();
          if (_rpcvers != RPCVERS) {
             throw new RpcMismatchReply(_rpcvers, 2);
@@ -221,7 +235,9 @@ public class RpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallItf<SVC_T
         _prog = _xdr.xdrDecodeInt();
         _version = _xdr.xdrDecodeInt();
         _proc = _xdr.xdrDecodeInt();
+        //JMK
         _cred = RpcCredential.decode(_xdr);
+        
      }
 
     /**
@@ -687,7 +703,7 @@ public class RpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallItf<SVC_T
      * Register {@link CompletionHandler} to receive notification when message
      * send is complete. NOTICE: when processing rpc call on the server side
      * the @{code registerSendListener} has the same effect as {@link #registerSendOnceListener}
-     * as a new instance of {@link RpcCall} is used to process the request.
+     * as a new instance of {@link AbstractRpcCall} is used to process the request.
      * @param listener the message sent listener
      */
     public void registerSendListener(CompletionHandler<Integer, InetSocketAddress> listener) {

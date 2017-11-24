@@ -51,6 +51,8 @@ public interface XdrTransportItf<SVC_T extends RpcSvcItf<SVC_T>> {
      * @return
      */
     XdrTransportItf<SVC_T> getPeerTransport();
+
+    ProtocolFactoryItf<SVC_T> getProtocolFactory();
     
     
 

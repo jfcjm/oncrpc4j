@@ -37,14 +37,14 @@ import org.dcache.xdr.model.itf.RpcReplyItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
 
-public class ReplyQueue<SVC_T extends RpcSvcItf<SVC_T>> implements ReplyQueueItf<SVC_T>{
+public class AbstractReplyQueue<SVC_T extends RpcSvcItf<SVC_T>> implements ReplyQueueItf<SVC_T>{
 
     private final ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(1, new ThreadFactory() {
         private final AtomicInteger counter = new AtomicInteger();
 
         @Override
         public Thread newThread(Runnable r) {
-            Thread t = new Thread(r, "timeout thread #" + counter.incrementAndGet() + " for ReplyQueue " + ReplyQueue.this);
+            Thread t = new Thread(r, "timeout thread #" + counter.incrementAndGet() + " for ReplyQueue " + AbstractReplyQueue.this);
             t.setDaemon(true);
             return t;
         }

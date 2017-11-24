@@ -22,7 +22,7 @@ package org.dcache.xdr;
 import java.net.InetSocketAddress;
 import java.nio.channels.CompletionHandler;
 
-import org.dcache.xdr.model.root.ReplyQueue;
+import org.dcache.xdr.model.root.AbstractReplyQueue;
 
 /**
  *
@@ -43,7 +43,7 @@ public interface XdrTransport {
      */
     <A> void send(Xdr xdr, A attachment,  CompletionHandler<Integer, ? super A> handler);
 
-    ReplyQueue getReplyQueue();
+    AbstractReplyQueue getReplyQueue();
 
     /**
      * Returns is this transport is open and ready.

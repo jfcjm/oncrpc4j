@@ -33,6 +33,7 @@ import org.dcache.xdr.RpcMessage;
 import org.dcache.xdr.RpcMessageType;
 import org.dcache.xdr.Xdr;
 import org.dcache.xdr.model.impl.AbstractGrizzlyXdrTransport;
+import org.dcache.xdr.model.itf.ProtocolFactoryItf;
 import org.dcache.xdr.model.itf.RpcReplyItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
@@ -40,13 +41,15 @@ import org.glassfish.grizzly.filterchain.BaseFilter;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.filterchain.NextAction;
 
-public class RpcProtocolFilter<SVC_T extends RpcSvcItf<SVC_T>> extends BaseFilter {
+public class AbstractRpcProtocolFilter<SVC_T extends RpcSvcItf<SVC_T>> extends BaseFilter {
 
-    private final static Logger _log = LoggerFactory.getLogger(RpcProtocolFilter.class);
-    private final ReplyQueue<SVC_T> _replyQueue;
+    private final static Logger _log = LoggerFactory.getLogger(AbstractRpcProtocolFilter.class);
+    private final AbstractReplyQueue<SVC_T> _replyQueue;
+    private ProtocolFactoryItf<SVC_T> _protoFactory;
 
-    public RpcProtocolFilter(ReplyQueue<SVC_T> replyQueue) {
+    public AbstractRpcProtocolFilter(AbstractReplyQueue<SVC_T> replyQueue, ProtocolFactoryItf<SVC_T> protoFactory) {
         _replyQueue = replyQueue;
+        _protoFactory = protoFactory;
     }
 
     @Override
@@ -66,11 +69,11 @@ public class RpcProtocolFilter<SVC_T extends RpcSvcItf<SVC_T>> extends BaseFilte
          * We have to get peer address from the request context, which will contain SocketAddress where from
          * request was coming.
          */
-        XdrTransportItf<SVC_T> transport = new AbstractGrizzlyXdrTransport<>(ctx.getConnection(), (InetSocketAddress)ctx.getAddress(), _replyQueue);
+        XdrTransportItf<SVC_T> transport = new AbstractGrizzlyXdrTransport<>(ctx.getConnection(), (InetSocketAddress)ctx.getAddress(), _replyQueue, _protoFactory);
 
         switch (message.type()) {
             case RpcMessageType.CALL:
-                RpcCall<SVC_T> call = new RpcCall<SVC_T>(message.xid(), xdr, transport);
+                AbstractRpcCall<SVC_T> call = new AbstractRpcCall<SVC_T>(message.xid(), xdr, transport);
                 try {
                     call.accept();
                     ctx.setMessage(call);
@@ -86,7 +89,7 @@ public class RpcProtocolFilter<SVC_T extends RpcSvcItf<SVC_T>> extends BaseFilte
                 return ctx.getInvokeAction();
             case RpcMessageType.REPLY:
                 try {
-                    RpcReplyItf<SVC_T> reply = new RpcReply<SVC_T>(message.xid(), xdr, transport);
+                    RpcReplyItf<SVC_T> reply = new AbstractRpcReply<SVC_T>(message.xid(), xdr, transport);
                     CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback = _replyQueue.get(message.xid());
                     if (callback != null) {
                         if (!reply.isAccepted()) {

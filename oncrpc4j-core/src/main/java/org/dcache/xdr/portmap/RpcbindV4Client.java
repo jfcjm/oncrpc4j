@@ -26,7 +26,7 @@ import org.dcache.xdr.XdrBoolean;
 import org.dcache.xdr.XdrString;
 import org.dcache.xdr.XdrVoid;
 import org.dcache.xdr.model.itf.RpcSvcItf;
-import org.dcache.xdr.model.root.RpcCall;
+import org.dcache.xdr.model.root.AbstractRpcCall;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,9 +41,9 @@ public class RpcbindV4Client<SVC_T extends RpcSvcItf<SVC_T>> implements OncPortm
     private final static Logger _log = LoggerFactory.getLogger(RpcbindV4Client.class);
 
     private final RpcAuth _auth = new RpcAuthTypeNone();
-    private final RpcCall<SVC_T>_call;
+    private final AbstractRpcCall<SVC_T>_call;
 
-    public RpcbindV4Client(RpcCall<SVC_T> call) {
+    public RpcbindV4Client(AbstractRpcCall<SVC_T> call) {
         _call = call;
     }
 

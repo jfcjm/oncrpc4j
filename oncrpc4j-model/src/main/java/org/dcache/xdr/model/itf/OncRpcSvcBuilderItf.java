@@ -36,6 +36,8 @@ public interface OncRpcSvcBuilderItf<SVC_T extends RpcSvcItf<SVC_T>> {
 
     OncRpcSvcBuilderItf<SVC_T> withRpcService(OncRpcProgram program, RpcDispatchableItf<SVC_T> service);
 
+    OncRpcSvcBuilderItf<SVC_T> withRpcSessionManager(RpcSessionManagerItf<SVC_T> sessionManager);
+    
     OncRpcSvcBuilderItf<SVC_T> withSubjectPropagation();
 
     OncRpcSvcBuilderItf<SVC_T> withoutSubjectPropagation();

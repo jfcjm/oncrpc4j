@@ -22,12 +22,12 @@ package org.dcache.xdr;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import org.dcache.xdr.model.root.RpcCall;
+import org.dcache.xdr.model.root.AbstractRpcCall;
 
 public class RpcCallTest {
 
     private Xdr _xdr = new XdrBuffer(1024);
-    private RpcCall _call = new RpcCall(0, _xdr, null);
+    private AbstractRpcCall _call = new AbstractRpcCall(0, _xdr, null);
 
     @Test(expected=RpcMismatchReply.class)
     public void testBadRpcVerion() throws Exception {

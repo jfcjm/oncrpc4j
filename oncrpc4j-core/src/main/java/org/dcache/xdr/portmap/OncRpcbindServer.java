@@ -36,9 +36,9 @@ import org.dcache.xdr.XdrVoid;
 import org.dcache.xdr.model.itf.RpcCallItf;
 import org.dcache.xdr.model.itf.RpcDispatchableItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
-import org.dcache.xdr.model.root.OncRpcSvc;
-import org.dcache.xdr.model.root.OncRpcSvcBuilder;
-import org.dcache.xdr.model.root.RpcCall;
+import org.dcache.xdr.model.root.AbstractOncRpcSvc;
+import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
+import org.dcache.xdr.model.root.AbstractRpcCall;
 
 
 public class OncRpcbindServer<SVC_T extends RpcSvcItf<SVC_T>> implements RpcDispatchableItf<SVC_T> {
@@ -185,7 +185,7 @@ public class OncRpcbindServer<SVC_T extends RpcSvcItf<SVC_T>> implements RpcDisp
     //JMK
     private  RpcSvcItf<SVC_T> createServer(int port) {
 
-        RpcSvcItf<SVC_T> server  =  new OncRpcSvcBuilder<SVC_T>()
+        RpcSvcItf<SVC_T> server  =  new AbstractOncRpcSvcBuilder<SVC_T>()
                 .withPort(port)
                 .withTCP()
                 .withUDP()

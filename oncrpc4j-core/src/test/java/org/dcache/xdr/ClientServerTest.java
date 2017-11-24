@@ -7,8 +7,8 @@ import java.nio.channels.CompletionHandler;
 import org.dcache.xdr.model.itf.RpcDispatchableItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
-import org.dcache.xdr.model.root.OncRpcSvcBuilder;
-import org.dcache.xdr.model.root.RpcCall;
+import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
+import org.dcache.xdr.model.root.AbstractRpcCall;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,7 +29,7 @@ public class ClientServerTest {
 
     private RpcSvcItf<?> svc;
     private RpcSvcItf<?>  clnt;
-    private RpcCall<?> clntCall;
+    private AbstractRpcCall<?> clntCall;
 
     @Before
     public void setUp() throws IOException {
@@ -44,7 +44,7 @@ public class ClientServerTest {
                     break;
                 }
                 case UPPER: {
-                    RpcCall<?> cb = new RpcCall<>(PROGNUM, PROGVER, new RpcAuthTypeNone(), call.getTransport());
+                    AbstractRpcCall<?> cb = new AbstractRpcCall<>(PROGNUM, PROGVER, new RpcAuthTypeNone(), call.getTransport());
                     XdrString s = new XdrString();
                     call.retrieveCall(s);
                     cb.call(ECHO, s, s);
@@ -64,7 +64,7 @@ public class ClientServerTest {
             call.reply(u);
         };
 
-        svc = new OncRpcSvcBuilder<>()
+        svc = new AbstractOncRpcSvcBuilder<>()
                 .withoutAutoPublish()
                 .withTCP()
                 .withWorkerThreadIoStrategy()
@@ -73,7 +73,7 @@ public class ClientServerTest {
                 .build();
         svc.start();
 
-        clnt = new OncRpcSvcBuilder<>()
+        clnt = new AbstractOncRpcSvcBuilder<>()
                 .withoutAutoPublish()
                 .withTCP()
                 .withClientMode()
@@ -82,7 +82,7 @@ public class ClientServerTest {
                 .build();
         clnt.start();
         XdrTransportItf<?> t = clnt.connect(svc.getInetSocketAddress(IpProtocolType.TCP));
-        clntCall = new RpcCall<>(PROGNUM, PROGVER, new RpcAuthTypeNone(), t);
+        clntCall = new AbstractRpcCall<>(PROGNUM, PROGVER, new RpcAuthTypeNone(), t);
     }
 
     @After
@@ -138,7 +138,7 @@ public class ClientServerTest {
     @Test
     public void shouldTriggerClientCallbackEvenIfOtherClientDisconnected() throws IOException {
 
-         RpcSvcItf<?> clnt = new OncRpcSvcBuilder<>()
+         RpcSvcItf<?> clnt = new AbstractOncRpcSvcBuilder<>()
                 .withTCP()
                 .withClientMode()
                 .withWorkerThreadIoStrategy()

@@ -32,7 +32,7 @@ import org.dcache.xdr.RpcAuthType;
 import org.dcache.xdr.RpcAuthVerifier;
 import org.dcache.xdr.RpcException;
 import org.dcache.xdr.RpcRejectStatus;
-import org.dcache.xdr.model.root.RpcCall;
+import org.dcache.xdr.model.root.AbstractRpcCall;
 import org.glassfish.grizzly.Buffer;
 import org.glassfish.grizzly.filterchain.BaseFilter;
 import org.glassfish.grizzly.filterchain.Filter;
@@ -80,7 +80,7 @@ public class GssProtocolFilter extends BaseFilter {
     @Override
     public NextAction handleRead(FilterChainContext ctx) throws IOException {
 
-        RpcCall call = ctx.getMessage();
+        AbstractRpcCall call = ctx.getMessage();
 
         if (call.getCredential().type() != RpcAuthType.RPCGSS_SEC) {
             return ctx.getInvokeAction();

@@ -25,7 +25,7 @@ import org.dcache.xdr.XdrBoolean;
 import org.dcache.xdr.XdrInt;
 import org.dcache.xdr.XdrVoid;
 import org.dcache.xdr.netid;
-import org.dcache.xdr.model.root.RpcCall;
+import org.dcache.xdr.model.root.AbstractRpcCall;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,9 +39,9 @@ import java.util.concurrent.TimeoutException;
 public class PortmapV2Client implements OncPortmapClient {
 
     private final static Logger _log = LoggerFactory.getLogger(PortmapV2Client.class);
-    private final RpcCall _call;
+    private final AbstractRpcCall _call;
 
-    public PortmapV2Client(RpcCall call) {
+    public PortmapV2Client(AbstractRpcCall call) {
         _call = call;
     }
 

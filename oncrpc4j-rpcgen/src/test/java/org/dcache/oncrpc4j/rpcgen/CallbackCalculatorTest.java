@@ -2,7 +2,7 @@ package org.dcache.oncrpc4j.rpcgen;
 
 import org.dcache.xdr.XdrLong;
 import org.dcache.xdr.XdrTransport;
-import org.dcache.xdr.model.root.RpcReply;
+import org.dcache.xdr.model.root.AbstractRpcReply;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -21,9 +21,9 @@ public class CallbackCalculatorTest extends AbstractCalculatorTest {
         final AtomicReference<CalculationResult> resultRef = new AtomicReference<>();
         final CountDownLatch latch = new CountDownLatch(1);
         long callTime = System.currentTimeMillis();
-        client.add_1_callback(1, 2, new CompletionHandler<RpcReply, XdrTransport>() {
+        client.add_1_callback(1, 2, new CompletionHandler<AbstractRpcReply, XdrTransport>() {
             @Override
-            public void completed(RpcReply result, XdrTransport attachment) {
+            public void completed(AbstractRpcReply result, XdrTransport attachment) {
                 callbackTimeRef.set(System.currentTimeMillis());
                 CalculationResult calculationResult = new CalculationResult();
                 try {
@@ -63,9 +63,9 @@ public class CallbackCalculatorTest extends AbstractCalculatorTest {
         final AtomicReference<XdrLong> resultRef = new AtomicReference<>();
         final CountDownLatch latch = new CountDownLatch(1);
         long callTime = System.currentTimeMillis();
-        client.addSimple_1_callback(1, 2, new CompletionHandler<RpcReply, XdrTransport>() {
+        client.addSimple_1_callback(1, 2, new CompletionHandler<AbstractRpcReply, XdrTransport>() {
             @Override
-            public void completed(RpcReply result, XdrTransport attachment) {
+            public void completed(AbstractRpcReply result, XdrTransport attachment) {
                 callbackTimeRef.set(System.currentTimeMillis());
                 XdrLong calculationResult = new XdrLong();
                 try {
@@ -102,9 +102,9 @@ public class CallbackCalculatorTest extends AbstractCalculatorTest {
     public void testCallbackAddTimeout() throws Exception {
         final AtomicReference<String> failureMsgRef = new AtomicReference<>();
         final CountDownLatch latch = new CountDownLatch(1);
-        client.addSimple_1_callback(1, 2, new CompletionHandler<RpcReply, XdrTransport>() {
+        client.addSimple_1_callback(1, 2, new CompletionHandler<AbstractRpcReply, XdrTransport>() {
             @Override
-            public void completed(RpcReply result, XdrTransport attachment) {
+            public void completed(AbstractRpcReply result, XdrTransport attachment) {
                 failureMsgRef.set("call should have timed out");
                 latch.countDown();
             }

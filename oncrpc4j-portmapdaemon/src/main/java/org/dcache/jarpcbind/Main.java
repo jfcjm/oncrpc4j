@@ -25,8 +25,8 @@ import org.dcache.xdr.OncRpcProgram;
 import org.dcache.xdr.RpcDispatchable;
 import org.dcache.xdr.model.itf.RpcDispatchableItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
-import org.dcache.xdr.model.root.OncRpcSvc;
-import org.dcache.xdr.model.root.OncRpcSvcBuilder;
+import org.dcache.xdr.model.root.AbstractOncRpcSvc;
+import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
 import org.dcache.xdr.portmap.OncRpcPortmap;
 import org.dcache.xdr.portmap.OncRpcbindServer;
 import org.slf4j.Logger;
@@ -80,7 +80,7 @@ public class Main <SVC_T extends RpcSvcItf<SVC_T>>{
 
     private  RpcSvcItf<?> createServer() throws IOException {
         RpcDispatchableItf<SVC_T> rpcbind = new OncRpcbindServer<>();
-        RpcSvcItf<SVC_T> server  =  new OncRpcSvcBuilder<SVC_T>()
+        RpcSvcItf<SVC_T> server  =  new AbstractOncRpcSvcBuilder<SVC_T>()
                 .withPort(OncRpcPortmap.PORTMAP_PORT)
                 .withTCP()
                 .withUDP()

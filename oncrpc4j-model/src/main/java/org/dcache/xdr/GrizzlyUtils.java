@@ -50,7 +50,7 @@ public class GrizzlyUtils {
     final static int CPUS = Runtime.getRuntime().availableProcessors();
 
     private GrizzlyUtils(){}
-    /*
+   
     public static Filter rpcMessageReceiverFor(Transport t) {
         if (t instanceof TCPNIOTransport) {
             return new RpcMessageParserTCP();
@@ -62,7 +62,7 @@ public class GrizzlyUtils {
 
         throw new RuntimeException("Unsupported transport: " + t.getClass().getName());
     }
-    */
+    
     public static Class< ? extends Transport> transportFor(int protocol) {
         switch(protocol) {
             case IpProtocolType.TCP:
