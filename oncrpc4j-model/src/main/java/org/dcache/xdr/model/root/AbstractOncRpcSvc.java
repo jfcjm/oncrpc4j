@@ -222,7 +222,6 @@ public class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implements  RpcSv
             FilterChainBuilder filterChain = FilterChainBuilder.stateless();
             filterChain.add(new TransportFilter());
             filterChain.add(rpcMessageReceiverFor(t));
-            org.junit.Assert.assertNotNull(_protocolFactory);;
             filterChain.add(new AbstractRpcProtocolFilter<>(_replyQueue,_protocolFactory));
             // use GSS if configures
             filterChain.add(_rpcSessionManager);
