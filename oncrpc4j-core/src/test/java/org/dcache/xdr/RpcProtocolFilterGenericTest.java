@@ -20,6 +20,10 @@
 package org.dcache.xdr;
 
 import java.io.IOException;
+
+import org.dcache.xdr.model.root.AbstractReplyQueue;
+import org.dcache.xdr.model.root.AbstractRpcProtocolFactory;
+import org.dcache.xdr.model.root.AbstractRpcProtocolFilter;
 import org.glassfish.grizzly.Connection;
 import org.glassfish.grizzly.filterchain.Filter;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
@@ -41,7 +45,7 @@ public class RpcProtocolFilterTest {
 
     @Before
     public void setUp() {
-        filter = new RpcProtocolFilter( new ReplyQueue());
+        filter = new AbstractRpcProtocolFilter( new AbstractReplyQueue(),new AbstractRpcProtocolFactory());
         mockedContext = FilterChainContext.create(mock(Connection.class));
     }
 
@@ -54,8 +58,13 @@ public class RpcProtocolFilterTest {
     private Xdr createBadXdr() {
         Xdr xdr = new Xdr(32);
         xdr.beginEncoding();
+        /*
         RpcMessage rpcMessage = new RpcMessage(1, 2); // xdr, type 0 = call, 1 = reply, 2 = not allowed
+        
         rpcMessage.xdrEncode(xdr);
+        */
+        xdr.xdrEncodeInt(1);;
+        xdr.xdrEncodeInt(2);;
         return xdr;
     }
 }

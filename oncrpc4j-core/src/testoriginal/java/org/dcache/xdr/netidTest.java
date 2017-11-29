@@ -19,40 +19,30 @@
  */
 package org.dcache.xdr;
 
+import java.net.InetSocketAddress;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-public class RpcCallTest {
+public class netidTest {
 
-    private Xdr _xdr = new XdrBuffer(1024);
-    private RpcCall _call = new RpcCall(0, _xdr, null);
-
-    @Test(expected=RpcMismatchReply.class)
-    public void testBadRpcVerion() throws Exception {
-        _xdr.beginEncoding();
-
-        _xdr.xdrEncodeInt(3); // rpc version
-        _xdr.endEncoding();
-
-        _xdr.beginDecoding();
-        _call.accept();
-
+    @Test
+    public void testToInetSocketAddress() throws Exception {
+        InetSocketAddress expResult = new InetSocketAddress("127.0.0.2", 2052);
+        InetSocketAddress result = netid.toInetSocketAddress("127.0.0.2.8.4");
+        assertEquals("address decodeing missmatch", expResult, result);
     }
 
-    @Test(expected=RpcAuthException.class)
-    public void testBadAuthType() throws Exception {
-        _xdr.beginEncoding();
+    @Test
+    public void testToInetSocketAddressIPv6() throws Exception {
+        InetSocketAddress expResult = new InetSocketAddress("0:0:0:0:0:0:0:0", 2052);
+        InetSocketAddress result = netid.toInetSocketAddress("0:0:0:0:0:0:0:0.8.4");
+        assertEquals("address decodeing missmatch", expResult, result);
+    }
 
-        _xdr.xdrEncodeInt(2); // rpc version
-        _xdr.xdrEncodeInt(127); // prog
-        _xdr.xdrEncodeInt(1); // vers
-        _xdr.xdrEncodeInt(0); // proc
-
-        _xdr.xdrEncodeInt(100);
-        _xdr.endEncoding();
-
-        _xdr.beginDecoding();
-        _call.accept();
+    @Test
+    public void testGetPort() {
+        int port = netid.getPort("127.0.0.2.8.4");
+        assertEquals("port decodeing does not match", 2052, port);
     }
 
 }

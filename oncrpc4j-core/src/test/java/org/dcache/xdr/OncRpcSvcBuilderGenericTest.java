@@ -21,6 +21,9 @@ package org.dcache.xdr;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import org.dcache.xdr.model.root.AbstractOncRpcSvc;
+import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
 import org.junit.Test;
 
 import static org.mockito.Mockito.mock;
@@ -34,7 +37,7 @@ public class OncRpcSvcBuilderTest {
     @Test
     public void shouldReturnSameThreadExecutorForSameThreadStrategy() {
 
-        OncRpcSvcBuilder builder = new OncRpcSvcBuilder();
+        AbstractOncRpcSvcBuilder<?> builder = new AbstractOncRpcSvcBuilder<>();
 
         ExecutorService executorService = builder.getWorkerThreadExecutorService();
         final Object[] holder = new Object[1];
@@ -49,7 +52,7 @@ public class OncRpcSvcBuilderTest {
     @Test
     public void shouldReturnDifferentExecutorForWorkerThreadStrategy() {
 
-        OncRpcSvcBuilder builder = new OncRpcSvcBuilder()
+        AbstractOncRpcSvcBuilder<?>  builder = new AbstractOncRpcSvcBuilder<>()
                 .withWorkerThreadIoStrategy();
 
         ExecutorService executorService = builder.getWorkerThreadExecutorService();
@@ -66,7 +69,7 @@ public class OncRpcSvcBuilderTest {
     public void shouldReturnGivenExecutorForWorkerThreadStrategy() {
 
         ExecutorService mockedExecutorService = mock(ExecutorService.class);
-        OncRpcSvcBuilder builder = new OncRpcSvcBuilder()
+        AbstractOncRpcSvcBuilder<?> builder = new AbstractOncRpcSvcBuilder<>()
                 .withWorkerThreadIoStrategy()
                 .withWorkerThreadExecutionService(mockedExecutorService);
 
@@ -77,7 +80,7 @@ public class OncRpcSvcBuilderTest {
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionOnInvalidProtocol() {
 
-        OncRpcSvc svc = new OncRpcSvcBuilder()
+        AbstractOncRpcSvc<?> svc = (AbstractOncRpcSvc<?>) new AbstractOncRpcSvcBuilder<>()
                 .withIpProtocolType(1)
                 .build();
     }
@@ -85,7 +88,7 @@ public class OncRpcSvcBuilderTest {
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionIfClientUsesTwoProtocols() {
 
-        OncRpcSvc svc = new OncRpcSvcBuilder()
+        AbstractOncRpcSvc<?> svc = (AbstractOncRpcSvc<?>) new AbstractOncRpcSvcBuilder<>()
                 .withClientMode()
                 .withTCP()
                 .withUDP()
@@ -95,7 +98,7 @@ public class OncRpcSvcBuilderTest {
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionDefinedWorkerThreadPoolWithExtern() {
 
-        OncRpcSvc svc = new OncRpcSvcBuilder()
+        AbstractOncRpcSvc<?> svc = (AbstractOncRpcSvc<?>)new AbstractOncRpcSvcBuilder<>()
                 .withTCP()
                 .withUDP()
                 .withWorkerThreadExecutionService(Executors.newCachedThreadPool())

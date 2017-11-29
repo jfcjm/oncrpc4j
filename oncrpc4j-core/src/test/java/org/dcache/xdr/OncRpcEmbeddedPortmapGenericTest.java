@@ -4,6 +4,10 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.concurrent.TimeoutException;
+
+import org.dcache.xdr.model.itf.RpcSvcItf;
+import org.dcache.xdr.model.root.AbstractOncRpcClient;
+import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
 import org.dcache.xdr.portmap.GenericPortmapClient;
 import org.dcache.xdr.portmap.OncPortmapClient;
 import org.dcache.xdr.portmap.OncRpcEmbeddedPortmap;
@@ -26,7 +30,7 @@ public class OncRpcEmbeddedPortmapTest {
 		portmap = new OncRpcEmbeddedPortmap();
 		assumeTrue(portmap.isEmbeddedPortmapper()); // skip test if not embedded portmapper
 
-		OncRpcSvc svc = new OncRpcSvcBuilder()
+		 RpcSvcItf<?> svc = new AbstractOncRpcSvcBuilder<>()
 			.withTCP()
 			.withAutoPublish()
 			.withSameThreadIoStrategy()
@@ -34,8 +38,8 @@ public class OncRpcEmbeddedPortmapTest {
 			.build();
 		svc.start();
 		// Open portmap and check nedtid content with dump
-		try ( OncRpcClient rpcClient = new OncRpcClient(InetAddress.getLocalHost(), IpProtocolType.UDP,111) ) {
-			OncPortmapClient portmapClient = new GenericPortmapClient(rpcClient.connect()); // init portmapper (only v2 atm)
+		try ( AbstractOncRpcClient<?> rpcClient = new AbstractOncRpcClient<>(InetAddress.getLocalHost(), IpProtocolType.UDP,111) ) {
+			OncPortmapClient<?> portmapClient = new GenericPortmapClient<>(rpcClient.connect()); // init portmapper (only v2 atm)
 			portmapClient.ping();
 			for ( rpcb current : portmapClient.dump() ) {
 				assertTrue("NedId value incorrect: "+current.getNetid(), Arrays.asList(NETID_NAMES).contains(current.getNetid()) );
