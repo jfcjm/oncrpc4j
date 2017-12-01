@@ -13,5 +13,5 @@ public interface ProtocolFactoryItf<SVC_T extends RpcSvcItf<SVC_T>> {
     
     void doPreStartAction(RpcSvcItf<SVC_T> rpcSvcItf) throws IOException;
 
-    void processBuilder(OncRpcSvcBuilderItf<SVC_T> builder);
+	void processBuilder(OncRpcSvcBuilderItf<SVC_T, ?> builder);
 }

@@ -5,42 +5,42 @@ import java.util.concurrent.ExecutorService;
 import org.dcache.xdr.IoStrategy;
 import org.dcache.xdr.OncRpcProgram;
 
-public interface OncRpcSvcBuilderItf<SVC_T extends RpcSvcItf<SVC_T>> {
-    OncRpcSvcBuilderItf<SVC_T> withMaxPort(int maxPort);
+public interface OncRpcSvcBuilderItf<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T extends OncRpcSvcBuilderItf<SVC_T,BUILDER_T>> {
+    OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withMaxPort(int maxPort);
 
-    OncRpcSvcBuilderItf<SVC_T> withMinPort(int minPort);
+    OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withMinPort(int minPort);
 
-    OncRpcSvcBuilderItf<SVC_T> withPort(int port);
+    OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withPort(int port);
 
-    OncRpcSvcBuilderItf<SVC_T> withSameThreadIoStrategy();
+    OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withSameThreadIoStrategy();
 
-    OncRpcSvcBuilderItf<SVC_T> withSelectorThreadPoolSize(int threadPoolSize);
+    OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withSelectorThreadPoolSize(int threadPoolSize);
 
-    <T extends OncRpcSvcBuilderItf<SVC_T>> T  withWorkerThreadIoStrategy();
+    <T extends OncRpcSvcBuilderItf<SVC_T,BUILDER_T>> T  withWorkerThreadIoStrategy();
 
-    OncRpcSvcBuilderItf<SVC_T> withWorkerThreadPoolSize(int threadPoolSize);
+    OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withWorkerThreadPoolSize(int threadPoolSize);
 
-    OncRpcSvcBuilderItf<SVC_T> withIoStrategy(IoStrategy ioStrategy);
+    OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withIoStrategy(IoStrategy ioStrategy);
 
-    OncRpcSvcBuilderItf<SVC_T> withJMX();
+    OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withJMX();
 
-    OncRpcSvcBuilderItf<SVC_T> withBacklog(int backlog);
+    OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withBacklog(int backlog);
 
-    OncRpcSvcBuilderItf<SVC_T> withBindAddress(String address);
+    OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withBindAddress(String address);
 
-    OncRpcSvcBuilderItf<SVC_T> withServiceName(String serviceName);
+    OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withServiceName(String serviceName);
 
-    <T extends OncRpcSvcBuilderItf<SVC_T>> T withWorkerThreadExecutionService(ExecutorService executorService);
+    <T extends OncRpcSvcBuilderItf<SVC_T,BUILDER_T>> T withWorkerThreadExecutionService(ExecutorService executorService);
 
-    <T extends OncRpcSvcBuilderItf<SVC_T>> T withClientMode();
+    <T extends OncRpcSvcBuilderItf<SVC_T,BUILDER_T>> T withClientMode();
 
-    OncRpcSvcBuilderItf<SVC_T> withRpcService(OncRpcProgram program, RpcDispatchableItf<SVC_T> service);
+    OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withRpcService(OncRpcProgram program, RpcDispatchableItf<SVC_T> service);
 
-    OncRpcSvcBuilderItf<SVC_T> withRpcSessionManager(RpcSessionManagerItf<SVC_T> sessionManager);
+    OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withRpcSessionManager(RpcSessionManagerItf<SVC_T> sessionManager);
     
-    OncRpcSvcBuilderItf<SVC_T> withSubjectPropagation();
+    OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withSubjectPropagation();
 
-    OncRpcSvcBuilderItf<SVC_T> withoutSubjectPropagation();
+    OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withoutSubjectPropagation();
 
     boolean getSubjectPropagation();
 

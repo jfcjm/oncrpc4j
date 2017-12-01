@@ -52,7 +52,7 @@ public class AbstractRpcProtocolFactory<SVC_T extends RpcSvcItf<SVC_T>> implemen
         return new AbstractRpcMessage(xdr);
     }
     @Override
-    public void processBuilder(OncRpcSvcBuilderItf<SVC_T> builder) {
+    public void processBuilder(OncRpcSvcBuilderItf<SVC_T,?> builder) {
     }
     @Override
     public void preStopActions(RpcSvcItf<SVC_T> rpcSvcItf) throws IOException {}

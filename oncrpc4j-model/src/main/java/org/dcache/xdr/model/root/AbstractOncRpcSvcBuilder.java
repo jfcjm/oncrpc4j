@@ -64,7 +64,7 @@ import static org.dcache.xdr.IpProtocolType.*;
  * </pre>
  * @since 2.0
  */
-public class AbstractOncRpcSvcBuilder <SVC_T extends RpcSvcItf<SVC_T>> implements OncRpcSvcBuilderItf<SVC_T>{
+public abstract class AbstractOncRpcSvcBuilder <SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T extends OncRpcSvcBuilderItf<SVC_T,BUILDER_T>> implements OncRpcSvcBuilderItf<SVC_T,BUILDER_T>{
 
     private int _protocol = 0;
     private int _minPort = 0;
@@ -93,125 +93,125 @@ public class AbstractOncRpcSvcBuilder <SVC_T extends RpcSvcItf<SVC_T>> implement
         _protocolFactory.processBuilder(this);
     }
 
-    public AbstractOncRpcSvcBuilder<SVC_T> withAutoPublish() {
+    public BUILDER_T withAutoPublish() {
         _autoPublish = true;
-        return this;
+        return getThis();
     }
 
-    public AbstractOncRpcSvcBuilder<SVC_T> withoutAutoPublish() {
+	public OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withoutAutoPublish() {
         _autoPublish = false;
         return this;
     }
 
-    public AbstractOncRpcSvcBuilder<SVC_T> withMaxPort(int maxPort) {
+    public OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withMaxPort(int maxPort) {
         checkArgument(maxPort >= 0, "Illegal max port value");
         _maxPort = maxPort;
         _minPort = Math.min(_minPort, _maxPort);
         return this;
     }
 
-    public AbstractOncRpcSvcBuilder<SVC_T> withMinPort(int minPort) {
+    public OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withMinPort(int minPort) {
         checkArgument(minPort >= 0, "Illegal min port value");
         _minPort = minPort;
         _maxPort = Math.max(_minPort, _maxPort);
         return this;
     }
 
-    public AbstractOncRpcSvcBuilder<SVC_T> withPort(int port) {
+    public OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withPort(int port) {
         checkArgument(port >= 0, "Illegal port value");
         _minPort = _maxPort = port;
         return this;
     }
 
-    public AbstractOncRpcSvcBuilder<SVC_T> withTCP() {
+    public OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withTCP() {
         _protocol |= TCP;
         return this;
     }
 
-    public AbstractOncRpcSvcBuilder<SVC_T> withUDP() {
+    public OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withUDP() {
         _protocol |= UDP;
         return this;
     }
 
-    public AbstractOncRpcSvcBuilder<SVC_T> withIpProtocolType(int protocolType) {
+    public OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withIpProtocolType(int protocolType) {
         _protocol = protocolType;
         return this;
     }
 
-    public AbstractOncRpcSvcBuilder<SVC_T> withSameThreadIoStrategy() {
+    public OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withSameThreadIoStrategy() {
         _ioStrategy = IoStrategy.SAME_THREAD;
         return this;
     }
 
-    public AbstractOncRpcSvcBuilder<SVC_T> withSelectorThreadPoolSize(int threadPoolSize) {
+    public OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withSelectorThreadPoolSize(int threadPoolSize) {
         checkArgument(threadPoolSize > 0, "thread pool size must be positive");
         _selectorThreadPoolSize = threadPoolSize;
         return this;
     }
 
-    public AbstractOncRpcSvcBuilder<SVC_T> withWorkerThreadIoStrategy() {
+    public OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withWorkerThreadIoStrategy() {
         _ioStrategy = IoStrategy.WORKER_THREAD;
         return this;
     }
 
-    public AbstractOncRpcSvcBuilder<SVC_T> withWorkerThreadPoolSize(int threadPoolSize) {
+    public OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withWorkerThreadPoolSize(int threadPoolSize) {
         checkArgument(threadPoolSize > 0, "thread pool size must be positive");
         _workerThreadPoolSize = threadPoolSize;
         return this;
     }
 
-    public AbstractOncRpcSvcBuilder<SVC_T> withIoStrategy(IoStrategy ioStrategy) {
+    public OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withIoStrategy(IoStrategy ioStrategy) {
         _ioStrategy = ioStrategy;
         return this;
     }
 
-    public AbstractOncRpcSvcBuilder<SVC_T> withJMX() {
+    public OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withJMX() {
         _withJMX = true;
         return this;
     }
 
-    public AbstractOncRpcSvcBuilder<SVC_T> withBacklog(int backlog) {
+    public OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withBacklog(int backlog) {
         _backlog = backlog;
         return this;
     }
 
-    public AbstractOncRpcSvcBuilder<SVC_T> withBindAddress(String address) {
+    public OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withBindAddress(String address) {
         _bindAddress = address;
         return this;
     }
 
-    public AbstractOncRpcSvcBuilder<SVC_T> withServiceName(String serviceName) {
+    public OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withServiceName(String serviceName) {
         _serviceName = serviceName;
         return this;
     }
     
     @Override
-    public AbstractOncRpcSvcBuilder<SVC_T>withRpcSessionManager(RpcSessionManagerItf<SVC_T> rpcSessionManager) {
+    public OncRpcSvcBuilderItf<SVC_T,BUILDER_T>withRpcSessionManager(RpcSessionManagerItf<SVC_T> rpcSessionManager) {
         _rpcSessionManager = rpcSessionManager;
         return this;
     }
 
-    public AbstractOncRpcSvcBuilder<SVC_T> withWorkerThreadExecutionService(ExecutorService executorService) {
+    public OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withWorkerThreadExecutionService(ExecutorService executorService) {
         _workerThreadExecutionService = executorService;
         return this;
     }
 
-    public AbstractOncRpcSvcBuilder<SVC_T> withClientMode() {
+    public OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withClientMode() {
         _isClient = true;
         return this;
     }
 
-    public AbstractOncRpcSvcBuilder<SVC_T> withRpcService(OncRpcProgram program, RpcDispatchableItf<SVC_T> service) {
+    public OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withRpcService(OncRpcProgram program, RpcDispatchableItf<SVC_T> service) {
         _programs.put(program, service);
         return this;
     }
 
-    public AbstractOncRpcSvcBuilder<SVC_T> withSubjectPropagation() {
+    public OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withSubjectPropagation() {
         _subjectPropagation = true;
         return this;
     }
 
-    public AbstractOncRpcSvcBuilder<SVC_T> withoutSubjectPropagation() {
+    public OncRpcSvcBuilderItf<SVC_T,BUILDER_T> withoutSubjectPropagation() {
         _subjectPropagation = false;
         return this;
     }
@@ -313,4 +313,7 @@ public class AbstractOncRpcSvcBuilder <SVC_T extends RpcSvcItf<SVC_T>> implement
 
         return new AbstractOncRpcSvc<SVC_T>(this);
     }
+
+
+    abstract protected BUILDER_T getThis();
 }

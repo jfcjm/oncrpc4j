@@ -115,7 +115,7 @@ public class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implements  RpcSv
      * Create new RPC service with defined configuration.
      * @param builder to build this service
      */
-    protected AbstractOncRpcSvc(AbstractOncRpcSvcBuilder<SVC_T> builder) {
+    protected AbstractOncRpcSvc(AbstractOncRpcSvcBuilder<SVC_T,?> builder) {
         final int protocol = builder.getProtocol();
 
         if ((protocol & (IpProtocolType.TCP | IpProtocolType.UDP)) == 0) {

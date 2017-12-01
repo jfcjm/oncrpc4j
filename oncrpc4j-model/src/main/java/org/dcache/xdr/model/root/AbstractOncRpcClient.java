@@ -29,7 +29,7 @@ import org.dcache.xdr.model.itf.OncRpcClientItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
 
-public class AbstractOncRpcClient<SVC_T extends RpcSvcItf<SVC_T>> implements AutoCloseable, OncRpcClientItf<SVC_T> {
+public abstract class AbstractOncRpcClient<SVC_T extends RpcSvcItf<SVC_T>> implements AutoCloseable, OncRpcClientItf<SVC_T> {
 
     private static final String DEFAULT_SERVICE_NAME = null;
 
@@ -58,7 +58,7 @@ public class AbstractOncRpcClient<SVC_T extends RpcSvcItf<SVC_T>> implements Aut
     //JMK : type cast
     public AbstractOncRpcClient(InetSocketAddress socketAddress, int protocol, int localPort, IoStrategy ioStrategy, String serviceName) {
         _socketAddress = socketAddress;
-        _rpcsvc = (AbstractOncRpcSvc<SVC_T>) new AbstractOncRpcSvcBuilder<SVC_T>()
+        _rpcsvc = getRpcSvcBuilder()
                 .withClientMode()
                 .withPort(localPort)
                 .withIpProtocolType(protocol)
@@ -87,4 +87,5 @@ public class AbstractOncRpcClient<SVC_T extends RpcSvcItf<SVC_T>> implements Aut
     public void close() throws IOException {
         _rpcsvc.stop();
     }
+    abstract protected AbstractOncRpcSvcBuilder<SVC_T,?> getRpcSvcBuilder();
 }
