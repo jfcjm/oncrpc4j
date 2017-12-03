@@ -25,6 +25,7 @@ import org.dcache.xdr.IoStrategy;
 import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcProgram;
 import org.dcache.xdr.model.impl.AbstractGrizzlyXdrTransport;
+import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
 import org.dcache.xdr.model.itf.ProtocolFactoryItf;
 import org.dcache.xdr.model.itf.RpcDispatchableItf;
 import org.dcache.xdr.model.itf.RpcSessionManagerItf;
@@ -72,7 +73,7 @@ import java.util.stream.Collectors;
 import static org.dcache.xdr.GrizzlyUtils.getSelectorPoolCfg;
 import static org.dcache.xdr.GrizzlyUtils.transportFor;
 
-public class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implements  RpcSvcItf<SVC_T>{
+public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implements  RpcSvcItf<SVC_T>{
     
     private final static Logger _log = LoggerFactory.getLogger(AbstractOncRpcSvc.class);
     
@@ -115,7 +116,7 @@ public class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implements  RpcSv
      * Create new RPC service with defined configuration.
      * @param builder to build this service
      */
-    protected AbstractOncRpcSvc(AbstractOncRpcSvcBuilder<SVC_T,?> builder) {
+    protected <BUILDER_T extends OncRpcSvcBuilderItf<SVC_T,BUILDER_T>>  AbstractOncRpcSvc(BUILDER_T builder) {
         final int protocol = builder.getProtocol();
 
         if ((protocol & (IpProtocolType.TCP | IpProtocolType.UDP)) == 0) {
@@ -346,4 +347,6 @@ public class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implements  RpcSv
 		.map(Object::toString)
 		.collect(Collectors.joining(",", getName() +"-[", "]"));
     }
+
+    public abstract SVC_T getThis() ;
 }
