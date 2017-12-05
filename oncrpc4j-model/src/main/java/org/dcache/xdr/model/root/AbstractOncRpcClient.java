@@ -103,17 +103,13 @@ public abstract class AbstractOncRpcClient<SVC_T extends RpcSvcItf<SVC_T>,BUILDE
         _socketAddress = socketAddress;
         BUILDER_T builder ;
         if (null == params) {
-            System.out.println("=========builder: "+1);
             builder = getRpcSvcBuilder();
         } else {
-            System.out.println("=========builder: "+2);
             builder = getRpcSvcBuilder(params);
         }
-        System.out.println("=========builder: "+ builder);
         _rpcsvc = builder
                 .withClientMode()
                 .withPort(localPort)
-                //TODO JMK .withIpProtocolType(protocol)
                 .withIoStrategy(ioStrategy)
                 .withServiceName(serviceName)
                 .build(); 
