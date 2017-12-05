@@ -7,20 +7,21 @@ import java.io.IOException;
 import org.dcache.xdr.OncRpcAcceptedException;
 import org.dcache.xdr.XdrInt;
 import org.dcache.xdr.XdrVoid;
+import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
 import org.dcache.xdr.model.itf.RpcCallItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public abstract class runGenericEmbeddedServerTest<SVC_T extends RpcSvcItf<SVC_T>> {
+public abstract class runGenericEmbeddedServerTest<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T extends OncRpcSvcBuilderItf<SVC_T,BUILDER_T>> {
 
-    private EmbeddedGenericServerFactory<SVC_T> _factory;
+    private EmbeddedGenericServerFactory<SVC_T,BUILDER_T> _factory;
 
-    runGenericEmbeddedServerTest(EmbeddedGenericServerFactory<SVC_T> factory)  {
+    runGenericEmbeddedServerTest(EmbeddedGenericServerFactory<SVC_T,BUILDER_T> factory)  {
         _factory = factory;
     }
     
-    protected  EmbeddedGenericServer<SVC_T> createEmbeddedServer(int port) throws IOException {
+    protected  EmbeddedGenericServer<SVC_T,BUILDER_T> createEmbeddedServer(int port) throws IOException {
         return _factory.createEmbeddedServer(port);
     }
     /**
@@ -30,7 +31,7 @@ public abstract class runGenericEmbeddedServerTest<SVC_T extends RpcSvcItf<SVC_T
      */
     @Test(timeout=2000)
     public void testProc0() throws IOException {
-        try ( EmbeddedGenericServer<SVC_T> srv = createEmbeddedServer (0)){
+        try ( EmbeddedGenericServer<SVC_T,BUILDER_T> srv = createEmbeddedServer (0)){
             assertTrue("Server should listen on a port != 0",srv.getListeningPort()>0);
             System.out.println(srv.getListeningPort());
             RpcCallItf<SVC_T> caller = srv.getClientCall();
@@ -45,7 +46,7 @@ public abstract class runGenericEmbeddedServerTest<SVC_T extends RpcSvcItf<SVC_T
      */
     @Test(timeout=2000,expected=OncRpcAcceptedException.class)
     public void testProcUnavailable() throws IOException {
-        try (EmbeddedGenericServer<SVC_T>  srv = createEmbeddedServer (0)){
+        try (EmbeddedGenericServer<SVC_T,BUILDER_T>  srv = createEmbeddedServer (0)){
             assertTrue("Server should listen on a port != 0",srv.getListeningPort()>0);
             System.out.println(srv.getListeningPort());
             RpcCallItf<SVC_T> caller = srv.getClientCall();
@@ -63,7 +64,7 @@ public abstract class runGenericEmbeddedServerTest<SVC_T extends RpcSvcItf<SVC_T
      */
     @Test(timeout=2000,expected=OncRpcAcceptedException.class)
     public void testVersionUnavailable() throws IOException {
-        try (EmbeddedGenericServer<SVC_T>  srv = createEmbeddedServer (0)){
+        try (EmbeddedGenericServer<SVC_T,BUILDER_T>  srv = createEmbeddedServer (0)){
             assertTrue("Server should listen on a port != 0",srv.getListeningPort()>0);
             System.out.println(srv.getListeningPort());
             RpcCallItf<SVC_T> caller = srv.getBadVersionClientCall();
@@ -84,7 +85,7 @@ public abstract class runGenericEmbeddedServerTest<SVC_T extends RpcSvcItf<SVC_T
      */
     @Test(timeout=2000,expected=OncRpcAcceptedException.class)
     public void testProgUnavailable() throws IOException {
-        try (EmbeddedGenericServer<SVC_T>  srv = createEmbeddedServer (0)){
+        try (EmbeddedGenericServer<SVC_T,BUILDER_T>  srv = createEmbeddedServer (0)){
             assertTrue("Server should listen on a port != 0",srv.getListeningPort()>0);
             System.out.println(srv.getListeningPort());
             RpcCallItf<SVC_T> caller = srv.getBadProgClientCall();
@@ -104,7 +105,7 @@ public abstract class runGenericEmbeddedServerTest<SVC_T extends RpcSvcItf<SVC_T
     @Ignore
     @Test(timeout=2000,expected=OncRpcAcceptedException.class)
     public void testUnexpectedError() throws IOException {
-        try ( EmbeddedGenericServer<SVC_T> srv = createEmbeddedServer (0)){
+        try ( EmbeddedGenericServer<SVC_T,BUILDER_T> srv = createEmbeddedServer (0)){
             assertTrue("Server should listen on a port != 0",srv.getListeningPort()>0);
             System.out.println(srv.getListeningPort());
             RpcCallItf<SVC_T> caller = srv.getClientCall();

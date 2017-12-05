@@ -20,7 +20,7 @@ import org.dcache.xdr.model.itf.RpcDispatchableItf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public  class EmbeddedGenericServer<SVC_T extends RpcSvcItf<SVC_T>>   
+public  class EmbeddedGenericServer<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T extends OncRpcSvcBuilderItf<SVC_T,BUILDER_T>>   
     implements Closeable{
     
     private final static Logger _log = LoggerFactory.getLogger(EmbeddedGenericServer.class);
@@ -38,13 +38,13 @@ public  class EmbeddedGenericServer<SVC_T extends RpcSvcItf<SVC_T>>
         }
 
     };
-    private EmbbeddedGenericServerFactory<SVC_T> _factory;
+    private EmbbeddedGenericServerFactory<SVC_T,BUILDER_T> _factory;
 
     
     protected  RpcCallItf<SVC_T> createRpcCaller(int prognum, int progver, XdrTransportItf<SVC_T> transport) {
        return  _factory.createRpcCaller(prognum,progver,transport);
     }
-    protected  OncRpcSvcBuilderItf<SVC_T> createOncSvcBuilder() {
+    protected  BUILDER_T createOncSvcBuilder() {
         return _factory.createOncSvcBuilder();
     }
     
@@ -74,15 +74,20 @@ public  class EmbeddedGenericServer<SVC_T extends RpcSvcItf<SVC_T>>
     private  RpcSvcItf<SVC_T> client;
 
     
-    
-    public EmbeddedGenericServer(EmbbeddedGenericServerFactory<SVC_T> factory) throws IOException{
-        this(factory,LIBVIRT_PORT);
+    //TODO LIBVIRT_PORT ??
+    public EmbeddedGenericServer(EmbbeddedGenericServerFactory<SVC_T,BUILDER_T> factory) throws IOException{
+        this(factory,LIBVIRT_PORT,null);
     }
-    public EmbeddedGenericServer(EmbbeddedGenericServerFactory<SVC_T> factory, int port) throws IOException {
+    public EmbeddedGenericServer(EmbbeddedGenericServerFactory<SVC_T,BUILDER_T> factory, int port,OtherParams params) throws IOException {
         _factory = factory;
         add(0,(RpcCallItf<SVC_T> call)-> call.reply(XdrVoid.XDR_VOID));
-        OncRpcSvcBuilderItf<SVC_T> builder = createOncSvcBuilder()
-                .withPort(port)
+        BUILDER_T builder;
+        if (null == params) {
+            builder = createOncSvcBuilder();
+        } else {
+            builder = createOncSvcBuilder();
+        }
+                builder.withPort(port)
                 .withWorkerThreadIoStrategy()
                 .withRpcService(new OncRpcProgram(PROGNUM, PROGVER), fakeSrvActions);
         svc = builder.build();
@@ -168,4 +173,9 @@ public  class EmbeddedGenericServer<SVC_T extends RpcSvcItf<SVC_T>>
     protected void processHighLevelException(RpcCallItf<SVC_T> call, Exception e){
        throw new RuntimeException(e);
     }
+    //TODO Interface duplicated with AbstractOncRpcClient
+    public interface OtherParams {
+
+    }
+    
 }
