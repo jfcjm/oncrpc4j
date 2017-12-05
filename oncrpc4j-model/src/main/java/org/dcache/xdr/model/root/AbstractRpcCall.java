@@ -165,7 +165,7 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
         _header = header;
         _xdr = xdr;
         _transport = transport;
-        _protoFactory = transport.getProtocolFactory();
+        //TODO _protoFactory = transport.getProtocolFactory();
     }
 
     /**

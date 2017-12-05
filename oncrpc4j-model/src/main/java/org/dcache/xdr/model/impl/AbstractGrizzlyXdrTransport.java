@@ -46,18 +46,18 @@ public  class AbstractGrizzlyXdrTransport<SVC_T extends RpcSvcItf<SVC_T>> implem
     private final InetSocketAddress _localAddress;
     private final InetSocketAddress _remoteAddress;
 
-    private ProtocolFactoryItf<SVC_T> _factory;
+  //TODO private ProtocolFactoryItf<SVC_T> _factory;
 
-    public  AbstractGrizzlyXdrTransport(Connection<InetSocketAddress> connection, ReplyQueueItf<SVC_T> replyQueue, ProtocolFactoryItf<SVC_T> factory) {
-        this(connection, connection.getPeerAddress(), replyQueue,factory);
+    public  AbstractGrizzlyXdrTransport(Connection<InetSocketAddress> connection, ReplyQueueItf<SVC_T> replyQueue /*, ProtocolFactoryItf<SVC_T> factory*/) {
+        this(connection, connection.getPeerAddress(), replyQueue /*,factory*/);
     }
 
-    public AbstractGrizzlyXdrTransport(Connection<InetSocketAddress> connection, InetSocketAddress remoteAddress, ReplyQueueItf<SVC_T> replyQueue, ProtocolFactoryItf<SVC_T> factory) {
+    public AbstractGrizzlyXdrTransport(Connection<InetSocketAddress> connection, InetSocketAddress remoteAddress, ReplyQueueItf<SVC_T> replyQueue/*, ProtocolFactoryItf<SVC_T> factory */) {
         _connection = connection;
         _replyQueue = replyQueue;
         _localAddress = _connection.getLocalAddress();
         _remoteAddress = remoteAddress;
-        _factory = factory;
+       //TODO  _factory = factory;
     }
 
     @Override
@@ -105,16 +105,17 @@ public  class AbstractGrizzlyXdrTransport<SVC_T extends RpcSvcItf<SVC_T>> implem
 
     @Override
     public XdrTransportItf<SVC_T> getPeerTransport() {
-        return new AbstractGrizzlyXdrTransport<SVC_T>(_connection, getReplyQueue(),_factory);
+        return new AbstractGrizzlyXdrTransport<SVC_T>(_connection, getReplyQueue()/*,_factory*/);
     }
 
     @Override
     public String toString() {
         return getRemoteSocketAddress() + " <=> " + getLocalSocketAddress();
     }
-
+    /*
     @Override
     public ProtocolFactoryItf<SVC_T> getProtocolFactory() {
         return _factory;
     }
+    */
 }

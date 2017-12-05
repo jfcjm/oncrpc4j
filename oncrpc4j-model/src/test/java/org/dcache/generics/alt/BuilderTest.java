@@ -40,14 +40,14 @@ public class BuilderTest {
         }
 
         @Override
-        protected TestOncRpcSvcItf getOncRpcSvc() {
-            // TODO Auto-generated method stub
-            return new TestOncRpcSvc(getThis());
+        public TestOncRpcSvcBuilderItf withDummyProperty() {
+            return this;
         }
 
         @Override
-        public TestOncRpcSvcBuilderItf withDummyProperty() {
-            return this;
+        protected TestOncRpcSvcItf getOncRpcSvc(TestOncRpcSvcBuilderItf builder_T) {
+            // TODO Auto-generated method stub
+            return null;
         }
         
     }

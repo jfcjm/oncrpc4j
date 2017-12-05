@@ -45,11 +45,11 @@ public class AbstractRpcProtocolFilter<SVC_T extends RpcSvcItf<SVC_T>> extends B
 
     private final static Logger _log = LoggerFactory.getLogger(AbstractRpcProtocolFilter.class);
     private final AbstractReplyQueue<SVC_T> _replyQueue;
-    private ProtocolFactoryItf<SVC_T> _protoFactory;
+    //TODO private ProtocolFactoryItf<SVC_T> _protoFactory;
 
-    public AbstractRpcProtocolFilter(AbstractReplyQueue<SVC_T> replyQueue, ProtocolFactoryItf<SVC_T> protoFactory) {
+    public AbstractRpcProtocolFilter(AbstractReplyQueue<SVC_T> replyQueue /*, ProtocolFactoryItf<SVC_T> protoFactory*/) {
         _replyQueue = replyQueue;
-        _protoFactory = protoFactory;
+        //TODO _protoFactory = protoFactory;
     }
 
     @Override
@@ -68,8 +68,8 @@ public class AbstractRpcProtocolFilter<SVC_T extends RpcSvcItf<SVC_T>> extends B
          * We have to get peer address from the request context, which will contain SocketAddress where from
          * request was coming.
          */
-        XdrTransportItf<SVC_T> transport = new AbstractGrizzlyXdrTransport<>(ctx.getConnection(), (InetSocketAddress)ctx.getAddress(), _replyQueue, _protoFactory);
-
+        //TODO  XdrTransportItf<SVC_T> transport = new AbstractGrizzlyXdrTransport<>(ctx.getConnection(), (InetSocketAddress)ctx.getAddress(), _replyQueue, _protoFactory);
+        XdrTransportItf<SVC_T> transport = new AbstractGrizzlyXdrTransport<>(ctx.getConnection(), (InetSocketAddress)ctx.getAddress(), _replyQueue);
         switch (header.getMessageType()) {
             case RpcMessageType.CALL:
                 AbstractRpcCall<SVC_T> call = new AbstractRpcCall<SVC_T>(header, xdr, transport);

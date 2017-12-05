@@ -20,16 +20,15 @@
 package org.dcache.xdr;
 
 import java.io.IOException;
-import org.dcache.xdr.gss.RpcAuthGss;
 
 /**
  * The RPC call message has two authentication fields - the credential and verifier.
  * The verifier may change it's value depending on state of credential (RPCGSS_SEC).
  * A reply uses only verifier.
  */
-public class RpcCredential {
+public class BaseRpcCredential {
 
-    private RpcCredential() {}
+    protected BaseRpcCredential() {}
 
     public static RpcAuth decode(XdrDecodingStream xdr) throws OncRpcException, IOException {
 
@@ -41,9 +40,6 @@ public class RpcCredential {
                 break;
             case RpcAuthType.NONE:
                 credential = new RpcAuthTypeNone();
-                break;
-            case RpcAuthType.RPCGSS_SEC:
-                credential = new RpcAuthGss();
                 break;
             default:
                 throw new RpcAuthException("Unsuported type: " + authType,

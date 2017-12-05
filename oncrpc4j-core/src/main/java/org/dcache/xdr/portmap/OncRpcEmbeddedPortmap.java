@@ -19,6 +19,7 @@
  */
 package org.dcache.xdr.portmap;
 
+import org.dcache.xdr.AbstractOncRpcClient;
 import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.OncRpcProgram;
@@ -26,7 +27,6 @@ import org.dcache.xdr.RpcAuth;
 import org.dcache.xdr.RpcAuthTypeNone;
 import org.dcache.xdr.XdrVoid;
 import org.dcache.xdr.model.itf.XdrTransportItf;
-import org.dcache.xdr.model.root.AbstractOncRpcClient;
 import org.dcache.xdr.model.root.AbstractOncRpcSvc;
 import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
 import org.dcache.xdr.model.root.AbstractRpcCall;

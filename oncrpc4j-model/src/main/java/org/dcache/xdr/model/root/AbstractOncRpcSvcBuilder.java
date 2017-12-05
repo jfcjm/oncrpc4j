@@ -295,7 +295,8 @@ public abstract class AbstractOncRpcSvcBuilder <SVC_T extends RpcSvcItf<SVC_T>,B
         return _protocolFactory;
     }
     public SVC_T build() {
-
+        //TDO JMK 
+        this.withTCP();
         if (_protocol == 0 || (((_protocol & TCP) != TCP) && ((_protocol & UDP) != UDP))) {
             throw new IllegalArgumentException("invalid protocol: " + _protocol);
         }
@@ -312,9 +313,8 @@ public abstract class AbstractOncRpcSvcBuilder <SVC_T extends RpcSvcItf<SVC_T>,B
             throw new IllegalArgumentException("Can't set worker thread pool size with external execution service");
         }
 
-        return new AbstractOncRpcSvc<SVC_T>(this).getThis();
+        return getOncRpcSvc(getThis());
     }
-
-    abstract protected SVC_T getOncRpcSvc();
+    abstract protected SVC_T getOncRpcSvc(BUILDER_T builder_T);
     abstract protected BUILDER_T getThis();
 }

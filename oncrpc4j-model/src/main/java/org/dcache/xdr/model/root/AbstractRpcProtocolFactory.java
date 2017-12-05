@@ -35,10 +35,6 @@ public class AbstractRpcProtocolFactory<SVC_T extends RpcSvcItf<SVC_T>> implemen
          Type type   = field. getGenericType ();
          return type;
     }
-
-    protected Map<OncRpcProgram, RpcDispatchableItf<SVC_T>> getPrograms() {
-        return _programs;
-    }
     
     void setSvc(RpcSvcItf<SVC_T> svc){
         _svc = svc;

@@ -22,12 +22,12 @@ package org.dcache.xdrgeneric;
 import java.net.InetAddress;
 import java.util.concurrent.Future;
 
+import org.dcache.xdr.AbstractOncRpcClient;
 import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.RpcAuth;
 import org.dcache.xdr.RpcAuthTypeNone;
 import org.dcache.xdr.XdrVoid;
 import org.dcache.xdr.model.itf.XdrTransportItf;
-import org.dcache.xdr.model.root.AbstractOncRpcClient;
 import org.dcache.xdr.model.root.AbstractRpcCall;
 
 public class SimpleRpcClient {

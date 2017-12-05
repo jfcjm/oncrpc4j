@@ -68,9 +68,16 @@ public interface OncRpcSvcBuilderItf<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T ex
     int getWorkerThreadPoolSize();
 
     boolean isClient();
-
+    /**
+     * Retourne le gestionnaire de session, par défaut devrait retourner un element
+     * null dont l'interface est comatibel avec GssSessionManager.
+     * et si possible avec un gestonnaire de ssession SASL.
+     * @return
+     */
     Map<OncRpcProgram, RpcDispatchableItf<SVC_T>> getRpcServices();
-
+    RpcSessionManagerItf<SVC_T> getRpcSessionManager();
     SVC_T build();
+
+    
 
 }

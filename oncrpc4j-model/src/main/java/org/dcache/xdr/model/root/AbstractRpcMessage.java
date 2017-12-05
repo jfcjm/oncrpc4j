@@ -5,7 +5,7 @@ import java.io.IOException;
 import org.dcache.xdr.BadXdrOncRpcException;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcAuth;
-import org.dcache.xdr.RpcCredential;
+import org.dcache.xdr.BaseRpcCredential;
 import org.dcache.xdr.RpcMessageType;
 import org.dcache.xdr.RpcMismatchReply;
 import org.dcache.xdr.RpcReplyStatus;
@@ -124,7 +124,7 @@ public class AbstractRpcMessage<SVC_T extends RpcSvcItf<SVC_T>> implements  Head
        _prog = xdr.xdrDecodeInt();
        _version = xdr.xdrDecodeInt();
        _proc = xdr.xdrDecodeInt();
-       _cred = RpcCredential.decode(xdr);
+       _cred = BaseRpcCredential.decode(xdr);
 
     }
     

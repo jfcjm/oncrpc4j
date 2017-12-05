@@ -9,7 +9,6 @@ import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcProgram;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
-import org.dcache.xdr.model.root.AbstractOncRpcClient;
 import org.dcache.xdr.model.root.AbstractOncRpcSvc;
 import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
 import org.dcache.xdr.portmap.GenericPortmapClient;

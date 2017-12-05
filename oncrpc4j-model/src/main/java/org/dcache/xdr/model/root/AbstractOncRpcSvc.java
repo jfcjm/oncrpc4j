@@ -81,7 +81,7 @@ public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implemen
     
     
     
-    private ProtocolFactoryItf<SVC_T> _protocolFactory = AbstractRpcProtocolFactory();
+    //TODO private ProtocolFactoryItf<SVC_T> _protocolFactory = AbstractRpcProtocolFactory();
     
     private final int _backlog;
     private final PortRange _portRange;
@@ -150,7 +150,7 @@ public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implemen
                     .build();
             _transports.add(udpTransport);
         }
-        _protocolFactory = builder.getFactory();
+        //TODO _protocolFactory = builder.getFactory();
         _isClient = builder.isClient();
         _portRange = builder.getMinPort() > 0 ?
                 new PortRange(builder.getMinPort(), builder.getMaxPort()) : null;
@@ -174,12 +174,11 @@ public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implemen
         _programs.putAll(builder.getRpcServices());
         _withSubjectPropagation = builder.getSubjectPropagation();
 	_svcName = builder.getServiceName();
-	    _protocolFactory.processBuilder(builder);
+	//TODO  _protocolFactory.processBuilder(builder);
     }
 
-    private ProtocolFactoryItf<SVC_T> AbstractRpcProtocolFactory() {
-        // TODO Auto-generated method stub
-        return null;
+    protected Map<OncRpcProgram, RpcDispatchableItf<SVC_T>> getPrograms() {
+        return _programs;
     }
 
     /**
@@ -216,14 +215,15 @@ public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implemen
 
 
     public void start() throws IOException {
-        _protocolFactory.preStopActions(this);
+      //TODO _protocolFactory.preStopActions(this);
         
         for (Transport t : _transports) {
 
             FilterChainBuilder filterChain = FilterChainBuilder.stateless();
             filterChain.add(new TransportFilter());
             filterChain.add(rpcMessageReceiverFor(t));
-            filterChain.add(new AbstractRpcProtocolFilter<>(_replyQueue,_protocolFactory));
+          //TODO filterChain.add(new AbstractRpcProtocolFilter<>(_replyQueue,_protocolFactory));
+            filterChain.add(new AbstractRpcProtocolFilter<>(_replyQueue));
             // use GSS if configures
             filterChain.add(_rpcSessionManager);
             filterChain.add(new AbstractRpcDispatcher<>(_requestExecutor, _programs, _withSubjectPropagation));
@@ -247,14 +247,14 @@ public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implemen
 
                 _boundConnections.add(connection);
             }
-            _protocolFactory.doPreStartAction(this);
+           //TODO  _protocolFactory.doPreStartAction(this);
             t.start();
 
         }
     }
 
     public void stop() throws IOException {
-        _protocolFactory.preStopActions(this);
+      //TODO _protocolFactory.preStopActions(this);
 
         for (Transport t : _transports) {
             t.shutdownNow();
@@ -265,7 +265,7 @@ public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implemen
     }
 
     public void stop(long gracePeriod, TimeUnit timeUnit) throws IOException {
-        _protocolFactory.preStopActions(this);
+      //TODO _protocolFactory.preStopActions(this);
         
         List<GrizzlyFuture<Transport>> transportsShuttingDown = new ArrayList<>();
         for (Transport t : _transports) {
@@ -306,7 +306,7 @@ public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implemen
         try {
             //noinspection unchecked
             Connection<InetSocketAddress> connection = connectFuture.get(timeout, timeUnit);
-            return new AbstractGrizzlyXdrTransport<SVC_T>(connection, _replyQueue,_protocolFactory);
+            return new AbstractGrizzlyXdrTransport<SVC_T>(connection, _replyQueue /*,_protocolFactory*/);
         } catch (ExecutionException e) {
             Throwable t = getRootCause(e);
             propagateIfPossible(t, IOException.class);

@@ -26,47 +26,98 @@ import java.util.concurrent.TimeUnit;
 
 import org.dcache.xdr.IoStrategy;
 import org.dcache.xdr.model.itf.OncRpcClientItf;
+import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
+import org.dcache.xdr.model.root.AbstractOncRpcSvc;
+import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
+import org.dcache.xdr.model.root.AbstractOncRpcClient.OtherParams;
 
-public abstract class AbstractOncRpcClient<SVC_T extends RpcSvcItf<SVC_T>> implements AutoCloseable, OncRpcClientItf<SVC_T> {
+public abstract class AbstractOncRpcClient<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T extends OncRpcSvcBuilderItf<SVC_T,BUILDER_T>> implements AutoCloseable, OncRpcClientItf<SVC_T> {
 
-    private static final String DEFAULT_SERVICE_NAME = null;
+    protected static final String DEFAULT_SERVICE_NAME = null;
 
     private final InetSocketAddress _socketAddress;
-    private final AbstractOncRpcSvc<SVC_T> _rpcsvc;
-
-    public AbstractOncRpcClient(InetAddress address, int protocol, int port) {
-        this(new InetSocketAddress(address, port), protocol, 0, IoStrategy.SAME_THREAD, DEFAULT_SERVICE_NAME);
+    private final SVC_T _rpcsvc;
+    /**
+     * On a enleve le paramètre int protocol, de l'appel pour le moment
+     * @param address
+     * @param port
+     */
+    public AbstractOncRpcClient(InetAddress address,  int port) {
+        this(new InetSocketAddress(address, port), 0, IoStrategy.SAME_THREAD, DEFAULT_SERVICE_NAME);
     }
-
-    public AbstractOncRpcClient(InetAddress address, int protocol, int port, int localPort) {
-        this(new InetSocketAddress(address, port), protocol, localPort, IoStrategy.SAME_THREAD, DEFAULT_SERVICE_NAME);
+    /**
+     * On a enleve le paramètre int protocol, de l'appel pour le moment
+     * @param address
+     * @param port
+     * @param localPort
+     */
+    public AbstractOncRpcClient(InetAddress address,  int port, int localPort) {
+        this(new InetSocketAddress(address, port), localPort, IoStrategy.SAME_THREAD, DEFAULT_SERVICE_NAME);
     }
-
-    public AbstractOncRpcClient(InetAddress address, int protocol, int port, int localPort, IoStrategy ioStrategy) {
-        this(new InetSocketAddress(address, port), protocol, localPort, ioStrategy, DEFAULT_SERVICE_NAME);
+    /**
+     * On a enleve le paramètre int protocol, de l'appel pour le moment
+     * @param address
+     * @param port
+     * @param localPort
+     * @param ioStrategy
+     */
+    public AbstractOncRpcClient(InetAddress address,  int port, int localPort, IoStrategy ioStrategy) {
+        this(new InetSocketAddress(address, port),  localPort, ioStrategy, DEFAULT_SERVICE_NAME);
     }
-
-    public AbstractOncRpcClient(InetAddress address, int protocol, int port, int localPort, IoStrategy ioStrategy, String serviceName) {
-        this(new InetSocketAddress(address, port), protocol, localPort, ioStrategy, serviceName);
+    /**
+     * On a enleve le paramètre int protocol, de l'appel pour le moment
+     * @param address
+     * @param port
+     * @param localPort
+     * @param ioStrategy
+     * @param serviceName
+     */
+    public AbstractOncRpcClient(InetAddress address,  int port, int localPort, IoStrategy ioStrategy, String serviceName) {
+        this(new InetSocketAddress(address, port), localPort, ioStrategy, serviceName);
     }
-
+    /**
+     * On a enleve le paramètre int protocol, de l'appel pour le moment
+     * @param socketAddress
+     * @param protocol
+     */
     public AbstractOncRpcClient(InetSocketAddress socketAddress, int protocol) {
-        this(socketAddress, protocol, 0, IoStrategy.SAME_THREAD, DEFAULT_SERVICE_NAME);
+        this(socketAddress,  0, IoStrategy.SAME_THREAD, DEFAULT_SERVICE_NAME);
     }
     //JMK : type cast
-    public AbstractOncRpcClient(InetSocketAddress socketAddress, int protocol, int localPort, IoStrategy ioStrategy, String serviceName) {
+    
+    public AbstractOncRpcClient(InetSocketAddress socketAddress,  int localPort, IoStrategy ioStrategy, String serviceName) {
+        this(socketAddress,localPort,ioStrategy,serviceName,null);
+    }
+    
+    
+    /**
+     * On a enleve le paramètre int protocol, de l'appel pour le moment
+     * @param socketAddress
+     * @param localPort
+     * @param ioStrategy
+     * @param serviceName
+     */
+    public AbstractOncRpcClient(InetSocketAddress socketAddress,  int localPort, IoStrategy ioStrategy, String serviceName,OtherParams params) {
         _socketAddress = socketAddress;
-        _rpcsvc = getRpcSvcBuilder()
+        BUILDER_T builder ;
+        if (null == params) {
+            System.out.println("=========builder: "+1);
+            builder = getRpcSvcBuilder();
+        } else {
+            System.out.println("=========builder: "+2);
+            builder = getRpcSvcBuilder(params);
+        }
+        System.out.println("=========builder: "+ builder);
+        _rpcsvc = builder
                 .withClientMode()
                 .withPort(localPort)
-                .withIpProtocolType(protocol)
+                //TODO JMK .withIpProtocolType(protocol)
                 .withIoStrategy(ioStrategy)
                 .withServiceName(serviceName)
-                .build();
+                .build(); 
     }
-
     public XdrTransportItf<SVC_T> connect() throws IOException {
         return connect(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
@@ -87,5 +138,11 @@ public abstract class AbstractOncRpcClient<SVC_T extends RpcSvcItf<SVC_T>> imple
     public void close() throws IOException {
         _rpcsvc.stop();
     }
-    abstract protected AbstractOncRpcSvcBuilder<SVC_T,?> getRpcSvcBuilder();
+    abstract protected   BUILDER_T getRpcSvcBuilder();
+
+
+    abstract protected  BUILDER_T getRpcSvcBuilder(OtherParams params);
+    public interface OtherParams {
+
+    }
 }

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.dcache.xdr.AbstractOncRpcClient;
 import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcAuth;
@@ -32,7 +33,6 @@ import org.dcache.xdr.RpcAuthTypeNone;
 import org.dcache.xdr.RpcProgUnavailable;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
-import org.dcache.xdr.model.root.AbstractOncRpcClient;
 import org.dcache.xdr.model.root.AbstractRpcCall;
 import org.dcache.xdr.portmap.rpcb;
 
