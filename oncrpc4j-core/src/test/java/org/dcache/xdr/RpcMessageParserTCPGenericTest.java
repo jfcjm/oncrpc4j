@@ -32,7 +32,7 @@ import org.junit.*;
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
 
-public class RpcMessageParserTCPTest {
+public class RpcMessageParserTCPGenericTest {
 
     private final static int INVOKE = 0;
     private final static int STOP = 1;

@@ -19,7 +19,7 @@ import org.junit.Test;
 /**
  * Quick testing for OncRpcEmbeddedPortmap
  */
-public class OncRpcEmbeddedPortmapTest {
+public class OncRpcEmbeddedPortmapGenericTest {
 	// https://tools.ietf.org/html/draft-ietf-nfsv4-rpc-netid-06
 	public static final String[] NETID_NAMES = new String[] {"-","ticlts","ticots","ticotsord","tcp","tcp6","udp","udp6","rdma","rdma6","sctp","sctp6"};
 	private OncRpcEmbeddedPortmap portmap = null;

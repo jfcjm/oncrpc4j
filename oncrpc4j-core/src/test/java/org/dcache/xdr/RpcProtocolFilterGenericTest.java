@@ -36,7 +36,7 @@ import static org.mockito.Mockito.mock;
 /**
  *
  */
-public class RpcProtocolFilterTest {
+public class RpcProtocolFilterGenericTest {
 
     private final static int INVOKE = 0;
     private final static int STOP = 1;

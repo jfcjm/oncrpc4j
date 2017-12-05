@@ -31,7 +31,7 @@ import org.dcache.xdr.model.itf.HeaderItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.dcache.xdr.model.root.AbstractRpcCall;
 import org.dcache.xdr.model.root.AbstractRpcMessage;
-public class RpcCallTest {
+public class RpcCallGenericTest {
 
     
 

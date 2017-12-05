@@ -17,7 +17,7 @@ import org.dcache.xdr.portmap.OncRpcbindServer;
 import org.dcache.xdr.portmap.rpcb;
 import org.junit.Test;
 
-public class TestGitHubIssue56 {
+public class TestGitHubIssue56Generic {
 
 	@Test
 	public void DumpTest() throws IOException, TimeoutException {

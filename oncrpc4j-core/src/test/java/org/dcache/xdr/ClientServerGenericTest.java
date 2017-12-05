@@ -18,7 +18,7 @@ import static org.junit.Assert.*;
 /**
  *
  */
-public class ClientServerTest {
+public class ClientServerGenericTest {
 
     private static final int PROGNUM = 100017;
     private static final int PROGVER = 1;

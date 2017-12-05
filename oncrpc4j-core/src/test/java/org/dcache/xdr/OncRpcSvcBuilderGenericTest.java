@@ -32,7 +32,7 @@ import static org.junit.Assert.*;
 /**
  *
  */
-public class OncRpcSvcBuilderTest {
+public class OncRpcSvcBuilderGenericTest {
 
     @Test
     public void shouldReturnSameThreadExecutorForSameThreadStrategy() {
