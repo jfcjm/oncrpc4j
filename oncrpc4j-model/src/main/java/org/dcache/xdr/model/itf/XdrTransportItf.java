@@ -5,7 +5,7 @@ import java.nio.channels.CompletionHandler;
 
 import org.dcache.xdr.Xdr;
 
-public interface XdrTransportItf<SVC_T extends RpcSvcItf<SVC_T>> {
+public interface XdrTransportItf<SVC_T extends RpcSvcItf<SVC_T,CALL_T>,CALL_T extends RpcCallItf<SVC_T,CALL_T>> {
 
     /**
      * Send data to remote end point. The handler parameter is a completion
@@ -19,7 +19,7 @@ public interface XdrTransportItf<SVC_T extends RpcSvcItf<SVC_T>> {
      */
     <A> void send(Xdr xdr, A attachment, CompletionHandler<Integer, ? super A> handler);
 
-    ReplyQueueItf<SVC_T> getReplyQueue();
+    ReplyQueueItf<SVC_T,CALL_T> getReplyQueue();
 
     /**
      * Returns is this transport is open and ready.
@@ -50,7 +50,7 @@ public interface XdrTransportItf<SVC_T extends RpcSvcItf<SVC_T>> {
      *
      * @return
      */
-    XdrTransportItf<SVC_T> getPeerTransport();
+    XdrTransportItf<SVC_T,CALL_T> getPeerTransport();
 
     //TODO ProtocolFactoryItf<SVC_T> getProtocolFactory();
     

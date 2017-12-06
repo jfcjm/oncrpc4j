@@ -19,13 +19,17 @@
  */
 package org.dcache.xdr;
 
+import org.dcache.xdr.model.itf.RpcCallItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.ietf.jgss.GSSContext;
 
 import javax.security.auth.Subject;
 
-public interface RpcLoginService {
-
-    <SVC_T extends RpcSvcItf<SVC_T>> Subject  login(XdrTransportItf<SVC_T> transport, GSSContext context);
+public interface RpcLoginService<
+    SVC_T extends RpcSvcItf<SVC_T,CALL_T>, 
+    CALL_T extends RpcCallItf<SVC_T,CALL_T>
+    >    {
+     Subject  login(XdrTransportItf<SVC_T,CALL_T> transport, GSSContext context);
 }
+

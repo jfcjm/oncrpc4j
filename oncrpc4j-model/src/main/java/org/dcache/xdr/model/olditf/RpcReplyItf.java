@@ -1,13 +1,12 @@
-package org.dcache.generics.alt.dispatchable;
+package org.dcache.xdr.model.itf;
 
 import java.io.IOException;
 
 import org.dcache.xdr.MismatchInfo;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.XdrAble;
-import org.dcache.xdr.model.itf.RpcCallItf;
 
-public interface RpcReplyAltItf<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>, CALL_T extends RpcCallAltItf<SVC_T,CALL_T>> {
+public interface RpcReplyItf<SVC_T extends RpcSvcItf<SVC_T>> {
 
     boolean isAccepted();
 

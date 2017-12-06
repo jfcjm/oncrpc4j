@@ -27,13 +27,18 @@ import java.util.concurrent.TimeUnit;
 import org.dcache.xdr.IoStrategy;
 import org.dcache.xdr.model.itf.OncRpcClientItf;
 import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
+import org.dcache.xdr.model.itf.RpcCallItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
-import org.dcache.xdr.model.root.AbstractOncRpcSvc;
-import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
 import org.dcache.xdr.model.root.AbstractOncRpcClient.OtherParams;
 
-public abstract class AbstractOncRpcClient<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T extends OncRpcSvcBuilderItf<SVC_T,BUILDER_T>> implements AutoCloseable, OncRpcClientItf<SVC_T> {
+public abstract class AbstractOncRpcClient
+    <
+        SVC_T extends RpcSvcItf<SVC_T,CALL_T>, 
+        CALL_T extends RpcCallItf<SVC_T,CALL_T>,
+        BUILDER_T extends  OncRpcSvcBuilderItf<SVC_T,CALL_T,BUILDER_T>
+    > 
+        implements AutoCloseable, OncRpcClientItf<SVC_T,CALL_T> {
 
     protected static final String DEFAULT_SERVICE_NAME = null;
 
@@ -114,12 +119,12 @@ public abstract class AbstractOncRpcClient<SVC_T extends RpcSvcItf<SVC_T>,BUILDE
                 .withServiceName(serviceName)
                 .build(); 
     }
-    public XdrTransportItf<SVC_T> connect() throws IOException {
+    public XdrTransportItf<SVC_T,CALL_T> connect() throws IOException {
         return connect(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
 
-    public XdrTransportItf<SVC_T> connect(long timeout, TimeUnit timeUnit) throws IOException {
-        XdrTransportItf<SVC_T> t;
+    public XdrTransportItf<SVC_T,CALL_T> connect(long timeout, TimeUnit timeUnit) throws IOException {
+        XdrTransportItf<SVC_T,CALL_T> t;
         try {
         _rpcsvc.start();
             t =_rpcsvc.connect(_socketAddress, timeout, timeUnit);

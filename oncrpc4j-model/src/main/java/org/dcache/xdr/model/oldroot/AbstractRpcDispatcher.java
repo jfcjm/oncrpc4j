@@ -17,7 +17,7 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.generics.alt.dispatchable;
+package org.dcache.xdr.model.root;
 
 import javax.security.auth.Subject;
 import java.io.IOException;
@@ -40,14 +40,14 @@ import org.glassfish.grizzly.filterchain.NextAction;
 
 import static java.util.Objects.requireNonNull;
 
-public class AbstractRpcDispatcherAlt<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,CALL_T extends RpcCallAltItf<SVC_T,CALL_T>> extends BaseFilter {
+public class AbstractRpcDispatcher<SVC_T extends RpcSvcItf<SVC_T>> extends BaseFilter {
 
-    private final static Logger _log = LoggerFactory.getLogger(AbstractRpcDispatcherAlt.class);
+    private final static Logger _log = LoggerFactory.getLogger(AbstractRpcDispatcher.class);
     /**
      * List of registered RPC services
      *
      */
-    private final Map<OncRpcProgram, RpcDispatchableAltItf<SVC_T,CALL_T>> _programs;
+    private final Map<OncRpcProgram, RpcDispatchableItf<SVC_T>> _programs;
 
     /**
      * {@link ExecutorService} used for request processing
@@ -70,8 +70,8 @@ public class AbstractRpcDispatcherAlt<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,C
      *
      * @throws NullPointerException if executor or program is null
      */
-    public AbstractRpcDispatcherAlt(ExecutorService executor, Map<OncRpcProgram,
-            RpcDispatchableAltItf<SVC_T,CALL_T>> programs, boolean withSubjectPropagation)
+    public AbstractRpcDispatcher(ExecutorService executor, Map<OncRpcProgram,
+            RpcDispatchableItf<SVC_T>> programs, boolean withSubjectPropagation)
             throws NullPointerException {
 
         _programs = requireNonNull(programs, "Programs is NULL");
@@ -82,14 +82,14 @@ public class AbstractRpcDispatcherAlt<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,C
     @Override
     public NextAction handleRead(final FilterChainContext ctx) throws IOException {
 
-        final CALL_T call = ctx.getMessage();
+        final AbstractRpcCall<SVC_T> call = ctx.getMessage();
         final int prog = call.getProgram();
         final int vers = call.getProgramVersion();
         final int proc = call.getProcedure();
 
         _log.debug("processing request {}", call);
 
-        final RpcDispatchableAltItf<SVC_T,CALL_T> program = _programs.get(new OncRpcProgram(prog, vers));
+        final RpcDispatchableItf<SVC_T> program = _programs.get(new OncRpcProgram(prog, vers));
         if (program == null) {
             call.failProgramUnavailable();
         } else {

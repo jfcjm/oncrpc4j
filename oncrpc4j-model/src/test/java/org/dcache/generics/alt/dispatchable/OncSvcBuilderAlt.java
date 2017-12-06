@@ -2,7 +2,7 @@ package org.dcache.generics.alt.dispatchable;
 
 import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
 
-public class OncSvcBuilderAlt extends AbstractOncRpcSvcBuilder<OncSvcAlt,OncSvcBuilderAlt>{
+public class OncSvcBuilderAlt extends AbstractOncRpcSvcBuilder<OncSvcAlt,RpcCallAlt,OncSvcBuilderAlt>{
 
     boolean _dummyOption;
 

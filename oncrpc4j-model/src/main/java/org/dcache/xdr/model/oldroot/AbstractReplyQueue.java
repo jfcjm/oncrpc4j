@@ -17,7 +17,7 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.generics.alt.dispatchable;
+package org.dcache.xdr.model.root;
 
 import java.io.EOFException;
 import java.net.SocketAddress;
@@ -32,14 +32,19 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class AbstractReplyQueueAlt<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,CALL_T extends RpcCallAltItf<SVC_T,CALL_T>> implements ReplyQueueAltItf<SVC_T,CALL_T>{
+import org.dcache.xdr.model.itf.ReplyQueueItf;
+import org.dcache.xdr.model.itf.RpcReplyItf;
+import org.dcache.xdr.model.itf.RpcSvcItf;
+import org.dcache.xdr.model.itf.XdrTransportItf;
+
+public class AbstractReplyQueue<SVC_T extends RpcSvcItf<SVC_T>> implements ReplyQueueItf<SVC_T>{
 
     private final ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(1, new ThreadFactory() {
         private final AtomicInteger counter = new AtomicInteger();
 
         @Override
         public Thread newThread(Runnable r) {
-            Thread t = new Thread(r, "timeout thread #" + counter.incrementAndGet() + " for ReplyQueue " + AbstractReplyQueueAlt.this);
+            Thread t = new Thread(r, "timeout thread #" + counter.incrementAndGet() + " for ReplyQueue " + AbstractReplyQueue.this);
             t.setDaemon(true);
             return t;
         }
@@ -56,10 +61,10 @@ public class AbstractReplyQueueAlt<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,CALL
      * finished.
      * @throws EOFException if disconnected
      */
-    @Override
-    public void registerKey(int xid, SocketAddress addr, CompletionHandler<RpcReplyAltItf<SVC_T,CALL_T>, XdrTransportAltItf<SVC_T, CALL_T>> callback) throws EOFException {
+    public void registerKey(int xid, SocketAddress addr, CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback) throws EOFException {
         registerKey(xid, addr, callback, 0, null);
     }
+
     /**
      * Register callback handler for a given xid. The Callback is called when
      * client receives reply from the server, request failed of expired.
@@ -72,12 +77,11 @@ public class AbstractReplyQueueAlt<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,CALL
      * @param timeoutUnits units in which timeout value is expressed.
      * @throws EOFException if disconnected
      */
-    @Override
-    public void registerKey(int xid, SocketAddress addr, CompletionHandler<RpcReplyAltItf<SVC_T,CALL_T>, XdrTransportAltItf<SVC_T,CALL_T>> callback, final long timeout, final TimeUnit timeoutUnits) throws EOFException {
+    public void registerKey(int xid, SocketAddress addr, CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback, final long timeout, final TimeUnit timeoutUnits) throws EOFException {
         ScheduledFuture<?> scheduledTimeout = null;
         if (timeout > 0 && timeoutUnits != null) {
             scheduledTimeout = executorService.schedule(() -> {
-                 CompletionHandler<RpcReplyAltItf<SVC_T,CALL_T>, XdrTransportAltItf<SVC_T,CALL_T>> handler = get(xid);
+                 CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> handler = get(xid);
                 if (handler != null) { //means we're 1st, no response yet
                     handler.failed(new TimeoutException("did not get a response within " + timeout + " " + timeoutUnits), null);
                 }
@@ -104,8 +108,7 @@ public class AbstractReplyQueueAlt<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,CALL
      * @param xid of rpc request.
      * @return completion handler for given xid or {@code null} if xid is unknown.
      */
-    @Override
-    public CompletionHandler<RpcReplyAltItf<SVC_T,CALL_T>, XdrTransportAltItf<SVC_T,CALL_T>> get(int xid) {
+    public CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> get(int xid) {
         PendingRequest request = _queue.remove(xid);
         if (request != null) { //means we're first. call off any pending timeouts
             request.cancelTimeout();
@@ -120,11 +123,11 @@ public class AbstractReplyQueueAlt<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,CALL
      *
      */
     private class PendingRequest {
-        private final CompletionHandler<RpcReplyAltItf<SVC_T,CALL_T>, XdrTransportAltItf<SVC_T,CALL_T>> handler;
+        private final CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> handler;
         private final ScheduledFuture<?> scheduledTimeout;
         private final SocketAddress addr;
 
-        public PendingRequest(SocketAddress addr, CompletionHandler<RpcReplyAltItf<SVC_T,CALL_T>, XdrTransportAltItf<SVC_T,CALL_T>> handler, ScheduledFuture<?> scheduledTimeout) {
+        public PendingRequest(SocketAddress addr, CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> handler, ScheduledFuture<?> scheduledTimeout) {
             this.handler = handler;
             this.scheduledTimeout = scheduledTimeout;
             this.addr = addr;

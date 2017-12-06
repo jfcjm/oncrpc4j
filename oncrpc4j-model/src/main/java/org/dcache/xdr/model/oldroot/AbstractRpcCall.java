@@ -17,7 +17,7 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.generics.alt.dispatchable;
+package org.dcache.xdr.model.root;
 
 import com.google.common.base.Throwables;
 import java.io.EOFException;
@@ -58,10 +58,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class AbstractRpcCallAlt<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,CALL_T extends RpcCallAltItf<SVC_T,CALL_T>> 
-    implements RpcCallAltItf<SVC_T,CALL_T>{
+public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallItf<SVC_T>{
 
-    private final static Logger _log = LoggerFactory.getLogger(AbstractRpcCallAlt.class);
+    private final static Logger _log = LoggerFactory.getLogger(AbstractRpcCall.class);
 
     private final static Random RND = new Random();
     /**
@@ -69,7 +68,7 @@ public class AbstractRpcCallAlt<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,CALL_T 
      */
     private final AtomicInteger xidGenerator = new AtomicInteger(RND.nextInt());
 
-    private  final HeaderAltItf<SVC_T,CALL_T> _header;
+    private  final HeaderItf<SVC_T> _header;
     
     /**
      * Supported RPC protocol version
@@ -79,7 +78,7 @@ public class AbstractRpcCallAlt<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,CALL_T 
     /**
      * RPC call transport.
      */
-    private final XdrTransportAltItf<SVC_T,CALL_T> _transport;
+    private final XdrTransportItf<SVC_T> _transport;
 
     /**
      * Call body.
@@ -151,17 +150,18 @@ public class AbstractRpcCallAlt<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,CALL_T 
     private final CompletionHandler<Integer, InetSocketAddress> _sendNotificationHandler
             = new NotifyListenersCompletionHandler();
 
+    private ProtocolFactoryItf<SVC_T> _protoFactory;
 
-    public AbstractRpcCallAlt(int prog, int ver, RpcAuth cred, XdrTransportAltItf<SVC_T,CALL_T> transport) {
-        this(new AbstractRpcMessageAlt<>(prog, ver, 0, cred), new Xdr(Xdr.INITIAL_XDR_SIZE), transport);
+    public AbstractRpcCall(int prog, int ver, RpcAuth cred, XdrTransportItf<SVC_T> transport) {
+        this(new AbstractRpcMessage<>(prog, ver, 0, cred), new Xdr(Xdr.INITIAL_XDR_SIZE), transport);
     }
     
     //* call from gss
-    public AbstractRpcCallAlt(AbstractRpcCallAlt<SVC_T,CALL_T> call) {
+    public AbstractRpcCall(AbstractRpcCall<SVC_T> call) {
     	this(call._header,call._xdr,call._transport);
     }
 
-    public AbstractRpcCallAlt(HeaderAltItf<SVC_T,CALL_T> header, Xdr xdr, XdrTransportAltItf<SVC_T,CALL_T> transport) {
+    public AbstractRpcCall(HeaderItf<SVC_T> header, Xdr xdr, XdrTransportItf<SVC_T> transport) {
         _header = header;
         _xdr = xdr;
         _transport = transport;
@@ -208,7 +208,7 @@ public class AbstractRpcCallAlt<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,CALL_T 
      * Get RPC {@XdrTransport} used by this call.
      * @return transport
      */
-    public XdrTransportAltItf<SVC_T,CALL_T> getTransport() {
+    public XdrTransportItf<SVC_T> getTransport() {
         return _transport;
     }
 
@@ -361,7 +361,7 @@ public class AbstractRpcCallAlt<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,CALL_T 
      * @throws IOException
      * @since 2.4.0
      */
-    public void call(int procedure, XdrAble args, CompletionHandler<RpcReplyAltItf<SVC_T,CALL_T>, XdrTransportAltItf<SVC_T,CALL_T>> callback, long timeoutValue, TimeUnit timeoutUnits, RpcAuth auth)
+    public void call(int procedure, XdrAble args, CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback, long timeoutValue, TimeUnit timeoutUnits, RpcAuth auth)
             throws IOException {
         callInternal(procedure, args, callback, timeoutValue, timeoutUnits, auth);
     }
@@ -369,7 +369,7 @@ public class AbstractRpcCallAlt<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,CALL_T 
     /**
      * convenience version of {@link #call(int, XdrAble, CompletionHandler, long, TimeUnit, RpcAuth)} with no auth
      */
-    public void call(int procedure, XdrAble args, CompletionHandler<RpcReplyAltItf<SVC_T,CALL_T>, XdrTransportAltItf<SVC_T,CALL_T>> callback, long timeoutValue, TimeUnit timeoutUnits)
+    public void call(int procedure, XdrAble args, CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback, long timeoutValue, TimeUnit timeoutUnits)
             throws IOException {
         callInternal(procedure, args, callback, timeoutValue, timeoutUnits, null);
     }
@@ -377,7 +377,7 @@ public class AbstractRpcCallAlt<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,CALL_T 
     /**
      * convenience version of {@link #call(int, XdrAble, CompletionHandler, long, TimeUnit, RpcAuth)} with no timeout
      */
-    public void call(int procedure, XdrAble args, CompletionHandler<RpcReplyAltItf<SVC_T,CALL_T>, XdrTransportAltItf<SVC_T,CALL_T>> callback, RpcAuth auth)
+    public void call(int procedure, XdrAble args, CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback, RpcAuth auth)
             throws IOException {
         callInternal(procedure, args, callback, 0, null, auth);
     }
@@ -385,7 +385,7 @@ public class AbstractRpcCallAlt<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,CALL_T 
     /**
      * convenience version of {@link #call(int, XdrAble, CompletionHandler, long, TimeUnit, RpcAuth)} with no timeout or auth
      */
-    public void call(int procedure, XdrAble args, CompletionHandler<RpcReplyAltItf<SVC_T,CALL_T>, XdrTransportAltItf<SVC_T,CALL_T>> callback)
+    public void call(int procedure, XdrAble args, CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback)
             throws IOException {
         callInternal(procedure, args, callback, 0, null, null);
     }
@@ -402,7 +402,7 @@ public class AbstractRpcCallAlt<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,CALL_T 
      * @throws OncRpcException
      * @throws IOException
      */
-    private int callInternal(int procedure, XdrAble args, CompletionHandler<RpcReplyAltItf<SVC_T,CALL_T>, XdrTransportAltItf<SVC_T,CALL_T>> callback,
+    private int callInternal(int procedure, XdrAble args, CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback,
                              long timeoutValue, TimeUnit timeoutUnits, RpcAuth auth)
             throws IOException {
         
@@ -412,7 +412,7 @@ public class AbstractRpcCallAlt<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,CALL_T 
         _header.update(xid, RpcMessageType.CALL, RPCVERS, procedure, auth,args);
         _header.xdrEncodeAsCall(xdr);
 
-        ReplyQueueAltItf<SVC_T,CALL_T> replyQueue = _transport.getReplyQueue();
+        ReplyQueueItf<SVC_T> replyQueue = _transport.getReplyQueue();
         if (callback != null) {
             replyQueue.registerKey(xid, _transport.getLocalSocketAddress(), callback, timeoutValue, timeoutUnits);
         } else {
@@ -541,10 +541,10 @@ public class AbstractRpcCallAlt<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,CALL_T 
             throws IOException {
 
         final CompletableFuture<T> future = new CompletableFuture<>();
-        CompletionHandler<RpcReplyAltItf<SVC_T,CALL_T>, XdrTransportAltItf<SVC_T,CALL_T>> callback = new CompletionHandler<RpcReplyAltItf<SVC_T,CALL_T>, XdrTransportAltItf<SVC_T,CALL_T>>() {
+        CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback = new CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>>() {
 
             @Override
-            public void completed(RpcReplyAltItf<SVC_T,CALL_T> reply, XdrTransportAltItf<SVC_T,CALL_T> attachment) {
+            public void completed(RpcReplyItf<SVC_T> reply, XdrTransportItf<SVC_T> attachment) {
                 try {
                     reply.getReplyResult(result);
                     future.complete(result);
@@ -554,7 +554,7 @@ public class AbstractRpcCallAlt<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,CALL_T 
             }
 
             @Override
-            public void failed(Throwable exc, XdrTransportAltItf<SVC_T,CALL_T> attachment) {
+            public void failed(Throwable exc, XdrTransportItf<SVC_T> attachment) {
                 future.completeExceptionally(exc);
             }
         };

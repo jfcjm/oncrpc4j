@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.OncRpcProgram;
 import org.dcache.xdr.RpcException;
+import org.dcache.xdr.model.itf.RpcCallItf;
 import org.dcache.xdr.model.itf.RpcDispatchableItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.glassfish.grizzly.filterchain.BaseFilter;
@@ -40,14 +41,14 @@ import org.glassfish.grizzly.filterchain.NextAction;
 
 import static java.util.Objects.requireNonNull;
 
-public class AbstractRpcDispatcher<SVC_T extends RpcSvcItf<SVC_T>> extends BaseFilter {
+public class AbstractRpcDispatcher<SVC_T extends RpcSvcItf<SVC_T,CALL_T>,CALL_T extends RpcCallItf<SVC_T,CALL_T>> extends BaseFilter {
 
     private final static Logger _log = LoggerFactory.getLogger(AbstractRpcDispatcher.class);
     /**
      * List of registered RPC services
      *
      */
-    private final Map<OncRpcProgram, RpcDispatchableItf<SVC_T>> _programs;
+    private final Map<OncRpcProgram, RpcDispatchableItf<SVC_T,CALL_T>> _programs;
 
     /**
      * {@link ExecutorService} used for request processing
@@ -71,7 +72,7 @@ public class AbstractRpcDispatcher<SVC_T extends RpcSvcItf<SVC_T>> extends BaseF
      * @throws NullPointerException if executor or program is null
      */
     public AbstractRpcDispatcher(ExecutorService executor, Map<OncRpcProgram,
-            RpcDispatchableItf<SVC_T>> programs, boolean withSubjectPropagation)
+            RpcDispatchableItf<SVC_T,CALL_T>> programs, boolean withSubjectPropagation)
             throws NullPointerException {
 
         _programs = requireNonNull(programs, "Programs is NULL");
@@ -82,14 +83,14 @@ public class AbstractRpcDispatcher<SVC_T extends RpcSvcItf<SVC_T>> extends BaseF
     @Override
     public NextAction handleRead(final FilterChainContext ctx) throws IOException {
 
-        final AbstractRpcCall<SVC_T> call = ctx.getMessage();
+        final CALL_T call = ctx.getMessage();
         final int prog = call.getProgram();
         final int vers = call.getProgramVersion();
         final int proc = call.getProcedure();
 
         _log.debug("processing request {}", call);
 
-        final RpcDispatchableItf<SVC_T> program = _programs.get(new OncRpcProgram(prog, vers));
+        final RpcDispatchableItf<SVC_T,CALL_T> program = _programs.get(new OncRpcProgram(prog, vers));
         if (program == null) {
             call.failProgramUnavailable();
         } else {

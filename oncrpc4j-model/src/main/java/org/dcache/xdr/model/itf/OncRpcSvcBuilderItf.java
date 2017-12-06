@@ -5,8 +5,9 @@ import java.util.concurrent.ExecutorService;
 
 import org.dcache.xdr.IoStrategy;
 import org.dcache.xdr.OncRpcProgram;
-
-public interface OncRpcSvcBuilderItf<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T extends OncRpcSvcBuilderItf<SVC_T,BUILDER_T>> {
+public interface OncRpcSvcBuilderItf<SVC_T extends RpcSvcItf<
+                                        SVC_T,CALL_T>,CALL_T extends RpcCallItf<SVC_T,
+                                        CALL_T>,BUILDER_T extends OncRpcSvcBuilderItf<SVC_T,CALL_T,BUILDER_T>> {
     BUILDER_T withMaxPort(int maxPort);
 
     BUILDER_T withMinPort(int minPort);
@@ -35,9 +36,9 @@ public interface OncRpcSvcBuilderItf<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T ex
 
     BUILDER_T  withClientMode();
 
-    BUILDER_T withRpcService(OncRpcProgram program, RpcDispatchableItf<SVC_T> service);
+    BUILDER_T withRpcService(OncRpcProgram program, RpcDispatchableItf<SVC_T,CALL_T> service);
 
-    BUILDER_T withRpcSessionManager(RpcSessionManagerItf<SVC_T> sessionManager);
+    BUILDER_T withRpcSessionManager(RpcSessionManagerItf<SVC_T,CALL_T> sessionManager);
     
     BUILDER_T withSubjectPropagation();
 
@@ -74,8 +75,8 @@ public interface OncRpcSvcBuilderItf<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T ex
      * et si possible avec un gestonnaire de ssession SASL.
      * @return
      */
-    Map<OncRpcProgram, RpcDispatchableItf<SVC_T>> getRpcServices();
-    RpcSessionManagerItf<SVC_T> getRpcSessionManager();
+    Map<OncRpcProgram, RpcDispatchableItf<SVC_T,CALL_T>> getRpcServices();
+    RpcSessionManagerItf<SVC_T,CALL_T> getRpcSessionManager();
     SVC_T build();
 
     

@@ -1,12 +1,11 @@
-package org.dcache.generics.alt.dispatchable;
+package org.dcache.xdr.model.itf;
 
 import java.net.InetSocketAddress;
 import java.nio.channels.CompletionHandler;
 
 import org.dcache.xdr.Xdr;
-import org.dcache.xdr.model.itf.ReplyQueueItf;
 
-public interface XdrTransportAltItf<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,CALL_T extends RpcCallAltItf<SVC_T,CALL_T>> {
+public interface XdrTransportItf<SVC_T extends RpcSvcItf<SVC_T>> {
 
     /**
      * Send data to remote end point. The handler parameter is a completion
@@ -20,7 +19,7 @@ public interface XdrTransportAltItf<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,CAL
      */
     <A> void send(Xdr xdr, A attachment, CompletionHandler<Integer, ? super A> handler);
 
-    ReplyQueueAltItf<SVC_T,CALL_T> getReplyQueue();
+    ReplyQueueItf<SVC_T> getReplyQueue();
 
     /**
      * Returns is this transport is open and ready.
@@ -51,7 +50,7 @@ public interface XdrTransportAltItf<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,CAL
      *
      * @return
      */
-    XdrTransportAltItf<SVC_T,CALL_T> getPeerTransport();
+    XdrTransportItf<SVC_T> getPeerTransport();
 
     //TODO ProtocolFactoryItf<SVC_T> getProtocolFactory();
     

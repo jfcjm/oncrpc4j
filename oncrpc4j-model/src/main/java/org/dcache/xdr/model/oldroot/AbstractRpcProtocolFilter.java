@@ -17,7 +17,7 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.generics.alt.dispatchable;
+package org.dcache.xdr.model.root;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -31,17 +31,23 @@ import org.dcache.xdr.RpcAccepsStatus;
 import org.dcache.xdr.RpcException;
 import org.dcache.xdr.RpcMessageType;
 import org.dcache.xdr.Xdr;
+import org.dcache.xdr.model.impl.AbstractGrizzlyXdrTransport;
+import org.dcache.xdr.model.itf.HeaderItf;
+import org.dcache.xdr.model.itf.ProtocolFactoryItf;
+import org.dcache.xdr.model.itf.RpcReplyItf;
+import org.dcache.xdr.model.itf.RpcSvcItf;
+import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.glassfish.grizzly.filterchain.BaseFilter;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.filterchain.NextAction;
 
-public class AbstractRpcProtocolFilterAlt<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,CALL_T extends RpcCallAltItf<SVC_T,CALL_T>> extends BaseFilter {
+public class AbstractRpcProtocolFilter<SVC_T extends RpcSvcItf<SVC_T>> extends BaseFilter {
 
-    private final static Logger _log = LoggerFactory.getLogger(AbstractRpcProtocolFilterAlt.class);
-    private final AbstractReplyQueueAlt<SVC_T,CALL_T> _replyQueue;
+    private final static Logger _log = LoggerFactory.getLogger(AbstractRpcProtocolFilter.class);
+    private final AbstractReplyQueue<SVC_T> _replyQueue;
     //TODO private ProtocolFactoryItf<SVC_T> _protoFactory;
 
-    public AbstractRpcProtocolFilterAlt(AbstractReplyQueueAlt<SVC_T,CALL_T> replyQueue /*, ProtocolFactoryItf<SVC_T> protoFactory*/) {
+    public AbstractRpcProtocolFilter(AbstractReplyQueue<SVC_T> replyQueue /*, ProtocolFactoryItf<SVC_T> protoFactory*/) {
         _replyQueue = replyQueue;
         //TODO _protoFactory = protoFactory;
     }
@@ -56,17 +62,17 @@ public class AbstractRpcProtocolFilterAlt<SVC_T extends RpcSvcAltItf<SVC_T,CALL_
         }
 
         xdr.beginDecoding();
-        final HeaderAltItf<SVC_T,CALL_T> header = new AbstractRpcMessageAlt<SVC_T,CALL_T>(xdr);
+        final HeaderItf<SVC_T> header = new AbstractRpcMessage<SVC_T>(xdr);
         /**
          * In case of UDP grizzly does not populates connection with correct destination address.
          * We have to get peer address from the request context, which will contain SocketAddress where from
          * request was coming.
          */
         //TODO  XdrTransportItf<SVC_T> transport = new AbstractGrizzlyXdrTransport<>(ctx.getConnection(), (InetSocketAddress)ctx.getAddress(), _replyQueue, _protoFactory);
-        XdrTransportAltItf<SVC_T,CALL_T> transport = new AbstractGrizzlyXdrTransportAlt<>(ctx.getConnection(), (InetSocketAddress)ctx.getAddress(), _replyQueue);
+        XdrTransportItf<SVC_T> transport = new AbstractGrizzlyXdrTransport<>(ctx.getConnection(), (InetSocketAddress)ctx.getAddress(), _replyQueue);
         switch (header.getMessageType()) {
             case RpcMessageType.CALL:
-                AbstractRpcCallAlt<SVC_T,CALL_T> call = new AbstractRpcCallAlt<SVC_T,CALL_T>(header, xdr, transport);
+                AbstractRpcCall<SVC_T> call = new AbstractRpcCall<SVC_T>(header, xdr, transport);
                 try {
                     call.accept();
                     ctx.setMessage(call);
@@ -82,8 +88,8 @@ public class AbstractRpcProtocolFilterAlt<SVC_T extends RpcSvcAltItf<SVC_T,CALL_
                 return ctx.getInvokeAction();
             case RpcMessageType.REPLY:
                 try {
-                    RpcReplyAltItf<SVC_T,CALL_T> reply = new AbstractRpcReplyAlt<SVC_T,CALL_T>(header, xdr, transport);
-                    CompletionHandler<RpcReplyAltItf<SVC_T,CALL_T>, XdrTransportAltItf<SVC_T,CALL_T>> callback = _replyQueue.get(header.getXid());
+                    RpcReplyItf<SVC_T> reply = new AbstractRpcReply<SVC_T>(header, xdr, transport);
+                    CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback = _replyQueue.get(header.getXid());
                     if (callback != null) {
                         if (!reply.isAccepted()) {
                             callback.failed(new OncRpcRejectedException(reply.getRejectStatus()), transport);

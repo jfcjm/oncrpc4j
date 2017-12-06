@@ -1,4 +1,4 @@
-package org.dcache.generics.alt.dispatchable;
+package org.dcache.xdr.model.itf;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -11,11 +11,9 @@ import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcAuth;
 import org.dcache.xdr.Xdr;
 import org.dcache.xdr.XdrAble;
-import org.dcache.xdr.model.itf.RpcReplyItf;
-import org.dcache.xdr.model.itf.XdrTransportItf;
 
 
-public interface RpcCallAltItf<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>, CALL_T extends RpcCallAltItf<SVC_T,CALL_T>> {
+public interface RpcCallItf<SVC_T extends RpcSvcItf<SVC_T>> {
 
     /**
      * Accept message. Have to be called prior processing RPC call.
@@ -45,9 +43,9 @@ public interface RpcCallAltItf<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>, CALL_T 
 
     /**
      * Get RPC {@XdrTransport} used by this call.
-     * @return transport.
+     * @return transport
      */
-    XdrTransportAltItf<SVC_T,CALL_T> getTransport();
+    XdrTransportItf<SVC_T> getTransport();
 
     /**
      * Get xid associated with this rpc message.
@@ -140,25 +138,25 @@ public interface RpcCallAltItf<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>, CALL_T 
      * @throws IOException
      * @since 2.4.0
      */
-    void call(int procedure, XdrAble args, CompletionHandler<RpcReplyAltItf<SVC_T,CALL_T>, XdrTransportAltItf<SVC_T,CALL_T>> callback,
+    void call(int procedure, XdrAble args, CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback,
             long timeoutValue, TimeUnit timeoutUnits, RpcAuth auth) throws IOException;
 
     /**
      * convenience version of {@link #call(int, XdrAble, CompletionHandler, long, TimeUnit, RpcAuth)} with no auth
      */
-    void call(int procedure, XdrAble args, CompletionHandler<RpcReplyAltItf<SVC_T,CALL_T>, XdrTransportAltItf<SVC_T,CALL_T>> callback,
+    void call(int procedure, XdrAble args, CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback,
             long timeoutValue, TimeUnit timeoutUnits) throws IOException;
 
     /**
      * convenience version of {@link #call(int, XdrAble, CompletionHandler, long, TimeUnit, RpcAuth)} with no timeout
      */
-    void call(int procedure, XdrAble args, CompletionHandler<RpcReplyAltItf<SVC_T,CALL_T>, XdrTransportAltItf<SVC_T,CALL_T>> callback,
+    void call(int procedure, XdrAble args, CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback,
             RpcAuth auth) throws IOException;
 
     /**
      * convenience version of {@link #call(int, XdrAble, CompletionHandler, long, TimeUnit, RpcAuth)} with no timeout or auth
      */
-    void call(int procedure, XdrAble args, CompletionHandler<RpcReplyAltItf<SVC_T,CALL_T>, XdrTransportAltItf<SVC_T,CALL_T>> callback)
+    void call(int procedure, XdrAble args, CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback)
             throws IOException;
 
     /**

@@ -1,4 +1,4 @@
-package org.dcache.generics.alt.dispatchable;
+package org.dcache.xdr.model.root;
 
 import java.io.IOException;
 
@@ -13,7 +13,10 @@ import org.dcache.xdr.Xdr;
 import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrDecodingStream;
 import org.dcache.xdr.XdrEncodingStream;
-public class AbstractRpcMessageAlt<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,CALL_T extends RpcCallAltItf<SVC_T,CALL_T>> implements  HeaderAltItf<SVC_T,CALL_T> {
+import org.dcache.xdr.model.itf.HeaderItf;
+import org.dcache.xdr.model.itf.RpcSvcItf;
+
+public class AbstractRpcMessage<SVC_T extends RpcSvcItf<SVC_T>> implements  HeaderItf<SVC_T> {
 
     private static final int RPCVERS = 2;
     
@@ -29,17 +32,17 @@ public class AbstractRpcMessageAlt<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,CALL
     private XdrAble _args;
     
   //appel de protocolfilter when receiving a message
-    public AbstractRpcMessageAlt(Xdr xdr) throws OncRpcException, IOException {
+    public AbstractRpcMessage(Xdr xdr) throws OncRpcException, IOException {
             minimalDecode(xdr);
         
     }
-    public AbstractRpcMessageAlt(int prog, int ver, int procedure, RpcAuth cred) {
+    public AbstractRpcMessage(int prog, int ver, int procedure, RpcAuth cred) {
     	this(0,0,0,prog,ver,procedure,null,null,cred);
 	}
     
     // Call when doing an initial call
     // ne fonctionne que si utilisé pour un appel
-    private AbstractRpcMessageAlt(int xid, int type,  int rpcvers, int prog, int version,
+    private AbstractRpcMessage(int xid, int type,  int rpcvers, int prog, int version,
             int proc, XdrAble args, RpcAuth auth, RpcAuth cred) {
         _xid = xid;
         _messageType = 	RpcMessageType.CALL;

@@ -1,4 +1,4 @@
-package org.dcache.generics.alt.dispatchable;
+package org.dcache.xdr.model.itf;
 
 import java.io.IOException;
 
@@ -14,7 +14,7 @@ import org.dcache.xdr.XdrEncodingStream;
  * @author jmk
  *
  */
-public interface HeaderAltItf<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,CALL_T extends RpcCallAltItf<SVC_T,CALL_T>> extends XdrAble{
+public interface HeaderItf<SVC_T extends RpcSvcItf<SVC_T>> extends XdrAble{
     
     int getRpcVers();
 

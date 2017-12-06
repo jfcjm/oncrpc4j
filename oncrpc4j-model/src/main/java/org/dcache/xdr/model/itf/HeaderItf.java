@@ -14,7 +14,7 @@ import org.dcache.xdr.XdrEncodingStream;
  * @author jmk
  *
  */
-public interface HeaderItf<SVC_T extends RpcSvcItf<SVC_T>> extends XdrAble{
+public interface HeaderItf<SVC_T extends RpcSvcItf<SVC_T,CALL_T>,CALL_T extends RpcCallItf<SVC_T,CALL_T>> extends XdrAble{
     
     int getRpcVers();
 

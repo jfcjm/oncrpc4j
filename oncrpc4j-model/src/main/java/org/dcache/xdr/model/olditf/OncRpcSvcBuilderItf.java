@@ -1,16 +1,12 @@
-package org.dcache.generics.alt.dispatchable;
+package org.dcache.xdr.model.itf;
 
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 import org.dcache.xdr.IoStrategy;
 import org.dcache.xdr.OncRpcProgram;
-import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
-import org.dcache.xdr.model.itf.RpcSessionManagerItf;
 
-public interface OncRpcSvcBuilderAltItf<SVC_T extends RpcSvcAltItf<
-                                        SVC_T,CALL_T>,CALL_T extends RpcCallAltItf<SVC_T,
-                                        CALL_T>,BUILDER_T extends OncRpcSvcBuilderAltItf<SVC_T,CALL_T,BUILDER_T>> {
+public interface OncRpcSvcBuilderItf<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T extends OncRpcSvcBuilderItf<SVC_T,BUILDER_T>> {
     BUILDER_T withMaxPort(int maxPort);
 
     BUILDER_T withMinPort(int minPort);
@@ -39,9 +35,9 @@ public interface OncRpcSvcBuilderAltItf<SVC_T extends RpcSvcAltItf<
 
     BUILDER_T  withClientMode();
 
-    BUILDER_T withRpcService(OncRpcProgram program, RpcDispatchableAltItf<SVC_T,CALL_T> service);
+    BUILDER_T withRpcService(OncRpcProgram program, RpcDispatchableItf<SVC_T> service);
 
-    BUILDER_T withRpcSessionManager(RpcSessionManagerAltItf<SVC_T,CALL_T> sessionManager);
+    BUILDER_T withRpcSessionManager(RpcSessionManagerItf<SVC_T> sessionManager);
     
     BUILDER_T withSubjectPropagation();
 
@@ -78,8 +74,8 @@ public interface OncRpcSvcBuilderAltItf<SVC_T extends RpcSvcAltItf<
      * et si possible avec un gestonnaire de ssession SASL.
      * @return
      */
-    Map<OncRpcProgram, RpcDispatchableAltItf<SVC_T,CALL_T>> getRpcServices();
-    RpcSessionManagerAltItf<SVC_T,CALL_T> getRpcSessionManager();
+    Map<OncRpcProgram, RpcDispatchableItf<SVC_T>> getRpcServices();
+    RpcSessionManagerItf<SVC_T> getRpcSessionManager();
     SVC_T build();
 
     

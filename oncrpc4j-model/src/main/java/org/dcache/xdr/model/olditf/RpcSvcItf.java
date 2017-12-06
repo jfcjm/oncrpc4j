@@ -1,4 +1,4 @@
-package org.dcache.generics.alt.dispatchable;
+package org.dcache.xdr.model.itf;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -6,10 +6,8 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.dcache.xdr.OncRpcProgram;
-import org.dcache.xdr.model.itf.RpcCallItf;
-import org.dcache.xdr.model.itf.RpcDispatchableItf;
 
-public interface RpcSvcAltItf<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,CALL_T extends RpcCallAltItf<SVC_T,CALL_T>>  {
+public interface RpcSvcItf<SVC_T extends RpcSvcItf<SVC_T>>  {
 
     /**
      * Register a new PRC service. Existing registration will be overwritten.
@@ -17,7 +15,7 @@ public interface RpcSvcAltItf<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,CALL_T ex
      * @param prog program number
      * @param handler RPC requests handler.
      */
-    void register(OncRpcProgram prog, RpcDispatchableAltItf<SVC_T,CALL_T> handler);
+    void register(OncRpcProgram prog, RpcDispatchableItf<SVC_T> handler);
 
     /**
      * Unregister program.
@@ -31,7 +29,7 @@ public interface RpcSvcAltItf<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,CALL_T ex
      * @param services
      * @deprecated use {@link OncRpcSvcBuilder#withRpcService} instead.
      */
-    void setPrograms(Map<OncRpcProgram, RpcDispatchableAltItf<SVC_T,CALL_T>> services);
+    void setPrograms(Map<OncRpcProgram, RpcDispatchableItf<SVC_T>> services);
 
     void start() throws IOException;
 
@@ -39,9 +37,9 @@ public interface RpcSvcAltItf<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,CALL_T ex
 
     void stop(long gracePeriod, TimeUnit timeUnit) throws IOException;
 
-    XdrTransportAltItf<SVC_T,CALL_T> connect(InetSocketAddress socketAddress) throws IOException;
+    XdrTransportItf<SVC_T> connect(InetSocketAddress socketAddress) throws IOException;
 
-    XdrTransportAltItf<SVC_T,CALL_T> connect(InetSocketAddress socketAddress, long timeout, TimeUnit timeUnit) throws IOException;
+    XdrTransportItf<SVC_T> connect(InetSocketAddress socketAddress, long timeout, TimeUnit timeUnit) throws IOException;
 
     /**
      * Returns the address of the endpoint this service is bound to,

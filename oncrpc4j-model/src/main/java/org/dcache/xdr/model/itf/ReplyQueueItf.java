@@ -5,7 +5,7 @@ import java.net.SocketAddress;
 import java.nio.channels.CompletionHandler;
 import java.util.concurrent.TimeUnit;
 
-public interface ReplyQueueItf<SVC_T extends RpcSvcItf<SVC_T>> {
+public interface ReplyQueueItf<SVC_T extends RpcSvcItf<SVC_T,CALL_T>,CALL_T extends RpcCallItf<SVC_T,CALL_T>> {
 
     /**
      * Register callback handler for a given xid. The Callback is called when
@@ -18,7 +18,7 @@ public interface ReplyQueueItf<SVC_T extends RpcSvcItf<SVC_T>> {
      * @throws EOFException if disconnected
      */
     void registerKey(int xid, SocketAddress addr,
-            CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback) throws EOFException;
+            CompletionHandler<RpcReplyItf<SVC_T,CALL_T>, XdrTransportItf<SVC_T,CALL_T>> callback) throws EOFException;
 
     /**
      * Register callback handler for a given xid. The Callback is called when
@@ -33,7 +33,7 @@ public interface ReplyQueueItf<SVC_T extends RpcSvcItf<SVC_T>> {
      * @throws EOFException if disconnected
      */
     void registerKey(int xid, SocketAddress addr,
-            CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback, long timeout, TimeUnit timeoutUnits)
+            CompletionHandler<RpcReplyItf<SVC_T,CALL_T>, XdrTransportItf<SVC_T,CALL_T>> callback, long timeout, TimeUnit timeoutUnits)
             throws EOFException;
 
 
@@ -46,7 +46,7 @@ public interface ReplyQueueItf<SVC_T extends RpcSvcItf<SVC_T>> {
      * @param xid of rpc request.
      * @return completion handler for given xid or {@code null} if xid is unknown.
      */
-    CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> get(int xid);
+    CompletionHandler<RpcReplyItf<SVC_T,CALL_T>, XdrTransportItf<SVC_T,CALL_T>> get(int xid);
 
     /**
      * Shutdown all background activity, if any.

@@ -17,7 +17,7 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.generics.alt.dispatchable;
+package org.dcache.xdr.model.root;
 
 import java.io.IOException;
 
@@ -30,13 +30,16 @@ import org.dcache.xdr.RpcRejectStatus;
 import org.dcache.xdr.RpcReplyStatus;
 import org.dcache.xdr.Xdr;
 import org.dcache.xdr.XdrAble;
+import org.dcache.xdr.model.itf.HeaderItf;
+import org.dcache.xdr.model.itf.RpcReplyItf;
+import org.dcache.xdr.model.itf.RpcSvcItf;
+import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AbstractRpcReplyAlt<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,CALL_T extends RpcCallAltItf<SVC_T,CALL_T>> 
-    implements RpcReplyAltItf<SVC_T,CALL_T>{
+public class AbstractRpcReply<SVC_T extends RpcSvcItf<SVC_T>> implements RpcReplyItf<SVC_T>{
 
-    private final static Logger _log = LoggerFactory.getLogger(AbstractRpcReplyAlt.class);
+    private final static Logger _log = LoggerFactory.getLogger(AbstractRpcReply.class);
     /**
      * XID of corresponding request
      */
@@ -52,15 +55,15 @@ public class AbstractRpcReplyAlt<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,CALL_T
     private int _authStatus;
 
     private RpcAuthVerifier _verf;
-    private final XdrTransportAltItf<SVC_T,CALL_T> _transport;
+    private final XdrTransportItf<SVC_T> _transport;
 
 
 
-    public AbstractRpcReplyAlt(HeaderAltItf<SVC_T,CALL_T> header, Xdr xdr, XdrTransportAltItf<SVC_T,CALL_T> transport) throws OncRpcException, IOException {
+    public AbstractRpcReply(HeaderItf<SVC_T> header, Xdr xdr, XdrTransportItf<SVC_T> transport) throws OncRpcException, IOException {
         this(header.getXid(),xdr,transport);
     }
     
-    public AbstractRpcReplyAlt(int xid, Xdr xdr, XdrTransportAltItf<SVC_T,CALL_T> transport) throws OncRpcException, IOException {
+    public AbstractRpcReply(int xid, Xdr xdr, XdrTransportItf<SVC_T> transport) throws OncRpcException, IOException {
         _xid = xid;
         _xdr = xdr;
         _transport = transport;

@@ -33,11 +33,12 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.dcache.xdr.model.itf.ReplyQueueItf;
+import org.dcache.xdr.model.itf.RpcCallItf;
 import org.dcache.xdr.model.itf.RpcReplyItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
 
-public class AbstractReplyQueue<SVC_T extends RpcSvcItf<SVC_T>> implements ReplyQueueItf<SVC_T>{
+public  class AbstractReplyQueue<SVC_T extends RpcSvcItf<SVC_T,CALL_T>,CALL_T extends RpcCallItf<SVC_T,CALL_T>> implements ReplyQueueItf<SVC_T,CALL_T> {
 
     private final ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(1, new ThreadFactory() {
         private final AtomicInteger counter = new AtomicInteger();
@@ -51,37 +52,23 @@ public class AbstractReplyQueue<SVC_T extends RpcSvcItf<SVC_T>> implements Reply
     });
     private final ConcurrentMap<Integer, PendingRequest> _queue = new ConcurrentHashMap<>();
 
-    /**
-     * Register callback handler for a given xid. The Callback is called when
-     * client receives reply from the server, request failed of expired.
-     *
-     * @param xid xid of RPC request.
-     * @param addr socket address of remote endpoint.
-     * @param callback completion handler which will be used when request execution is
-     * finished.
-     * @throws EOFException if disconnected
+    /* (non-Javadoc)
+     * @see org.dcache.xdr.GenItfReplyQueue#registerKey(int, java.net.SocketAddress, java.nio.channels.CompletionHandler)
      */
-    public void registerKey(int xid, SocketAddress addr, CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback) throws EOFException {
+    @Override
+    public void registerKey(int xid, SocketAddress addr, CompletionHandler<RpcReplyItf<SVC_T,CALL_T>, XdrTransportItf<SVC_T,CALL_T>> callback) throws EOFException {
         registerKey(xid, addr, callback, 0, null);
     }
 
-    /**
-     * Register callback handler for a given xid. The Callback is called when
-     * client receives reply from the server, request failed of expired.
-     *
-     * @param xid xid of RPC request.
-     * @param addr socket address of remote endpoint.
-     * @param callback completion handler which will be used when request execution is
-     * finished.
-     * @param timeout how long client is interested in the reply.
-     * @param timeoutUnits units in which timeout value is expressed.
-     * @throws EOFException if disconnected
+    /* (non-Javadoc)
+     * @see org.dcache.xdr.GenItfReplyQueue#registerKey(int, java.net.SocketAddress, java.nio.channels.CompletionHandler, long, java.util.concurrent.TimeUnit)
      */
-    public void registerKey(int xid, SocketAddress addr, CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback, final long timeout, final TimeUnit timeoutUnits) throws EOFException {
+    @Override
+    public void registerKey(int xid, SocketAddress addr, CompletionHandler<RpcReplyItf<SVC_T,CALL_T>, XdrTransportItf<SVC_T,CALL_T>> callback, final long timeout, final TimeUnit timeoutUnits) throws EOFException {
         ScheduledFuture<?> scheduledTimeout = null;
         if (timeout > 0 && timeoutUnits != null) {
             scheduledTimeout = executorService.schedule(() -> {
-                 CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> handler = get(xid);
+                CompletionHandler<RpcReplyItf<SVC_T,CALL_T>, XdrTransportItf<SVC_T,CALL_T>> handler = get(xid);
                 if (handler != null) { //means we're 1st, no response yet
                     handler.failed(new TimeoutException("did not get a response within " + timeout + " " + timeoutUnits), null);
                 }
@@ -90,6 +77,10 @@ public class AbstractReplyQueue<SVC_T extends RpcSvcItf<SVC_T>> implements Reply
         _queue.put(xid, new PendingRequest(addr, callback, scheduledTimeout));
     }
 
+    /* (non-Javadoc)
+     * @see org.dcache.xdr.GenItfReplyQueue#handleDisconnect(java.net.SocketAddress)
+     */
+    @Override
     public void handleDisconnect(SocketAddress addr) {
         EOFException eofException = new EOFException("Disconnected");
 
@@ -101,14 +92,11 @@ public class AbstractReplyQueue<SVC_T extends RpcSvcItf<SVC_T>> implements Reply
                 });
     }
 
-    /**
-     * Get {@link CompletionHandler} for the provided xid.
-     * On completion key will be unregistered.
-     *
-     * @param xid of rpc request.
-     * @return completion handler for given xid or {@code null} if xid is unknown.
+    /* (non-Javadoc)
+     * @see org.dcache.xdr.GenItfReplyQueue#get(int)
      */
-    public CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> get(int xid) {
+    @Override
+    public CompletionHandler<RpcReplyItf<SVC_T,CALL_T>, XdrTransportItf<SVC_T,CALL_T>> get(int xid) {
         PendingRequest request = _queue.remove(xid);
         if (request != null) { //means we're first. call off any pending timeouts
             request.cancelTimeout();
@@ -117,17 +105,13 @@ public class AbstractReplyQueue<SVC_T extends RpcSvcItf<SVC_T>> implements Reply
             return null;
         }
     }
-    /**
-     * JMK Needed to convert this class to non-static
-     * @author jmk
-     *
-     */
-    private class PendingRequest {
-        private final CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> handler;
+
+    private  class PendingRequest {
+        private final CompletionHandler<RpcReplyItf<SVC_T,CALL_T>, XdrTransportItf<SVC_T,CALL_T>> handler;
         private final ScheduledFuture<?> scheduledTimeout;
         private final SocketAddress addr;
 
-        public PendingRequest(SocketAddress addr, CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> handler, ScheduledFuture<?> scheduledTimeout) {
+        public PendingRequest(SocketAddress addr, CompletionHandler<RpcReplyItf<SVC_T,CALL_T>, XdrTransportItf<SVC_T,CALL_T>> handler, ScheduledFuture<?> scheduledTimeout) {
             this.handler = handler;
             this.scheduledTimeout = scheduledTimeout;
             this.addr = addr;
@@ -145,9 +129,10 @@ public class AbstractReplyQueue<SVC_T extends RpcSvcItf<SVC_T>> implements Reply
         }
     }
 
-    /**
-     * Shutdown all background activity, if any.
+    /* (non-Javadoc)
+     * @see org.dcache.xdr.GenItfReplyQueue#shutdown()
      */
+    @Override
     public void shutdown() {
         executorService.shutdown();
     }

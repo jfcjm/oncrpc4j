@@ -14,9 +14,9 @@ import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrDecodingStream;
 import org.dcache.xdr.XdrEncodingStream;
 import org.dcache.xdr.model.itf.HeaderItf;
+import org.dcache.xdr.model.itf.RpcCallItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
-
-public class AbstractRpcMessage<SVC_T extends RpcSvcItf<SVC_T>> implements  HeaderItf<SVC_T> {
+public class AbstractRpcMessage<SVC_T extends RpcSvcItf<SVC_T,CALL_T>,CALL_T extends RpcCallItf<SVC_T,CALL_T>> implements  HeaderItf<SVC_T,CALL_T> {
 
     private static final int RPCVERS = 2;
     

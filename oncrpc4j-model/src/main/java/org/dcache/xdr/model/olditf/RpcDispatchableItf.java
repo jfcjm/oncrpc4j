@@ -17,7 +17,7 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.generics.alt.dispatchable;
+package org.dcache.xdr.model.itf;
 
 import java.io.IOException;
 
@@ -30,8 +30,8 @@ import org.dcache.xdr.OncRpcException;
  *
  */
 @FunctionalInterface
-public interface RpcDispatchableAltItf<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,CALL_T extends RpcCallAltItf<SVC_T,CALL_T>> {
-    public void dispatchOncRpcCall( CALL_T call)
+public interface RpcDispatchableItf<SVC_T extends RpcSvcItf<SVC_T>> {
+    public void dispatchOncRpcCall(RpcCallItf<SVC_T>  call)
             throws OncRpcException, IOException;
 
 }

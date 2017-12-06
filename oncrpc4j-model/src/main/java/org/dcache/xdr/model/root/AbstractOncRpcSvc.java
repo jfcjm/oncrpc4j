@@ -24,8 +24,9 @@ import static org.dcache.xdr.GrizzlyUtils.rpcMessageReceiverFor;
 import org.dcache.xdr.IoStrategy;
 import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcProgram;
-import org.dcache.xdr.model.impl.AbstractGrizzlyXdrTransport;
 import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
+import org.dcache.xdr.model.itf.ReplyQueueItf;
+import org.dcache.xdr.model.itf.RpcCallItf;
 import org.dcache.xdr.model.itf.RpcDispatchableItf;
 import org.dcache.xdr.model.itf.RpcSessionManagerItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
@@ -37,6 +38,7 @@ import org.glassfish.grizzly.GrizzlyFuture;
 import org.glassfish.grizzly.PortRange;
 import org.glassfish.grizzly.SocketBinder;
 import org.glassfish.grizzly.Transport;
+import org.glassfish.grizzly.filterchain.Filter;
 import org.glassfish.grizzly.filterchain.FilterChain;
 import org.glassfish.grizzly.filterchain.FilterChainBuilder;
 import org.glassfish.grizzly.filterchain.TransportFilter;
@@ -83,7 +85,11 @@ import static org.dcache.xdr.GrizzlyUtils.transportFor;
  *
  * @param <SVC_T>
  */
-public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T extends  OncRpcSvcBuilderItf<SVC_T,BUILDER_T> > implements  RpcSvcItf<SVC_T>{
+public abstract class AbstractOncRpcSvc<
+                SVC_T extends RpcSvcItf<SVC_T,CALL_T>,
+                CALL_T extends RpcCallItf<SVC_T,CALL_T>,
+                BUILDER_T extends  OncRpcSvcBuilderItf<SVC_T,CALL_T,BUILDER_T>
+          > implements  RpcSvcItf<SVC_T,CALL_T>{
     
     private final static Logger _log = LoggerFactory.getLogger(AbstractOncRpcSvc.class);
     
@@ -97,18 +103,18 @@ public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T
 
     private final ExecutorService _requestExecutor;
 
-    private final AbstractReplyQueue<SVC_T> _replyQueue = new AbstractReplyQueue<>();
+    private final ReplyQueueItf<SVC_T,CALL_T> _replyQueue = createReplyQueue();
 
     private final boolean _withSubjectPropagation;
     /**
      * Handle RPCSEC_GSS
      */
-    private RpcSessionManagerItf<SVC_T> _rpcSessionManager;
+    private RpcSessionManagerItf<SVC_T,CALL_T> _rpcSessionManager;
 
     /**
      * mapping of registered programs.
      */
-    private final Map<OncRpcProgram, RpcDispatchableItf<SVC_T>> _programs =
+    private final Map<OncRpcProgram, RpcDispatchableItf<SVC_T,CALL_T>> _programs =
             new ConcurrentHashMap<>();
 
     /**
@@ -187,7 +193,7 @@ public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T
      * @param prog program number
      * @param handler RPC requests handler.
      */
-    public void register(OncRpcProgram prog, RpcDispatchableItf<SVC_T> handler) {
+    public void register(OncRpcProgram prog, RpcDispatchableItf<SVC_T,CALL_T> handler) {
         _log.info("Registering new program {} : {}", prog, handler);
         _programs.put(prog, handler);
     }
@@ -208,7 +214,7 @@ public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T
      * @deprecated use {@link AbstractOncRpcSvcBuilder#withRpcService} instead.
      */
     @Deprecated
-    public void setPrograms(Map<OncRpcProgram, RpcDispatchableItf<SVC_T>> services) {
+    public void setPrograms(Map<OncRpcProgram, RpcDispatchableItf<SVC_T,CALL_T>> services) {
         _programs.putAll(services);
     }
 
@@ -223,7 +229,7 @@ public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T
             filterChain.add(new TransportFilter());
             filterChain.add(rpcMessageReceiverFor(t));
           //TODO filterChain.add(new AbstractRpcProtocolFilter<>(_replyQueue,_protocolFactory));
-            filterChain.add(new AbstractRpcProtocolFilter<>(_replyQueue));
+            filterChain.add(createRpcProtocolFilter(_replyQueue));
             // use GSS if configures
             filterChain.add(_rpcSessionManager);
             filterChain.add(new AbstractRpcDispatcher<>(_requestExecutor, _programs, _withSubjectPropagation));
@@ -286,11 +292,11 @@ public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T
         _requestExecutor.shutdown();
     }
 
-    public XdrTransportItf<SVC_T> connect(InetSocketAddress socketAddress) throws IOException {
+    public XdrTransportItf<SVC_T,CALL_T> connect(InetSocketAddress socketAddress) throws IOException {
         return connect(socketAddress, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
 
-    public XdrTransportItf<SVC_T> connect(InetSocketAddress socketAddress, long timeout, TimeUnit timeUnit) throws IOException {
+    public XdrTransportItf<SVC_T,CALL_T> connect(InetSocketAddress socketAddress, long timeout, TimeUnit timeUnit) throws IOException {
 
         // in client mode only one transport is defined
         NIOTransport transport = _transports.get(0);
@@ -306,7 +312,7 @@ public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T
         try {
             //noinspection unchecked
             Connection<InetSocketAddress> connection = connectFuture.get(timeout, timeUnit);
-            return new AbstractGrizzlyXdrTransport<SVC_T>(connection, _replyQueue /*,_protocolFactory*/);
+            return new AbstractGrizzlyXdrTransport<SVC_T,CALL_T>(connection, _replyQueue /*,_protocolFactory*/);
         } catch (ExecutionException e) {
             Throwable t = getRootCause(e);
             propagateIfPossible(t, IOException.class);
@@ -348,7 +354,7 @@ public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T
 		.collect(Collectors.joining(",", getName() +"-[", "]"));
     }
     
-    protected Map<OncRpcProgram, RpcDispatchableItf<SVC_T>> getPrograms() {
+    protected Map<OncRpcProgram, RpcDispatchableItf<SVC_T,CALL_T>> getPrograms() {
         return _programs;
     }
     
@@ -384,4 +390,19 @@ public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T
      * @throws IOException 
      */
     protected abstract void preStopActions() throws IOException;
+    
+    /**
+     * create an rpcprotocolfilter able to handle message for the given Rpc Implementation
+     *
+     * @param _replyQueue
+     * @return
+     */
+    protected abstract Filter createRpcProtocolFilter(ReplyQueueItf<SVC_T, CALL_T> _replyQueue);
+    
+
+    /**
+     * Create a replyqueue able to process return message for the given rpc implemntation
+     * @return
+     */
+    protected abstract ReplyQueueItf<SVC_T, CALL_T> createReplyQueue();
 }

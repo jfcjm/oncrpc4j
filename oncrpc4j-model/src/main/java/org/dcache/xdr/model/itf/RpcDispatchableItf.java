@@ -30,8 +30,8 @@ import org.dcache.xdr.OncRpcException;
  *
  */
 @FunctionalInterface
-public interface RpcDispatchableItf<SVC_T extends RpcSvcItf<SVC_T>> {
-    public void dispatchOncRpcCall(RpcCallItf<SVC_T>  call)
+public interface RpcDispatchableItf<SVC_T extends RpcSvcItf<SVC_T,CALL_T>,CALL_T extends RpcCallItf<SVC_T,CALL_T>> {
+    public void dispatchOncRpcCall( CALL_T call)
             throws OncRpcException, IOException;
 
 }

@@ -34,7 +34,6 @@ import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrEncodingStream;
 import org.dcache.xdr.XdrVoid;
 import org.dcache.xdr.model.itf.HeaderItf;
-import org.dcache.xdr.model.itf.ProtocolFactoryItf;
 import org.dcache.xdr.model.itf.ReplyQueueItf;
 import org.dcache.xdr.model.itf.RpcCallItf;
 import org.dcache.xdr.model.itf.RpcReplyItf;
@@ -58,7 +57,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallItf<SVC_T>{
+public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T,CALL_T>,CALL_T extends RpcCallItf<SVC_T,CALL_T>> 
+    implements RpcCallItf<SVC_T,CALL_T>{
 
     private final static Logger _log = LoggerFactory.getLogger(AbstractRpcCall.class);
 
@@ -68,7 +68,7 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
      */
     private final AtomicInteger xidGenerator = new AtomicInteger(RND.nextInt());
 
-    private  final HeaderItf<SVC_T> _header;
+    private  final HeaderItf<SVC_T,CALL_T> _header;
     
     /**
      * Supported RPC protocol version
@@ -78,7 +78,7 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
     /**
      * RPC call transport.
      */
-    private final XdrTransportItf<SVC_T> _transport;
+    private final XdrTransportItf<SVC_T,CALL_T> _transport;
 
     /**
      * Call body.
@@ -150,18 +150,17 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
     private final CompletionHandler<Integer, InetSocketAddress> _sendNotificationHandler
             = new NotifyListenersCompletionHandler();
 
-    private ProtocolFactoryItf<SVC_T> _protoFactory;
 
-    public AbstractRpcCall(int prog, int ver, RpcAuth cred, XdrTransportItf<SVC_T> transport) {
+    public AbstractRpcCall(int prog, int ver, RpcAuth cred, XdrTransportItf<SVC_T,CALL_T> transport) {
         this(new AbstractRpcMessage<>(prog, ver, 0, cred), new Xdr(Xdr.INITIAL_XDR_SIZE), transport);
     }
     
     //* call from gss
-    public AbstractRpcCall(AbstractRpcCall<SVC_T> call) {
+    public AbstractRpcCall(AbstractRpcCall<SVC_T,CALL_T> call) {
     	this(call._header,call._xdr,call._transport);
     }
 
-    public AbstractRpcCall(HeaderItf<SVC_T> header, Xdr xdr, XdrTransportItf<SVC_T> transport) {
+    public AbstractRpcCall(HeaderItf<SVC_T,CALL_T> header, Xdr xdr, XdrTransportItf<SVC_T,CALL_T> transport) {
         _header = header;
         _xdr = xdr;
         _transport = transport;
@@ -208,7 +207,7 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
      * Get RPC {@XdrTransport} used by this call.
      * @return transport
      */
-    public XdrTransportItf<SVC_T> getTransport() {
+    public XdrTransportItf<SVC_T,CALL_T> getTransport() {
         return _transport;
     }
 
@@ -361,7 +360,7 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
      * @throws IOException
      * @since 2.4.0
      */
-    public void call(int procedure, XdrAble args, CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback, long timeoutValue, TimeUnit timeoutUnits, RpcAuth auth)
+    public void call(int procedure, XdrAble args, CompletionHandler<RpcReplyItf<SVC_T,CALL_T>, XdrTransportItf<SVC_T,CALL_T>> callback, long timeoutValue, TimeUnit timeoutUnits, RpcAuth auth)
             throws IOException {
         callInternal(procedure, args, callback, timeoutValue, timeoutUnits, auth);
     }
@@ -369,7 +368,7 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
     /**
      * convenience version of {@link #call(int, XdrAble, CompletionHandler, long, TimeUnit, RpcAuth)} with no auth
      */
-    public void call(int procedure, XdrAble args, CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback, long timeoutValue, TimeUnit timeoutUnits)
+    public void call(int procedure, XdrAble args, CompletionHandler<RpcReplyItf<SVC_T,CALL_T>, XdrTransportItf<SVC_T,CALL_T>> callback, long timeoutValue, TimeUnit timeoutUnits)
             throws IOException {
         callInternal(procedure, args, callback, timeoutValue, timeoutUnits, null);
     }
@@ -377,7 +376,7 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
     /**
      * convenience version of {@link #call(int, XdrAble, CompletionHandler, long, TimeUnit, RpcAuth)} with no timeout
      */
-    public void call(int procedure, XdrAble args, CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback, RpcAuth auth)
+    public void call(int procedure, XdrAble args, CompletionHandler<RpcReplyItf<SVC_T,CALL_T>, XdrTransportItf<SVC_T,CALL_T>> callback, RpcAuth auth)
             throws IOException {
         callInternal(procedure, args, callback, 0, null, auth);
     }
@@ -385,7 +384,7 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
     /**
      * convenience version of {@link #call(int, XdrAble, CompletionHandler, long, TimeUnit, RpcAuth)} with no timeout or auth
      */
-    public void call(int procedure, XdrAble args, CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback)
+    public void call(int procedure, XdrAble args, CompletionHandler<RpcReplyItf<SVC_T,CALL_T>, XdrTransportItf<SVC_T,CALL_T>> callback)
             throws IOException {
         callInternal(procedure, args, callback, 0, null, null);
     }
@@ -402,7 +401,7 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
      * @throws OncRpcException
      * @throws IOException
      */
-    private int callInternal(int procedure, XdrAble args, CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback,
+    private int callInternal(int procedure, XdrAble args, CompletionHandler<RpcReplyItf<SVC_T,CALL_T>, XdrTransportItf<SVC_T,CALL_T>> callback,
                              long timeoutValue, TimeUnit timeoutUnits, RpcAuth auth)
             throws IOException {
         
@@ -412,7 +411,7 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
         _header.update(xid, RpcMessageType.CALL, RPCVERS, procedure, auth,args);
         _header.xdrEncodeAsCall(xdr);
 
-        ReplyQueueItf<SVC_T> replyQueue = _transport.getReplyQueue();
+        ReplyQueueItf<SVC_T,CALL_T> replyQueue = _transport.getReplyQueue();
         if (callback != null) {
             replyQueue.registerKey(xid, _transport.getLocalSocketAddress(), callback, timeoutValue, timeoutUnits);
         } else {
@@ -541,10 +540,10 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
             throws IOException {
 
         final CompletableFuture<T> future = new CompletableFuture<>();
-        CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback = new CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>>() {
+        CompletionHandler<RpcReplyItf<SVC_T,CALL_T>, XdrTransportItf<SVC_T,CALL_T>> callback = new CompletionHandler<RpcReplyItf<SVC_T,CALL_T>, XdrTransportItf<SVC_T,CALL_T>>() {
 
             @Override
-            public void completed(RpcReplyItf<SVC_T> reply, XdrTransportItf<SVC_T> attachment) {
+            public void completed(RpcReplyItf<SVC_T,CALL_T> reply, XdrTransportItf<SVC_T,CALL_T> attachment) {
                 try {
                     reply.getReplyResult(result);
                     future.complete(result);
@@ -554,7 +553,7 @@ public class AbstractRpcCall<SVC_T extends RpcSvcItf<SVC_T>> implements RpcCallI
             }
 
             @Override
-            public void failed(Throwable exc, XdrTransportItf<SVC_T> attachment) {
+            public void failed(Throwable exc, XdrTransportItf<SVC_T,CALL_T> attachment) {
                 future.completeExceptionally(exc);
             }
         };

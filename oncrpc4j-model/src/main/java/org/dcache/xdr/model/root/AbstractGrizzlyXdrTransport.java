@@ -17,7 +17,7 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.generics.alt.dispatchable;
+package org.dcache.xdr.model.root;
 
 
 import java.net.InetSocketAddress;
@@ -25,8 +25,8 @@ import java.nio.channels.CompletionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.dcache.xdr.Xdr;
-import org.dcache.xdr.model.itf.ProtocolFactoryItf;
 import org.dcache.xdr.model.itf.ReplyQueueItf;
+import org.dcache.xdr.model.itf.RpcCallItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.glassfish.grizzly.Buffer;
@@ -37,22 +37,22 @@ import org.glassfish.grizzly.asyncqueue.WritableMessage;
 
 import static java.util.Objects.requireNonNull;
 
-public  class AbstractGrizzlyXdrTransportAlt<SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,CALL_T extends RpcCallAltItf<SVC_T,CALL_T>> implements XdrTransportAltItf<SVC_T,CALL_T> {
+public  class AbstractGrizzlyXdrTransport<SVC_T extends RpcSvcItf<SVC_T,CALL_T>,CALL_T extends RpcCallItf<SVC_T,CALL_T>> implements XdrTransportItf<SVC_T,CALL_T> {
 
-    private final static Logger _log = LoggerFactory.getLogger(AbstractGrizzlyXdrTransportAlt.class);
+    private final static Logger _log = LoggerFactory.getLogger(AbstractGrizzlyXdrTransport.class);
 
     private final Connection<InetSocketAddress> _connection;
-    private final ReplyQueueAltItf<SVC_T,CALL_T> _replyQueue;
+    private final ReplyQueueItf<SVC_T,CALL_T> _replyQueue;
     private final InetSocketAddress _localAddress;
     private final InetSocketAddress _remoteAddress;
 
   //TODO private ProtocolFactoryItf<SVC_T> _factory;
 
-    public  AbstractGrizzlyXdrTransportAlt(Connection<InetSocketAddress> connection, ReplyQueueAltItf<SVC_T,CALL_T> replyQueue /*, ProtocolFactoryItf<SVC_T> factory*/) {
+    public  AbstractGrizzlyXdrTransport(Connection<InetSocketAddress> connection, ReplyQueueItf<SVC_T,CALL_T> replyQueue /*, ProtocolFactoryItf<SVC_T> factory*/) {
         this(connection, connection.getPeerAddress(), replyQueue /*,factory*/);
     }
 
-    public AbstractGrizzlyXdrTransportAlt(Connection<InetSocketAddress> connection, InetSocketAddress remoteAddress, ReplyQueueAltItf<SVC_T,CALL_T> replyQueue/*, ProtocolFactoryItf<SVC_T> factory */) {
+    public AbstractGrizzlyXdrTransport(Connection<InetSocketAddress> connection, InetSocketAddress remoteAddress, ReplyQueueItf<SVC_T,CALL_T> replyQueue/*, ProtocolFactoryItf<SVC_T> factory */) {
         _connection = connection;
         _replyQueue = replyQueue;
         _localAddress = _connection.getLocalAddress();
@@ -99,13 +99,13 @@ public  class AbstractGrizzlyXdrTransportAlt<SVC_T extends RpcSvcAltItf<SVC_T,CA
     }
 
     @Override
-    public ReplyQueueAltItf<SVC_T,CALL_T> getReplyQueue() {
+    public ReplyQueueItf<SVC_T,CALL_T> getReplyQueue() {
         return _replyQueue;
     }
 
     @Override
-    public XdrTransportAltItf<SVC_T,CALL_T> getPeerTransport() {
-        return new AbstractGrizzlyXdrTransportAlt<SVC_T,CALL_T>(_connection, getReplyQueue()/*,_factory*/);
+    public XdrTransportItf<SVC_T,CALL_T> getPeerTransport() {
+        return new AbstractGrizzlyXdrTransport<SVC_T,CALL_T>(_connection, getReplyQueue()/*,_factory*/);
     }
 
     @Override
