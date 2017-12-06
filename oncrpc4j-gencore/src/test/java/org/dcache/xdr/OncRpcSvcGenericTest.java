@@ -24,8 +24,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeoutException;
 import org.dcache.utils.net.InetSocketAddresses;
-import org.dcache.xdr.model.itf.RpcSvcItf;
-import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
 import org.dcache.xdr.portmap.GenericPortmapClient;
 import org.dcache.xdr.portmap.OncPortmapClient;
 import org.dcache.xdr.portmap.OncRpcPortmap;
@@ -37,12 +35,12 @@ import static org.junit.Assert.*;
 
 public class OncRpcSvcGenericTest {
 
-    private RpcSvcItf<?> svc;
+    private  IOncRpcSvc svc;
 	
 
     @Test
     public void testBindToInterface() throws IOException {
-        svc = new GenOncRpcSvcBuilder<>()
+        svc = new GenOncRpcSvcBuilder()
                 .withTCP()
                 .withUDP()
                 .withoutAutoPublish()
@@ -60,7 +58,7 @@ public class OncRpcSvcGenericTest {
 
     @Test
     public void testNotBindToInterface() throws IOException {
-        svc = new GenOncRpcSvcBuilder<>()
+        svc = new GenOncRpcSvcBuilder()
                 .withTCP()
                 .withUDP()
                 .withoutAutoPublish()
@@ -76,13 +74,13 @@ public class OncRpcSvcGenericTest {
     }
 	
 	@Test
-    public <SVC_T extends RpcSvcItf<SVC_T>>void testPortmapSetApplication() throws IOException, TimeoutException {
+    public void testPortmapSetApplication() throws IOException, TimeoutException {
 		int TEST_PROG = 100024;
 		int TEST_PROG_VER = 1;
 		String TEST_PROG_OWNER = "superuser";
-		OncRpcbindServer<SVC_T> bindService = new OncRpcbindServer<>();
+		OncRpcbindServer bindService = new OncRpcbindServer();
 		OncRpcProgram portMapProg = new OncRpcProgram(OncRpcPortmap.PORTMAP_PROGRAMM, OncRpcPortmap.PORTMAP_V2);
-		RpcSvcItf<IOncRpcSvc> svc = new GenOncRpcSvcBuilder<>()
+		IOncRpcSvc svc = new GenOncRpcSvcBuilder()
                 .withTCP()
                 .withUDP()
                 .withoutAutoPublish()
@@ -94,7 +92,7 @@ public class OncRpcSvcGenericTest {
         svc.start();
         
         try ( GenOncRpcClient rpcClient = new GenOncRpcClient(InetAddress.getByName(null), IpProtocolType.UDP, svc.getInetSocketAddress(IpProtocolType.UDP).getPort() ) ) {
-			OncPortmapClient portmapClient = new GenericPortmapClient<>(rpcClient.connect()); // init portmapper (only v2 atm)
+			OncPortmapClient portmapClient = new GenericPortmapClient(rpcClient.connect()); // init portmapper (only v2 atm)
             assertTrue(portmapClient.ping()); // ping portmap
 			assertTrue( portmapClient.getPort(OncRpcPortmap.PORTMAP_PROGRAMM, OncRpcPortmap.PORTMAP_V2, "tcp").equals("127.0.0.1.0.111") ); // check port
 			String addr = InetSocketAddresses.uaddrOf(new InetSocketAddress("127.0.0.1",1234)); 

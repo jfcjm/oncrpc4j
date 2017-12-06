@@ -19,14 +19,15 @@
  */
 package org.dcache.xdr.portmap;
 
+import org.dcache.xdr.IOncRpcCall;
+import org.dcache.xdr.IOncRpcSvc;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcAuth;
 import org.dcache.xdr.RpcAuthTypeNone;
 import org.dcache.xdr.XdrBoolean;
 import org.dcache.xdr.XdrString;
 import org.dcache.xdr.XdrVoid;
-import org.dcache.xdr.model.itf.RpcSvcItf;
-import org.dcache.xdr.model.root.AbstractRpcCall;
+import org.dcache.xdr.model.itf.RpcCallItf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,14 +37,15 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class RpcbindV4Client<SVC_T extends RpcSvcItf<SVC_T>> implements OncPortmapClient {
+public class RpcbindV4Client
+    implements OncPortmapClient {
 
     private final static Logger _log = LoggerFactory.getLogger(RpcbindV4Client.class);
 
     private final RpcAuth _auth = new RpcAuthTypeNone();
-    private final AbstractRpcCall<SVC_T>_call;
+    private final RpcCallItf<IOncRpcSvc,IOncRpcCall>_call;
 
-    public RpcbindV4Client(AbstractRpcCall<SVC_T> call) {
+    public RpcbindV4Client(RpcCallItf<IOncRpcSvc,IOncRpcCall> call) {
         _call = call;
     }
 

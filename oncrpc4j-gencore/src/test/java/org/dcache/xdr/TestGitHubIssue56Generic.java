@@ -7,10 +7,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcProgram;
-import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
-import org.dcache.xdr.model.root.AbstractOncRpcSvc;
-import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
 import org.dcache.xdr.portmap.GenericPortmapClient;
 import org.dcache.xdr.portmap.OncRpcPortmap;
 import org.dcache.xdr.portmap.OncRpcbindServer;
@@ -22,7 +19,7 @@ public class TestGitHubIssue56Generic {
 	@Test
 	public void DumpTest() throws IOException, TimeoutException {
 
-		 RpcSvcItf<?> rpcbindServer = new GenOncRpcSvcBuilder<>()
+		  IOncRpcSvc rpcbindServer = new GenOncRpcSvcBuilder()
                 .withTCP()
                 .withUDP()
                 .withoutAutoPublish()
@@ -31,8 +28,8 @@ public class TestGitHubIssue56Generic {
 		rpcbindServer.start();
 		int protoType = IpProtocolType.TCP;
 		GenOncRpcClient rpcClient = new GenOncRpcClient(rpcbindServer.getInetSocketAddress(protoType),protoType );
-		XdrTransportItf<?> transport = rpcClient.connect();
-		GenericPortmapClient<?> portmapClient = new GenericPortmapClient<>(transport);
+		XdrTransportItf<IOncRpcSvc,IOncRpcCall> transport = rpcClient.connect();
+		GenericPortmapClient portmapClient = new GenericPortmapClient(transport);
 		for (rpcb r : portmapClient.dump()){
 			assertEquals("superuser",r.getOwner());
 		}
@@ -41,7 +38,7 @@ public class TestGitHubIssue56Generic {
 	@Test
 	public void UnsetTest() throws IOException, TimeoutException {
 
-		GenOncRpcSvc<?> rpcbindServer = (GenOncRpcSvc<?>) new GenOncRpcSvcBuilder<>()
+		 IOncRpcSvc rpcbindServer = new GenOncRpcSvcBuilder()
                 .withTCP()
                 .withUDP()
                 .withoutAutoPublish()
@@ -50,8 +47,8 @@ public class TestGitHubIssue56Generic {
 		rpcbindServer.start();
 		int protoType = IpProtocolType.TCP;
 		GenOncRpcClient rpcClient = new GenOncRpcClient(rpcbindServer.getInetSocketAddress(protoType),protoType );
-		XdrTransportItf<?> transport = rpcClient.connect();
-		GenericPortmapClient<?> portmapClient = new GenericPortmapClient<>(transport);
+		XdrTransportItf<IOncRpcSvc,IOncRpcCall> transport = rpcClient.connect();
+		GenericPortmapClient portmapClient = new GenericPortmapClient(transport);
 		boolean isUnset=portmapClient.unsetPort(OncRpcPortmap.PORTMAP_PROGRAMM, OncRpcPortmap.PORTMAP_V2, "superuser");
 		assertTrue(isUnset);
 		//NPE when dumping an empry portmapper registrar

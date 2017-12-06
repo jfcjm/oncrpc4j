@@ -2,9 +2,11 @@ package org.dcache.xdr;
 
 import org.dcache.xdr.gss.GssSessionManager;
 import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
+import org.dcache.xdr.model.itf.RpcCallItf;
+import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
 
-public interface IOncRpcSvcBuilder extends OncRpcSvcBuilderItf<IOncRpcSvc,IOncRpcSvcBuilder> {
+public interface IOncRpcSvcBuilder  extends OncRpcSvcBuilderItf<IOncRpcSvc,IOncRpcCall,IOncRpcSvcBuilder> {
     IOncRpcSvcBuilder withGssSessionManager(GssSessionManager gssSessionManager);
     GssSessionManager getGssSessionManager();
     

@@ -21,8 +21,10 @@ package org.dcache.xdr.portmap;
 
 import org.dcache.xdr.GenOncRpcClient;
 import org.dcache.xdr.GenOncRpcSvcBuilder;
+import org.dcache.xdr.IOncRpcCall;
 import org.dcache.xdr.IOncRpcSvc;
 import org.dcache.xdr.IpProtocolType;
+import org.dcache.xdr.OncRpcCall;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.OncRpcProgram;
 import org.dcache.xdr.RpcAuth;
@@ -31,7 +33,6 @@ import org.dcache.xdr.XdrVoid;
 import org.dcache.xdr.model.itf.RpcCallItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
-import org.dcache.xdr.model.root.AbstractRpcCall;
 import org.dcache.xdr.portmap.OncRpcPortmap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,12 +46,12 @@ import java.util.concurrent.TimeoutException;
  * An instance of this class will create an embedded rpc portmap
  * service if OS does not provides one.
  */
-public class OncRpcEmbeddedPortmap<SVC_T extends RpcSvcItf<SVC_T>> {
+public class OncRpcEmbeddedPortmap {
 
     private static final Logger LOG = LoggerFactory.getLogger(OncRpcEmbeddedPortmap.class);
 
     private static final RpcAuth _auth = new RpcAuthTypeNone();
-    private RpcSvcItf<IOncRpcSvc> optionalEmbeddedServer = null;
+    private RpcSvcItf<IOncRpcSvc,IOncRpcCall> optionalEmbeddedServer = null;
 
     public OncRpcEmbeddedPortmap() {
         this(2, TimeUnit.SECONDS);
@@ -62,10 +63,10 @@ public class OncRpcEmbeddedPortmap<SVC_T extends RpcSvcItf<SVC_T>> {
         boolean localPortmapperRunning = false;
         try(GenOncRpcClient rpcClient = new GenOncRpcClient(InetAddress.getByName(null), IpProtocolType.UDP, OncRpcPortmap.PORTMAP_PORT)) {
 
-            XdrTransportItf<IOncRpcSvc> transport = rpcClient.connect();
+            XdrTransportItf<IOncRpcSvc,IOncRpcCall> transport = rpcClient.connect();
             /* check for version 2, 3 and 4 */
             for (int i = 4; i > 1 && !localPortmapperRunning; i--) {
-                RpcCallItf<?> call = new AbstractRpcCall<>(OncRpcPortmap.PORTMAP_PROGRAMM, i, _auth, transport);
+                RpcCallItf<?,?> call = new OncRpcCall(OncRpcPortmap.PORTMAP_PROGRAMM, i, _auth, transport);
                 try {
                     call.call(0, XdrVoid.XDR_VOID, XdrVoid.XDR_VOID, timeoutValue, timeoutUnit);
                     localPortmapperRunning = true;
@@ -81,12 +82,12 @@ public class OncRpcEmbeddedPortmap<SVC_T extends RpcSvcItf<SVC_T>> {
         if (!localPortmapperRunning) {
             try {
                 LOG.info("Starting embedded portmap service");
-                 IOncRpcSvc rpcbindServer = new GenOncRpcSvcBuilder<>()
+                IOncRpcSvc  rpcbindServer = new GenOncRpcSvcBuilder()
                         .withPort(OncRpcPortmap.PORTMAP_PORT)
                         .withTCP()
                         .withUDP()
                         .withoutAutoPublish()
-                        .withRpcService(new OncRpcProgram(OncRpcPortmap.PORTMAP_PROGRAMM, OncRpcPortmap.PORTMAP_V2), new OncRpcbindServer<SVC_T>())
+                        .withRpcService(new OncRpcProgram(OncRpcPortmap.PORTMAP_PROGRAMM, OncRpcPortmap.PORTMAP_V2), new OncRpcbindServer())
                         .build();
                 rpcbindServer.start();
                 optionalEmbeddedServer = rpcbindServer;

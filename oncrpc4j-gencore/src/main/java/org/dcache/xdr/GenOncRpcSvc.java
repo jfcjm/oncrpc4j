@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.concurrent.TimeoutException;
 
 import org.dcache.utils.net.InetSocketAddresses;
-import org.dcache.xdr.model.itf.RpcSvcItf;
+import org.dcache.xdr.model.itf.ReplyQueueItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.dcache.xdr.model.root.AbstractOncRpcSvc;
 import org.dcache.xdr.portmap.GenericPortmapClient;
@@ -18,6 +18,7 @@ import org.dcache.xdr.portmap.OncPortmapClient;
 import org.dcache.xdr.portmap.OncRpcPortmap;
 import org.glassfish.grizzly.Connection;
 import org.glassfish.grizzly.Transport;
+import org.glassfish.grizzly.filterchain.Filter;
 import org.glassfish.grizzly.nio.transport.TCPNIOTransport;
 import org.glassfish.grizzly.nio.transport.UDPNIOTransport;
 import org.slf4j.Logger;
@@ -28,7 +29,9 @@ import org.slf4j.LoggerFactory;
  *
  * @param <SVC_T>
  */
-public class GenOncRpcSvc<SVC_T extends RpcSvcItf<IOncRpcSvc>> extends AbstractOncRpcSvc<IOncRpcSvc,IOncRpcSvcBuilder> implements IOncRpcSvc{
+public class GenOncRpcSvc extends AbstractOncRpcSvc<IOncRpcSvc,IOncRpcCall,IOncRpcSvcBuilder> 
+
+  implements IOncRpcSvc{
     private final static Logger _log = LoggerFactory.getLogger(GenOncRpcSvc.class);
     private boolean _publish;
 
@@ -47,6 +50,7 @@ public class GenOncRpcSvc<SVC_T extends RpcSvcItf<IOncRpcSvc>> extends AbstractO
     //TODO JMK Modifier le nom, cela ne s'applique qu'au serveur
     @Override
     protected void doPreStartAction(Connection<InetSocketAddress> c) throws IOException {
+        _log.debug("Doing PreStart action publish is {}", _publish);
         if ( _publish) {
             publishToPortmap(c, getPrograms().keySet());
         }
@@ -78,10 +82,10 @@ public class GenOncRpcSvc<SVC_T extends RpcSvcItf<IOncRpcSvc>> extends AbstractO
 
         GenOncRpcClient rpcClient = new GenOncRpcClient(InetAddress.getByName(null),
                 IpProtocolType.UDP, OncRpcPortmap.PORTMAP_PORT);
-        XdrTransportItf<IOncRpcSvc> transport = rpcClient.connect();
+        XdrTransportItf<IOncRpcSvc,IOncRpcCall> transport = rpcClient.connect();
 
         try {
-            OncPortmapClient portmapClient = new GenericPortmapClient<IOncRpcSvc>(transport);
+            OncPortmapClient portmapClient = new GenericPortmapClient(transport);
 
             Set<String> netids = new HashSet<>();
             String username = System.getProperty("user.name");
@@ -135,10 +139,10 @@ public class GenOncRpcSvc<SVC_T extends RpcSvcItf<IOncRpcSvc>> extends AbstractO
 
         GenOncRpcClient rpcClient = new GenOncRpcClient(InetAddress.getByName(null),
                 IpProtocolType.UDP, OncRpcPortmap.PORTMAP_PORT);
-        XdrTransportItf<IOncRpcSvc> transport = rpcClient.connect();
+        XdrTransportItf<IOncRpcSvc,IOncRpcCall> transport = rpcClient.connect();
 
         try {
-            OncPortmapClient portmapClient = new GenericPortmapClient<>(transport);
+            OncPortmapClient portmapClient = new GenericPortmapClient(transport);
 
             String username = System.getProperty("user.name");
 
@@ -155,5 +159,15 @@ public class GenOncRpcSvc<SVC_T extends RpcSvcItf<IOncRpcSvc>> extends AbstractO
         } finally {
             rpcClient.close();
         }
+    }
+
+    @Override
+    protected Filter createRpcProtocolFilter(ReplyQueueItf<IOncRpcSvc, IOncRpcCall> _replyQueue) {
+        return new GenRpcProtocolFilter(_replyQueue);
+    }
+
+    @Override
+    protected ReplyQueueItf<IOncRpcSvc, IOncRpcCall> createReplyQueue() {
+        return new GenReplyQueue();
     }
 }

@@ -28,6 +28,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.security.auth.Subject;
 
+import org.dcache.xdr.IOncRpcCall;
+import org.dcache.xdr.IOncRpcSvc;
 import org.dcache.xdr.RpcLoginService;
 import org.dcache.utils.Opaque;
 
@@ -36,7 +38,7 @@ import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
 import org.ietf.jgss.GSSManager;
 import org.ietf.jgss.Oid;
-
+import org.dcache.xdr.model.itf.RpcCallItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
 
@@ -47,7 +49,7 @@ public class GssSessionManager {
     private static final Logger _log = LoggerFactory.getLogger(GssSessionManager.class);
     private final GSSManager gManager = GSSManager.getInstance();
     private final GSSCredential _serviceCredential;
-    private final RpcLoginService _loginService;
+    private final RpcLoginService<IOncRpcSvc,IOncRpcCall> _loginService;
 
     public GssSessionManager(RpcLoginService loginService, String servicePrincipal, String keytab)
             throws GSSException, IOException {
@@ -102,7 +104,7 @@ public class GssSessionManager {
         return context;
     }
 
-    public <SVC_T extends RpcSvcItf<SVC_T>> Subject subjectOf(XdrTransportItf<SVC_T> transport, GSSContext context) {
+    public Subject subjectOf(XdrTransportItf<IOncRpcSvc,IOncRpcCall> transport, GSSContext context) {
         return _loginService.login(transport, context);
     }
 }
