@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.dcache.xdr.AbstractOncRpcClient;
+import org.dcache.xdr.GenOncRpcClient;
 import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcAuth;
@@ -34,16 +34,18 @@ import org.dcache.xdr.RpcProgUnavailable;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.dcache.xdr.model.root.AbstractRpcCall;
+import org.dcache.xdr.portmap.PortmapV2Client;
+import org.dcache.xdr.portmap.RpcbindV4Client;
 
-public class GenericPortmapClient<SVC_T extends RpcSvcItf<SVC_T>> implements OncPortmapClient<SVC_T> {
+public class GenericPortmapClient<SVC_T extends RpcSvcItf<SVC_T>> implements OncPortmapClient {
 
     private final static Logger _log = LoggerFactory.getLogger(GenericPortmapClient.class);
     private final RpcAuth _auth = new RpcAuthTypeNone();
-    private final OncPortmapClient<SVC_T> _portmapClient;
+    private final OncPortmapClient _portmapClient;
 
     public GenericPortmapClient(XdrTransportItf<SVC_T> transport) throws RpcProgUnavailable {
 
-       OncPortmapClient<SVC_T> portmapClient = new RpcbindV4Client(new AbstractRpcCall<>(100000, 4, _auth, transport));
+       OncPortmapClient portmapClient = new RpcbindV4Client(new AbstractRpcCall<>(100000, 4, _auth, transport));
         if( !portmapClient.ping() ) {
             portmapClient = new PortmapV2Client( new AbstractRpcCall<>(100000, 2, _auth, transport) );
             if(!portmapClient.ping()) {
@@ -79,10 +81,10 @@ public class GenericPortmapClient<SVC_T extends RpcSvcItf<SVC_T>> implements Onc
 
         int protocol = IpProtocolType.TCP;
 
-        AbstractOncRpcClient<?> rpcClient = new AbstractOncRpcClient<>(InetAddress.getByName(null), IpProtocolType.UDP, 111);
+        GenOncRpcClient rpcClient = new GenOncRpcClient(InetAddress.getByName(null), IpProtocolType.UDP, 111);
         XdrTransportItf<?> transport = rpcClient.connect();
 
-        OncPortmapClient<?> portmapClient = new GenericPortmapClient<>(transport);
+        OncPortmapClient portmapClient = new GenericPortmapClient<>(transport);
 
         try {
 

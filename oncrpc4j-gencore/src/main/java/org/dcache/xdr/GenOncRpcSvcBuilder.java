@@ -1,9 +1,10 @@
 package org.dcache.xdr;
 
 import org.dcache.xdr.gss.GssSessionManager;
+import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
 
-public class GenOncRpcSvcBuilder extends AbstractOncRpcSvcBuilder<IOncRpcSvc, IOncRpcSvcBuilder> implements IOncRpcSvcBuilder{
+public class GenOncRpcSvcBuilder<SVC_T extends RpcSvcItf<IOncRpcSvc>> extends AbstractOncRpcSvcBuilder<IOncRpcSvc, IOncRpcSvcBuilder> implements IOncRpcSvcBuilder{
     GssSessionManager _gssSessionManager =null;
     private int _protocol;
     @Override

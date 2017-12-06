@@ -34,6 +34,7 @@ import org.dcache.xdr.RpcProgUnavailable;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.dcache.xdr.model.root.AbstractRpcCall;
+import org.dcache.xdr.portmap.OncPortmapClient;
 import org.dcache.xdr.portmap.rpcb;
 
 public class GenericPortmapClient<SVC_T extends RpcSvcItf<SVC_T>> implements OncPortmapClient<SVC_T> {

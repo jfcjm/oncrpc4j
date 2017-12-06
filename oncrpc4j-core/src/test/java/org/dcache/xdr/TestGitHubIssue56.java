@@ -12,7 +12,6 @@ import org.dcache.xdr.OncRpcProgram;
 import org.dcache.xdr.OncRpcSvc;
 import org.dcache.xdr.OncRpcSvcBuilder;
 import org.dcache.xdr.XdrTransport;
-import org.dcache.xdr.portmap.GenericPortmapClient;
 import org.dcache.xdr.portmap.OncRpcPortmap;
 import org.dcache.xdr.portmap.OncRpcbindServer;
 import org.dcache.xdr.portmap.rpcb;

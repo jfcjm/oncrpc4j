@@ -27,14 +27,14 @@ public class ClientServerGenericTest {
     private static final int UPPER = 2;
     private static final int SHUTDOWN = 3;
 
-    private RpcSvcItf<?> svc;
+    private RpcSvcItf<IOncRpcSvc> svc;
     private RpcSvcItf<?>  clnt;
     private AbstractRpcCall<?> clntCall;
 
     @Before
     public void setUp() throws IOException {
 
-        RpcDispatchableItf echo =  ( call) -> {
+        RpcDispatchableItf<IOncRpcSvc> echo =  ( call) -> {
             switch (call.getProcedure()) {
 
                 case ECHO: {
@@ -57,14 +57,14 @@ public class ClientServerGenericTest {
             }
         };
 
-        RpcDispatchableItf upper = ( call) -> {
+        RpcDispatchableItf<IOncRpcSvc> upper = ( call) -> {
             XdrString s = new XdrString();
             call.retrieveCall(s);
             XdrString u = new XdrString(s.stringValue().toUpperCase());
             call.reply(u);
         };
 
-        svc = new AbstractOncRpcSvcBuilder<>()
+        svc = new GenOncRpcSvcBuilder<>()
                 .withoutAutoPublish()
                 .withTCP()
                 .withWorkerThreadIoStrategy()
@@ -73,7 +73,7 @@ public class ClientServerGenericTest {
                 .build();
         svc.start();
 
-        clnt = new AbstractOncRpcSvcBuilder<>()
+        clnt = new GenOncRpcSvcBuilder<>()
                 .withoutAutoPublish()
                 .withTCP()
                 .withClientMode()
@@ -138,7 +138,7 @@ public class ClientServerGenericTest {
     @Test
     public void shouldTriggerClientCallbackEvenIfOtherClientDisconnected() throws IOException {
 
-         RpcSvcItf<?> clnt = new AbstractOncRpcSvcBuilder<>()
+         RpcSvcItf<?> clnt = new GenOncRpcSvcBuilder<>()
                 .withTCP()
                 .withClientMode()
                 .withWorkerThreadIoStrategy()

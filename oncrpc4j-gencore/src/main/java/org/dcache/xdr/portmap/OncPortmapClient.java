@@ -17,7 +17,7 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.xdr.portmap.generic;
+package org.dcache.xdr.portmap;
 
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.model.itf.RpcSvcItf;
@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
-public interface OncPortmapClient<SVC_T extends RpcSvcItf<SVC_T>> {
+public interface OncPortmapClient {
     List<rpcb> dump() throws OncRpcException, IOException, TimeoutException;
     boolean ping();
     boolean setPort(int program, int version, String netid, String addr, String owner) throws OncRpcException, IOException, TimeoutException;

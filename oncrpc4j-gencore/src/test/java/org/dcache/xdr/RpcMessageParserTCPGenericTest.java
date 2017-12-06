@@ -44,7 +44,7 @@ public class RpcMessageParserTCPGenericTest {
     public void setUp() {
         mockedContext = FilterChainContext.create(mock(Connection.class));
         tcpParser = new RpcMessageParserTCP();
-        rpc = new AbstractRpcProtocolFilter(new AbstractReplyQueue(),new AbstractRpcProtocolFactory());
+        rpc = new AbstractRpcProtocolFilter(new AbstractReplyQueue());
     }
 
     @Test

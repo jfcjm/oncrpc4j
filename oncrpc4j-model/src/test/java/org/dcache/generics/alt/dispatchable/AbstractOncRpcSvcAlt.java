@@ -17,19 +17,13 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.xdr.model.root;
+package org.dcache.generics.alt.dispatchable;
 
 import static org.dcache.xdr.GrizzlyUtils.rpcMessageReceiverFor;
 
 import org.dcache.xdr.IoStrategy;
 import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcProgram;
-import org.dcache.xdr.model.impl.AbstractGrizzlyXdrTransport;
-import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
-import org.dcache.xdr.model.itf.RpcDispatchableItf;
-import org.dcache.xdr.model.itf.RpcSessionManagerItf;
-import org.dcache.xdr.model.itf.RpcSvcItf;
-import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.glassfish.grizzly.CloseType;
 import org.glassfish.grizzly.Connection;
 import org.glassfish.grizzly.ConnectionProbe;
@@ -83,9 +77,13 @@ import static org.dcache.xdr.GrizzlyUtils.transportFor;
  *
  * @param <SVC_T>
  */
-public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T extends  OncRpcSvcBuilderItf<SVC_T,BUILDER_T> > implements  RpcSvcItf<SVC_T>{
+public abstract class AbstractOncRpcSvcAlt<
+                SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,
+                BUILDER_T extends  OncRpcSvcBuilderAltItf<SVC_T,CALL_T,BUILDER_T>,
+                CALL_T extends RpcCallAltItf<SVC_T,CALL_T>
+          > implements  RpcSvcAltItf<SVC_T,CALL_T>{
     
-    private final static Logger _log = LoggerFactory.getLogger(AbstractOncRpcSvc.class);
+    private final static Logger _log = LoggerFactory.getLogger(AbstractOncRpcSvcAlt.class);
     
     private final int _backlog;
     private final PortRange _portRange;
@@ -97,18 +95,18 @@ public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T
 
     private final ExecutorService _requestExecutor;
 
-    private final AbstractReplyQueue<SVC_T> _replyQueue = new AbstractReplyQueue<>();
+    private final AbstractReplyQueueAlt<SVC_T,CALL_T> _replyQueue = new AbstractReplyQueueAlt<>();
 
     private final boolean _withSubjectPropagation;
     /**
      * Handle RPCSEC_GSS
      */
-    private RpcSessionManagerItf<SVC_T> _rpcSessionManager;
+    private RpcSessionManagerAltItf<SVC_T,CALL_T> _rpcSessionManager;
 
     /**
      * mapping of registered programs.
      */
-    private final Map<OncRpcProgram, RpcDispatchableItf<SVC_T>> _programs =
+    private final Map<OncRpcProgram, RpcDispatchableAltItf<SVC_T,CALL_T>> _programs =
             new ConcurrentHashMap<>();
 
     /**
@@ -120,7 +118,7 @@ public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T
      * Create new RPC service with defined configuration.
      * @param builder to build this service
      */
-    protected   AbstractOncRpcSvc(BUILDER_T builder) {
+    protected   AbstractOncRpcSvcAlt(BUILDER_T builder) {
         final int protocol = builder.getProtocol();
 
         if ((protocol & (IpProtocolType.TCP | IpProtocolType.UDP)) == 0) {
@@ -171,7 +169,7 @@ public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T
         _requestExecutor = builder.getWorkerThreadExecutorService();
         _rpcSessionManager = builder.getRpcSessionManager();
         if (null == builder.getRpcSessionManager()) {
-            _rpcSessionManager = new DefaultSessionManager<>();
+            _rpcSessionManager = new DefaultSessionManagerAlt<>();
         } else {
             _rpcSessionManager = builder.getRpcSessionManager();
         }
@@ -187,7 +185,7 @@ public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T
      * @param prog program number
      * @param handler RPC requests handler.
      */
-    public void register(OncRpcProgram prog, RpcDispatchableItf<SVC_T> handler) {
+    public void register(OncRpcProgram prog, RpcDispatchableAltItf<SVC_T,CALL_T> handler) {
         _log.info("Registering new program {} : {}", prog, handler);
         _programs.put(prog, handler);
     }
@@ -208,7 +206,7 @@ public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T
      * @deprecated use {@link AbstractOncRpcSvcBuilder#withRpcService} instead.
      */
     @Deprecated
-    public void setPrograms(Map<OncRpcProgram, RpcDispatchableItf<SVC_T>> services) {
+    public void setPrograms(Map<OncRpcProgram, RpcDispatchableAltItf<SVC_T,CALL_T>> services) {
         _programs.putAll(services);
     }
 
@@ -223,10 +221,10 @@ public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T
             filterChain.add(new TransportFilter());
             filterChain.add(rpcMessageReceiverFor(t));
           //TODO filterChain.add(new AbstractRpcProtocolFilter<>(_replyQueue,_protocolFactory));
-            filterChain.add(new AbstractRpcProtocolFilter<>(_replyQueue));
+            filterChain.add(new AbstractRpcProtocolFilterAlt<>(_replyQueue));
             // use GSS if configures
             filterChain.add(_rpcSessionManager);
-            filterChain.add(new AbstractRpcDispatcher<>(_requestExecutor, _programs, _withSubjectPropagation));
+            filterChain.add(new AbstractRpcDispatcherAlt<>(_requestExecutor, _programs, _withSubjectPropagation));
 
             final FilterChain filters = filterChain.build();
 
@@ -286,11 +284,11 @@ public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T
         _requestExecutor.shutdown();
     }
 
-    public XdrTransportItf<SVC_T> connect(InetSocketAddress socketAddress) throws IOException {
+    public XdrTransportAltItf<SVC_T,CALL_T> connect(InetSocketAddress socketAddress) throws IOException {
         return connect(socketAddress, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
 
-    public XdrTransportItf<SVC_T> connect(InetSocketAddress socketAddress, long timeout, TimeUnit timeUnit) throws IOException {
+    public XdrTransportAltItf<SVC_T,CALL_T> connect(InetSocketAddress socketAddress, long timeout, TimeUnit timeUnit) throws IOException {
 
         // in client mode only one transport is defined
         NIOTransport transport = _transports.get(0);
@@ -306,7 +304,7 @@ public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T
         try {
             //noinspection unchecked
             Connection<InetSocketAddress> connection = connectFuture.get(timeout, timeUnit);
-            return new AbstractGrizzlyXdrTransport<SVC_T>(connection, _replyQueue /*,_protocolFactory*/);
+            return new AbstractGrizzlyXdrTransportAlt<SVC_T,CALL_T>(connection, _replyQueue /*,_protocolFactory*/);
         } catch (ExecutionException e) {
             Throwable t = getRootCause(e);
             propagateIfPossible(t, IOException.class);
@@ -348,7 +346,7 @@ public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T
 		.collect(Collectors.joining(",", getName() +"-[", "]"));
     }
     
-    protected Map<OncRpcProgram, RpcDispatchableItf<SVC_T>> getPrograms() {
+    protected Map<OncRpcProgram, RpcDispatchableAltItf<SVC_T,CALL_T>> getPrograms() {
         return _programs;
     }
     

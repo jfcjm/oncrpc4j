@@ -28,6 +28,7 @@ import org.dcache.xdr.XdrVoid;
 import org.dcache.xdr.model.itf.RpcCallItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.root.AbstractRpcCall;
+import org.dcache.xdr.portmap.OncPortmapClient;
 import org.dcache.xdr.portmap.OncRpcPortmap;
 import org.dcache.xdr.portmap.rpcb;
 import org.dcache.xdr.portmap.rpcb_list;

@@ -17,7 +17,7 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.xdr.model.root;
+package org.dcache.generics.alt;
 
 import static org.dcache.xdr.GrizzlyUtils.rpcMessageReceiverFor;
 
@@ -30,6 +30,10 @@ import org.dcache.xdr.model.itf.RpcDispatchableItf;
 import org.dcache.xdr.model.itf.RpcSessionManagerItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
+import org.dcache.xdr.model.root.AbstractReplyQueue;
+import org.dcache.xdr.model.root.AbstractRpcDispatcher;
+import org.dcache.xdr.model.root.AbstractRpcProtocolFilter;
+import org.dcache.xdr.model.root.DefaultSessionManager;
 import org.glassfish.grizzly.CloseType;
 import org.glassfish.grizzly.Connection;
 import org.glassfish.grizzly.ConnectionProbe;
@@ -83,7 +87,7 @@ import static org.dcache.xdr.GrizzlyUtils.transportFor;
  *
  * @param <SVC_T>
  */
-public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T extends  OncRpcSvcBuilderItf<SVC_T,BUILDER_T> > implements  RpcSvcItf<SVC_T>{
+public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implements  RpcSvcItf<SVC_T>{
     
     private final static Logger _log = LoggerFactory.getLogger(AbstractOncRpcSvc.class);
     
@@ -120,7 +124,7 @@ public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T
      * Create new RPC service with defined configuration.
      * @param builder to build this service
      */
-    protected   AbstractOncRpcSvc(BUILDER_T builder) {
+    protected <BUILDER_T extends OncRpcSvcBuilderItf<SVC_T,BUILDER_T>>  AbstractOncRpcSvc(BUILDER_T builder) {
         final int protocol = builder.getProtocol();
 
         if ((protocol & (IpProtocolType.TCP | IpProtocolType.UDP)) == 0) {
@@ -179,6 +183,10 @@ public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T
         _withSubjectPropagation = builder.getSubjectPropagation();
 	_svcName = builder.getServiceName();
 	processBuilder(builder);
+    }
+
+    protected Map<OncRpcProgram, RpcDispatchableItf<SVC_T>> getPrograms() {
+        return _programs;
     }
 
     /**
@@ -246,9 +254,9 @@ public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T
                         ((SocketBinder) t).bind(_bindAddress, _portRange, _backlog);
 
                 _boundConnections.add(connection);
-                doPreStartAction(connection);
             }
-           t.start();
+           doPreStartAction();
+            t.start();
 
         }
     }
@@ -315,7 +323,7 @@ public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T
             throw new IOException(e.toString(), e);
         }
     }
-    
+
     /**
      * Returns the address of the endpoint this service is bound to,
      * or <code>null</code> if it is not bound yet.
@@ -347,32 +355,22 @@ public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T
 		.map(Object::toString)
 		.collect(Collectors.joining(",", getName() +"-[", "]"));
     }
-    
-    protected Map<OncRpcProgram, RpcDispatchableItf<SVC_T>> getPrograms() {
-        return _programs;
-    }
-    
-    protected boolean isClient() {
-        return _isClient;
-    }
-    
+
     protected abstract SVC_T getThis() ;
     /**
      * Method that defines how a subclass of {@link #AbstractOncRpcSvc} will process its associated builder
      * @param builder
      */
-    protected abstract  void processBuilder(BUILDER_T builder);
+    protected abstract <BUILDER_T extends OncRpcSvcBuilderItf<SVC_T,BUILDER_T>> BUILDER_T processBuilder(BUILDER_T builder);
     
 
     /**
      * Actions to réalize before starting the service.
      * <em>Example</em> In the ONC-RPC case this method could try to register
      * the service to portmap/rpcbind.
-     * @param connection 
      * @param abstractOncRpcSvc
-     * @throws IOException 
      */
-    protected abstract void doPreStartAction(Connection<InetSocketAddress> connection) throws IOException;
+    protected abstract void doPreStartAction();
     
     /**
      * Actions to realize before stopping the rpc service;  This action
@@ -381,7 +379,6 @@ public abstract class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T
      * <em>Example</em> In the ONC-RPC case this method could try to unregister
      * The service from portmap/rpcbind.
      * @param abstractOncRpcSvc
-     * @throws IOException 
      */
-    protected abstract void preStopActions() throws IOException;
+    protected abstract void preStopActions();
 }

@@ -25,6 +25,8 @@ import java.util.HashSet;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.dcache.xdr.GenOncRpcSvcBuilder;
+import org.dcache.xdr.IOncRpcSvc;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.OncRpcProgram;
 import org.dcache.xdr.XdrBoolean;
@@ -35,7 +37,7 @@ import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
 
 
-public class OncRpcbindServer<SVC_T extends RpcSvcItf<SVC_T>> implements RpcDispatchableItf<SVC_T> {
+public class OncRpcbindServer<SVC_T extends RpcSvcItf<SVC_T>> implements RpcDispatchableItf<IOncRpcSvc> {
 	static final ArrayList<String> v2NetIDs = new ArrayList<String>() {{
 		add("tcp");
 		add("udp");
@@ -53,8 +55,8 @@ public class OncRpcbindServer<SVC_T extends RpcSvcItf<SVC_T>> implements RpcDisp
         _services.add(new rpcb(OncRpcPortmap.PORTMAP_PROGRAMM, OncRpcPortmap.PORTMAP_V2, "udp", "0.0.0.0.0.111", "superuser"));
         //_services.add(new rpcb(100000, 4, "tcp", "0.0.0.0.0.111", "superuser"));
     }
-    
-    public void dispatchOncRpcCall(RpcCallItf<SVC_T> call) throws OncRpcException, IOException {
+    @Override
+    public void dispatchOncRpcCall(RpcCallItf<IOncRpcSvc> call) throws OncRpcException, IOException {
         int version = call.getProgramVersion();
 
         switch(version) {
@@ -68,8 +70,7 @@ public class OncRpcbindServer<SVC_T extends RpcSvcItf<SVC_T>> implements RpcDisp
                 call.failProgramMismatch(2, 4);
         }
     }
-
-    private void processV2Call(RpcCallItf<SVC_T> call) throws OncRpcException, IOException {
+    private void processV2Call(RpcCallItf<IOncRpcSvc> call) throws OncRpcException, IOException {
         switch(call.getProcedure()) {
             case OncRpcPortmap.PMAPPROC_NULL:
                 call.reply(XdrVoid.XDR_VOID);
@@ -177,9 +178,9 @@ public class OncRpcbindServer<SVC_T extends RpcSvcItf<SVC_T>> implements RpcDisp
 
     }
     //JMK
-    private  RpcSvcItf<SVC_T> createServer(int port) {
+    private  RpcSvcItf<IOncRpcSvc> createServer(int port) {
 
-        RpcSvcItf<SVC_T> server  =  new AbstractOncRpcSvcBuilder<SVC_T>()
+        RpcSvcItf<IOncRpcSvc> server  =  new GenOncRpcSvcBuilder<>()
                 .withPort(port)
                 .withTCP()
                 .withUDP()

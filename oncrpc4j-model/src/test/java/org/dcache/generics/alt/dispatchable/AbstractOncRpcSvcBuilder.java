@@ -17,17 +17,13 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.xdr.model.root;
+package org.dcache.generics.alt.dispatchable;
 
 import com.google.common.util.concurrent.MoreExecutors;
 
 import org.dcache.xdr.IoStrategy;
 import org.dcache.xdr.OncRpcProgram;
-import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
 import org.dcache.xdr.model.itf.ProtocolFactoryItf;
-import org.dcache.xdr.model.itf.RpcDispatchableItf;
-import org.dcache.xdr.model.itf.RpcSessionManagerItf;
-import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.glassfish.grizzly.threadpool.FixedThreadPool;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
 
@@ -64,8 +60,12 @@ import static org.dcache.xdr.IpProtocolType.*;
  * </pre>
  * @since 2.0
  */
-public abstract class AbstractOncRpcSvcBuilder <SVC_T extends RpcSvcItf<SVC_T>,BUILDER_T extends  OncRpcSvcBuilderItf<SVC_T,BUILDER_T>> 
-    implements OncRpcSvcBuilderItf<SVC_T,BUILDER_T>{
+public abstract class AbstractOncRpcSvcBuilder <
+        SVC_T extends RpcSvcAltItf<SVC_T,CALL_T>,
+        BUILDER_T extends  OncRpcSvcBuilderAltItf<SVC_T,CALL_T,BUILDER_T>,
+        CALL_T extends RpcCallAltItf<SVC_T,CALL_T>
+       > 
+    implements OncRpcSvcBuilderAltItf<SVC_T,CALL_T,BUILDER_T>{
 
     private int _protocol = 0;
     private int _minPort = 0;
@@ -76,22 +76,15 @@ public abstract class AbstractOncRpcSvcBuilder <SVC_T extends RpcSvcItf<SVC_T>,B
     private int _backlog = 4096;
     private String _bindAddress = "0.0.0.0";
     private String _serviceName = "OncRpcSvc";
-    private RpcSessionManagerItf<SVC_T> _rpcSessionManager;
+    private RpcSessionManagerAltItf<SVC_T,CALL_T> _rpcSessionManager;
     private ExecutorService _workerThreadExecutionService;
     private boolean _isClient = false;
-    private final Map<OncRpcProgram, RpcDispatchableItf<SVC_T>> _programs = new HashMap<>();
+    private final Map<OncRpcProgram, RpcDispatchableAltItf<SVC_T,CALL_T>> _programs = new HashMap<>();
     private int _selectorThreadPoolSize = 0;
     private int _workerThreadPoolSize = 0;
     private boolean _subjectPropagation = false;
-    private ProtocolFactoryItf<SVC_T> _protocolFactory;
 
     public AbstractOncRpcSvcBuilder() {
-        this(new AbstractRpcProtocolFactory<>());
-    }
-    
-    public AbstractOncRpcSvcBuilder(ProtocolFactoryItf<SVC_T> oncRpcProtocolFactory) {
-        _protocolFactory = oncRpcProtocolFactory;
-        _protocolFactory.processBuilder(this);
     }
 
     public BUILDER_T withAutoPublish() {
@@ -187,7 +180,7 @@ public abstract class AbstractOncRpcSvcBuilder <SVC_T extends RpcSvcItf<SVC_T>,B
     }
     
     @Override
-    public BUILDER_T withRpcSessionManager(RpcSessionManagerItf<SVC_T> rpcSessionManager) {
+    public BUILDER_T withRpcSessionManager(RpcSessionManagerAltItf<SVC_T,CALL_T> rpcSessionManager) {
         _rpcSessionManager = rpcSessionManager;
         return getThis();
     }
@@ -202,7 +195,7 @@ public abstract class AbstractOncRpcSvcBuilder <SVC_T extends RpcSvcItf<SVC_T>,B
         return getThis();
     }
 
-    public BUILDER_T withRpcService(OncRpcProgram program, RpcDispatchableItf<SVC_T> service) {
+    public BUILDER_T withRpcService(OncRpcProgram program, RpcDispatchableAltItf<SVC_T,CALL_T> service) {
         _programs.put(program, service);
         return getThis();
     }
@@ -257,7 +250,7 @@ public abstract class AbstractOncRpcSvcBuilder <SVC_T extends RpcSvcItf<SVC_T>,B
         return _serviceName;
     }
 
-    public RpcSessionManagerItf<SVC_T> getRpcSessionManager() {
+    public RpcSessionManagerAltItf<SVC_T,CALL_T> getRpcSessionManager() {
         return _rpcSessionManager;
     }
 
@@ -287,12 +280,8 @@ public abstract class AbstractOncRpcSvcBuilder <SVC_T extends RpcSvcItf<SVC_T>,B
         return _isClient;
     }
 
-    public Map<OncRpcProgram, RpcDispatchableItf<SVC_T>> getRpcServices() {
+    public Map<OncRpcProgram, RpcDispatchableAltItf<SVC_T,CALL_T>> getRpcServices() {
         return _programs;
-    }
-
-    ProtocolFactoryItf<SVC_T> getFactory(){
-        return _protocolFactory;
     }
     public SVC_T build() {
         if (_protocol == 0 || (((_protocol & TCP) != TCP) && ((_protocol & UDP) != UDP))) {

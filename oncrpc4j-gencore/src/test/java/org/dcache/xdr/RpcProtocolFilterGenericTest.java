@@ -45,7 +45,7 @@ public class RpcProtocolFilterGenericTest {
 
     @Before
     public void setUp() {
-        filter = new AbstractRpcProtocolFilter( new AbstractReplyQueue(),new AbstractRpcProtocolFactory());
+        filter = new AbstractRpcProtocolFilter( new AbstractReplyQueue());
         mockedContext = FilterChainContext.create(mock(Connection.class));
     }
 

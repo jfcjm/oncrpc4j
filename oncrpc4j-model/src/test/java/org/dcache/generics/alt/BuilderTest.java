@@ -15,6 +15,7 @@ import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.dcache.xdr.model.root.AbstractOncRpcSvc;
 import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
+import org.glassfish.grizzly.Connection;
 import org.junit.Test;
 /**
  * This test class aims to show why it is better for OncRpcSvcBuilderItf
@@ -51,7 +52,7 @@ public class BuilderTest {
         }
         
     }
-     class  TestOncRpcSvc extends AbstractOncRpcSvc<TestOncRpcSvcItf> implements TestOncRpcSvcItf {
+     class  TestOncRpcSvc extends AbstractOncRpcSvc<TestOncRpcSvcItf,TestOncRpcSvcBuilderItf> implements TestOncRpcSvcItf {
 
         protected TestOncRpcSvc(TestOncRpcSvcBuilderItf builder) {
             super(builder);
@@ -62,9 +63,30 @@ public class BuilderTest {
         public TestOncRpcSvcItf getThis() {
             return this;
         }
+
+        @Override
+        protected void processBuilder(TestOncRpcSvcBuilderItf builder) {
+            // TODO Auto-generated method stub
+            
+        }
+
+        @Override
+        protected void doPreStartAction(Connection<InetSocketAddress> connection) throws IOException {
+            // TODO Auto-generated method stub
+            
+        }
+
+        @Override
+        protected void preStopActions() throws IOException {
+            // TODO Auto-generated method stub
+            
+        }
         
     }
-    @Test
+     /**
+      * Pat défaut, IllegalArgumentException est levée 
+      */
+    @Test(expected=IllegalArgumentException.class)
     public void test() {
         // type de build
         TestOncRpcSvcItf svc = new TestOncRpcSvcBuilder().withAutoPublish().build();

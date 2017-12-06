@@ -17,20 +17,20 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.xdr.portmap.generic;
+package org.dcache.xdr.portmap;
 
-import org.dcache.xdr.AbstractOncRpcClient;
+import org.dcache.xdr.GenOncRpcClient;
+import org.dcache.xdr.GenOncRpcSvcBuilder;
+import org.dcache.xdr.IOncRpcSvc;
 import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.OncRpcProgram;
 import org.dcache.xdr.RpcAuth;
 import org.dcache.xdr.RpcAuthTypeNone;
 import org.dcache.xdr.XdrVoid;
-import org.dcache.xdr.model.itf.OncRpcClientItf;
 import org.dcache.xdr.model.itf.RpcCallItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
-import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
 import org.dcache.xdr.model.root.AbstractRpcCall;
 import org.dcache.xdr.portmap.OncRpcPortmap;
 import org.slf4j.Logger;
@@ -50,7 +50,7 @@ public class OncRpcEmbeddedPortmap<SVC_T extends RpcSvcItf<SVC_T>> {
     private static final Logger LOG = LoggerFactory.getLogger(OncRpcEmbeddedPortmap.class);
 
     private static final RpcAuth _auth = new RpcAuthTypeNone();
-    private RpcSvcItf<SVC_T> optionalEmbeddedServer = null;
+    private RpcSvcItf<IOncRpcSvc> optionalEmbeddedServer = null;
 
     public OncRpcEmbeddedPortmap() {
         this(2, TimeUnit.SECONDS);
@@ -60,9 +60,9 @@ public class OncRpcEmbeddedPortmap<SVC_T extends RpcSvcItf<SVC_T>> {
 
         // we start embedded portmap only if there no other one is running
         boolean localPortmapperRunning = false;
-        try(OncRpcClientItf<SVC_T> rpcClient = new AbstractOncRpcClient<>(InetAddress.getByName(null), IpProtocolType.UDP, OncRpcPortmap.PORTMAP_PORT)) {
+        try(GenOncRpcClient rpcClient = new GenOncRpcClient(InetAddress.getByName(null), IpProtocolType.UDP, OncRpcPortmap.PORTMAP_PORT)) {
 
-            XdrTransportItf<SVC_T> transport = rpcClient.connect();
+            XdrTransportItf<IOncRpcSvc> transport = rpcClient.connect();
             /* check for version 2, 3 and 4 */
             for (int i = 4; i > 1 && !localPortmapperRunning; i--) {
                 RpcCallItf<?> call = new AbstractRpcCall<>(OncRpcPortmap.PORTMAP_PROGRAMM, i, _auth, transport);
@@ -81,7 +81,7 @@ public class OncRpcEmbeddedPortmap<SVC_T extends RpcSvcItf<SVC_T>> {
         if (!localPortmapperRunning) {
             try {
                 LOG.info("Starting embedded portmap service");
-                RpcSvcItf<SVC_T> rpcbindServer = new AbstractOncRpcSvcBuilder<SVC_T>()
+                 IOncRpcSvc rpcbindServer = new GenOncRpcSvcBuilder<>()
                         .withPort(OncRpcPortmap.PORTMAP_PORT)
                         .withTCP()
                         .withUDP()

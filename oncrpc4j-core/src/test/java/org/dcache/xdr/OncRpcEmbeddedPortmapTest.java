@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.concurrent.TimeoutException;
-import org.dcache.xdr.portmap.GenericPortmapClient;
+
 import org.dcache.xdr.portmap.OncPortmapClient;
 import org.dcache.xdr.portmap.OncRpcEmbeddedPortmap;
 import org.dcache.xdr.portmap.rpcb;

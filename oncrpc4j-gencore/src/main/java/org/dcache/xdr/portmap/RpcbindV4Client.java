@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class RpcbindV4Client<SVC_T extends RpcSvcItf<SVC_T>> implements OncPortmapClient<SVC_T> {
+public class RpcbindV4Client<SVC_T extends RpcSvcItf<SVC_T>> implements OncPortmapClient {
 
     private final static Logger _log = LoggerFactory.getLogger(RpcbindV4Client.class);
 

@@ -19,21 +19,11 @@
  */
 package org.dcache.xdr;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.util.concurrent.TimeUnit;
-
 import org.dcache.xdr.IoStrategy;
-import org.dcache.xdr.GenOncRpcClient.OncCLientParams;
 import org.dcache.xdr.model.itf.OncRpcClientItf;
-import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
-import org.dcache.xdr.model.itf.RpcSvcItf;
-import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.dcache.xdr.model.root.AbstractOncRpcClient;
-import org.dcache.xdr.model.root.AbstractOncRpcSvc;
-import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
-import org.dcache.xdr.model.root.AbstractOncRpcClient.OtherParams;
 /**
  * Pour pouvoir hériter d'abstract : il faut pouvoir associer le protocole IP donc modifier la chaîne d'invocation
  * du builder dès le constructeur ..
@@ -101,12 +91,11 @@ public  class GenOncRpcClient extends AbstractOncRpcClient<IOncRpcSvc,IOncRpcSvc
     @Override
     protected IOncRpcSvcBuilder getRpcSvcBuilder() {
         System.out.println("OK 1");;
-        return new GenOncRpcSvcBuilder();
+        return new GenOncRpcSvcBuilder<>();
     }
     @Override
     protected   IOncRpcSvcBuilder getRpcSvcBuilder(OtherParams params) {
-        System.out.println("OK");;
-        return new GenOncRpcSvcBuilder().withIpProtocolType(((OncCLientParams)params)._protocol);
+        return new GenOncRpcSvcBuilder<>().withIpProtocolType(((OncCLientParams)params).getProtocol());
     }
 
     
@@ -115,5 +104,8 @@ public  class GenOncRpcClient extends AbstractOncRpcClient<IOncRpcSvc,IOncRpcSvc
        public OncCLientParams(final int  protocol) {
             _protocol = protocol;
        }
+    public int getProtocol() {
+        return _protocol;
+    }
     }
 }

@@ -13,8 +13,9 @@ public class GenOncRpcClientTest {
 
     @Test
     public void testGenOncRpcClientInetAddressIntInt() throws IOException {
-        GenOncRpcClient client = new GenOncRpcClient(InetAddress.getByName("127.0.0.1"),0,0);
+        GenOncRpcClient client = new GenOncRpcClient(InetAddress.getByName("127.0.0.1"),111,4);
         assertNotNull(client);
+        
         XdrTransportItf<IOncRpcSvc> c = client.connect();
     }
 

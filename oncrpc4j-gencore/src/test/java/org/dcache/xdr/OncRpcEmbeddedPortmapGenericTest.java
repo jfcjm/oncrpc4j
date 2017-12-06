@@ -29,7 +29,7 @@ public class OncRpcEmbeddedPortmapGenericTest {
 		portmap = new OncRpcEmbeddedPortmap();
 		assumeTrue(portmap.isEmbeddedPortmapper()); // skip test if not embedded portmapper
 
-		 RpcSvcItf<?> svc = new AbstractOncRpcSvcBuilder<>()
+		 RpcSvcItf<?> svc = new GenOncRpcSvcBuilder<>()
 			.withTCP()
 			.withAutoPublish()
 			.withSameThreadIoStrategy()
@@ -37,8 +37,8 @@ public class OncRpcEmbeddedPortmapGenericTest {
 			.build();
 		svc.start();
 		// Open portmap and check nedtid content with dump
-		try ( AbstractOncRpcClient<?> rpcClient = new AbstractOncRpcClient<>(InetAddress.getLocalHost(), IpProtocolType.UDP,111) ) {
-			OncPortmapClient<?> portmapClient = new GenericPortmapClient<>(rpcClient.connect()); // init portmapper (only v2 atm)
+		try ( GenOncRpcClient rpcClient = new GenOncRpcClient(InetAddress.getLocalHost(), IpProtocolType.UDP,111) ) {
+			OncPortmapClient portmapClient = new GenericPortmapClient<>(rpcClient.connect()); // init portmapper (only v2 atm)
 			portmapClient.ping();
 			for ( rpcb current : portmapClient.dump() ) {
 				assertTrue("NedId value incorrect: "+current.getNetid(), Arrays.asList(NETID_NAMES).contains(current.getNetid()) );
