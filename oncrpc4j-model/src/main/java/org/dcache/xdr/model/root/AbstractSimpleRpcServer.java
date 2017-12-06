@@ -17,40 +17,25 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.xdrgeneric;
-
-import java.io.IOException;
+package org.dcache.xdr.model.root;
 
 import org.dcache.xdr.OncRpcProgram;
 import org.dcache.xdr.XdrVoid;
+import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
+import org.dcache.xdr.model.itf.RpcCallItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
-import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
-import org.dcache.xdr.portmap.generic.OncRpcEmbeddedPortmap;
 
-public class SimpleRpcServer<SVC_T extends RpcSvcItf<SVC_T>> {
+public abstract class AbstractSimpleRpcServer<
+    SVC_T extends RpcSvcItf<SVC_T,CALL_T>,
+    CALL_T extends RpcCallItf<SVC_T,CALL_T>,
+    BUILDER_T extends OncRpcSvcBuilderItf<SVC_T,CALL_T,BUILDER_T>
+    > {
 
     static final int DEFAULT_PORT = 1717;
     private static final int PROG_NUMBER = 100017;
     private static final int PROG_VERS = 1;
-	private RpcSvcItf<SVC_T> svc;
-    SimpleRpcServer(int port){
-    	 svc = new AbstractOncRpcSvcBuilder<SVC_T>()
-                .withTCP()
-                .withAutoPublish()
-                .withPort(port)
-                .withSameThreadIoStrategy()
-                .withJMX()
-                .withRpcService(new OncRpcProgram(PROG_NUMBER, PROG_VERS),
-                								  call -> call.reply(XdrVoid.XDR_VOID)
-                								  )
-                .build();
-    }
-    void go() throws IOException{
-    	svc.start();
-    	System.in.read();
-    	svc.stop();
-    }
-    public static void main(String[] args) throws Exception {
+
+    protected  void process(String[] args) throws Exception {
 
         if( args.length > 1) {
             System.err.println("Usage: SimpleRpcServer <port>");
@@ -61,10 +46,21 @@ public class SimpleRpcServer<SVC_T extends RpcSvcItf<SVC_T>> {
         if( args.length == 1) {
             port = Integer.parseInt(args[0]);
         }
-
-        new OncRpcEmbeddedPortmap();
-        //JMK
-        new SimpleRpcServer<>(port).go();
+        doPreStartAction();
+        RpcSvcItf<SVC_T,CALL_T> svc =  createOncRpcSvcBuilder(port)         
+                    .withPort(port)
+                    .withSameThreadIoStrategy()
+                    .withJMX()
+                    .withRpcService(new OncRpcProgram(PROG_NUMBER, PROG_VERS),
+                                    call -> call.reply(XdrVoid.XDR_VOID))
+                    .build();
+        svc.start();
+        System.in.read();
+        svc.stop();
     }
+
+    protected abstract OncRpcSvcBuilderItf<SVC_T, CALL_T,BUILDER_T> createOncRpcSvcBuilder(int port);
+    protected abstract void doPreStartAction(); // 
+    
 
 }

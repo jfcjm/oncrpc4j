@@ -29,7 +29,7 @@ import org.dcache.xdr.GenOncRpcClient;
 import org.dcache.xdr.IOncRpcCall;
 import org.dcache.xdr.IOncRpcSvc;
 import org.dcache.xdr.IpProtocolType;
-import org.dcache.xdr.OncRpcCall;
+import org.dcache.xdr.GenOncRpcCall;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcAuth;
 import org.dcache.xdr.RpcAuthTypeNone;
@@ -46,9 +46,9 @@ public class GenericPortmapClient implements OncPortmapClient {
 
     public GenericPortmapClient(XdrTransportItf<IOncRpcSvc,IOncRpcCall> transport) throws RpcProgUnavailable {
 
-       OncPortmapClient portmapClient = new RpcbindV4Client(new OncRpcCall(100000, 4, _auth, transport));
+       OncPortmapClient portmapClient = new RpcbindV4Client(new GenOncRpcCall(100000, 4, _auth, transport));
         if( !portmapClient.ping() ) {
-            portmapClient = new PortmapV2Client( new OncRpcCall(100000, 2, _auth, transport) );
+            portmapClient = new PortmapV2Client( new GenOncRpcCall(100000, 2, _auth, transport) );
             if(!portmapClient.ping()) {
                 // FIXME: return correct exception
                 throw new RpcProgUnavailable("portmap service not available");

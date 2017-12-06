@@ -32,12 +32,13 @@ import org.slf4j.LoggerFactory;
 public class GenOncRpcSvc extends AbstractOncRpcSvc<IOncRpcSvc,IOncRpcCall,IOncRpcSvcBuilder> 
 
   implements IOncRpcSvc{
-    private final static Logger _log = LoggerFactory.getLogger(GenOncRpcSvc.class);
-    private boolean _publish;
-
-    protected <BUILDER_T extends IOncRpcSvcBuilder> GenOncRpcSvc(BUILDER_T builder) {
+    
+    protected GenOncRpcSvc(IOncRpcSvcBuilder builder) {
         super(builder);
     }
+
+    private final static Logger _log = LoggerFactory.getLogger(GenOncRpcSvc.class);
+    private boolean _publish;
 
     @Override
     public IOncRpcSvc getThis() {

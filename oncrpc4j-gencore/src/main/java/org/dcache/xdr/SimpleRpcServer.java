@@ -40,7 +40,7 @@ public class SimpleRpcServer extends AbstractSimpleRpcServer<IOncRpcSvc,IOncRpcC
 
     @Override
     protected OncRpcSvcBuilderItf<IOncRpcSvc, IOncRpcCall, IOncRpcSvcBuilder> createOncRpcSvcBuilder(int port) {
-        return new OncRpcSvcBuilder()
+        return new GenOncRpcSvcBuilder()
                 .withTCP()
                 .withAutoPublish();
     }

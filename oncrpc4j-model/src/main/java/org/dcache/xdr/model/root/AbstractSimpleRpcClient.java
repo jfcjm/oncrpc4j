@@ -17,29 +17,32 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.xdr;
+package org.dcache.xdr.model.root;
 
 import java.net.InetAddress;
 import java.util.concurrent.Future;
 
 import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.RpcAuth;
+import org.dcache.xdr.RpcAuthTypeNone;
 import org.dcache.xdr.XdrVoid;
 import org.dcache.xdr.model.itf.OncRpcClientItf;
 import org.dcache.xdr.model.itf.RpcCallItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
 //TODO à génériser
-public abstract class AbstractSimpleRpcClient<SVC_T extends RpcSvcItf<SVC_T>> {
+public abstract class AbstractSimpleRpcClient<
+    SVC_T extends RpcSvcItf<SVC_T,CALL_T>,
+    CALL_T extends RpcCallItf<SVC_T,CALL_T>> {
     protected void process (String[] args) throws Exception {
         InetAddress address = InetAddress.getByName(args[0]);
         int port = Integer.parseInt(args[1]);
-        OncRpcClientItf<SVC_T> rpcClient = createRpcClient(address,IpProtocolType.TCP,port);
-        XdrTransportItf<SVC_T> transport = rpcClient.connect();
+        OncRpcClientItf<SVC_T,CALL_T> rpcClient = createRpcClient(address,IpProtocolType.TCP,port);
+        XdrTransportItf<SVC_T,CALL_T> transport = rpcClient.connect();
         
         RpcAuth auth = new RpcAuthTypeNone();
 
-         RpcCallItf<SVC_T> call = createRpcCall(100017, 1, auth, transport);
+         RpcCallItf<SVC_T,CALL_T> call = createRpcCall(100017, 1, auth, transport);
         /*
          * call PROC_NULL (ping)
          */
@@ -49,7 +52,7 @@ public abstract class AbstractSimpleRpcClient<SVC_T extends RpcSvcItf<SVC_T>> {
         r.get();
         rpcClient.close();
     }
-    protected abstract RpcCallItf<SVC_T> createRpcCall(int i, int j, RpcAuth auth, XdrTransportItf<SVC_T> transport);
-    protected abstract OncRpcClientItf<SVC_T> createRpcClient(InetAddress address, int tcp, int port);
-    protected abstract AbstractSimpleRpcClient<SVC_T> createSimpleClient();
+    protected abstract RpcCallItf<SVC_T,CALL_T> createRpcCall(int i, int j, RpcAuth auth, XdrTransportItf<SVC_T,CALL_T> transport);
+    protected abstract OncRpcClientItf<SVC_T,CALL_T> createRpcClient(InetAddress address, int tcp, int port);
+    protected abstract AbstractSimpleRpcClient<SVC_T,CALL_T> createSimpleClient();
 }

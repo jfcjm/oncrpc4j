@@ -91,6 +91,7 @@ public  class GenOncRpcClient  extends AbstractOncRpcClient<IOncRpcSvc,IOncRpcCa
         super(socketAddress,localPort,ioStrategy,serviceName,new OncCLientParams(protocol));
         //comment passe t'on les nouveaux paramètres du builder (withIpProtocolType(protocol)),with GssSessionManager?
     }
+    
     @Override
     protected IOncRpcSvcBuilder getRpcSvcBuilder() {
         System.out.println("OK 1");;

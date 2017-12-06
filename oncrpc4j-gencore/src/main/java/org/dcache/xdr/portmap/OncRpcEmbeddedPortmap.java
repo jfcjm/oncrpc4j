@@ -24,7 +24,7 @@ import org.dcache.xdr.GenOncRpcSvcBuilder;
 import org.dcache.xdr.IOncRpcCall;
 import org.dcache.xdr.IOncRpcSvc;
 import org.dcache.xdr.IpProtocolType;
-import org.dcache.xdr.OncRpcCall;
+import org.dcache.xdr.GenOncRpcCall;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.OncRpcProgram;
 import org.dcache.xdr.RpcAuth;
@@ -66,7 +66,7 @@ public class OncRpcEmbeddedPortmap {
             XdrTransportItf<IOncRpcSvc,IOncRpcCall> transport = rpcClient.connect();
             /* check for version 2, 3 and 4 */
             for (int i = 4; i > 1 && !localPortmapperRunning; i--) {
-                RpcCallItf<?,?> call = new OncRpcCall(OncRpcPortmap.PORTMAP_PROGRAMM, i, _auth, transport);
+                RpcCallItf<?,?> call = new GenOncRpcCall(OncRpcPortmap.PORTMAP_PROGRAMM, i, _auth, transport);
                 try {
                     call.call(0, XdrVoid.XDR_VOID, XdrVoid.XDR_VOID, timeoutValue, timeoutUnit);
                     localPortmapperRunning = true;
