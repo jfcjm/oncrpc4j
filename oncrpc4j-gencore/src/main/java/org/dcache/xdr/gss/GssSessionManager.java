@@ -30,7 +30,6 @@ import javax.security.auth.Subject;
 
 import org.dcache.xdr.IOncRpcCall;
 import org.dcache.xdr.IOncRpcSvc;
-import org.dcache.xdr.RpcLoginService;
 import org.dcache.utils.Opaque;
 
 import org.ietf.jgss.GSSContext;
@@ -41,6 +40,7 @@ import org.ietf.jgss.Oid;
 import org.dcache.xdr.model.itf.RpcCallItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
+import org.dcache.xdr.model.root.AbstractRpcLoginService;
 
 public class GssSessionManager {
 
@@ -49,9 +49,9 @@ public class GssSessionManager {
     private static final Logger _log = LoggerFactory.getLogger(GssSessionManager.class);
     private final GSSManager gManager = GSSManager.getInstance();
     private final GSSCredential _serviceCredential;
-    private final RpcLoginService<IOncRpcSvc,IOncRpcCall> _loginService;
+    private final AbstractRpcLoginService<IOncRpcSvc,IOncRpcCall> _loginService;
 
-    public GssSessionManager(RpcLoginService loginService, String servicePrincipal, String keytab)
+    public GssSessionManager(AbstractRpcLoginService loginService, String servicePrincipal, String keytab)
             throws GSSException, IOException {
         System.setProperty("javax.security.auth.useSubjectCredsOnly", "false");
         System.setProperty("java.security.auth.login.config",
@@ -64,7 +64,7 @@ public class GssSessionManager {
         _loginService = loginService;
     }
 
-    public GssSessionManager(RpcLoginService loginService) throws GSSException {
+    public GssSessionManager(AbstractRpcLoginService loginService) throws GSSException {
         System.setProperty("javax.security.auth.useSubjectCredsOnly", "false");
 
         Oid krb5Mechanism = new Oid(KRB5_OID);
