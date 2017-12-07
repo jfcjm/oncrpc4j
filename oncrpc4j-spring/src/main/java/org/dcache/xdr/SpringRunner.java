@@ -20,8 +20,6 @@
 package org.dcache.xdr;
 
 import java.io.IOException;
-
-import org.dcache.xdr.model.root.AbstractOncRpcSvc;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
@@ -42,7 +40,7 @@ public class SpringRunner {
         try {
             context = new FileSystemXmlApplicationContext(args[0]);
 
-            AbstractOncRpcSvc service = (AbstractOncRpcSvc) context.getBean("oncrpcsvc");
+            OncRpcSvc service = (OncRpcSvc) context.getBean("oncrpcsvc");
             service.start();
 
             System.in.read();
