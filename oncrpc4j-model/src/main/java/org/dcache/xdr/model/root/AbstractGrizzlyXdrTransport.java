@@ -25,10 +25,10 @@ import java.nio.channels.CompletionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.dcache.xdr.Xdr;
+import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.dcache.xdr.model.itf.ReplyQueueItf;
 import org.dcache.xdr.model.itf.RpcCallItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
-import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.glassfish.grizzly.Buffer;
 import org.glassfish.grizzly.Connection;
 import org.glassfish.grizzly.EmptyCompletionHandler;
@@ -37,7 +37,10 @@ import org.glassfish.grizzly.asyncqueue.WritableMessage;
 
 import static java.util.Objects.requireNonNull;
 
-public  class AbstractGrizzlyXdrTransport<SVC_T extends RpcSvcItf<SVC_T,CALL_T>,CALL_T extends RpcCallItf<SVC_T,CALL_T>> implements XdrTransportItf<SVC_T,CALL_T> {
+public  class AbstractGrizzlyXdrTransport
+    <
+        SVC_T extends RpcSvcItf<SVC_T,CALL_T>,
+        CALL_T extends RpcCallItf<SVC_T,CALL_T>> implements XdrTransportItf<SVC_T,CALL_T> {
 
     private final static Logger _log = LoggerFactory.getLogger(AbstractGrizzlyXdrTransport.class);
 

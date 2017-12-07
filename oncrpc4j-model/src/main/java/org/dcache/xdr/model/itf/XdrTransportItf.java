@@ -5,7 +5,11 @@ import java.nio.channels.CompletionHandler;
 
 import org.dcache.xdr.Xdr;
 
-public interface XdrTransportItf<SVC_T extends RpcSvcItf<SVC_T,CALL_T>,CALL_T extends RpcCallItf<SVC_T,CALL_T>> {
+public interface XdrTransportItf
+    <SVC_T extends RpcSvcItf<SVC_T,
+     CALL_T>,CALL_T extends RpcCallItf<SVC_T,CALL_T>
+     >
+      {
 
     /**
      * Send data to remote end point. The handler parameter is a completion

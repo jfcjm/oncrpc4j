@@ -26,6 +26,7 @@ import org.dcache.xdr.model.itf.OncRpcClientItf;
 import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
 import org.dcache.xdr.model.itf.RpcCallItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
+import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.dcache.xdr.model.root.AbstractOncRpcClient;
 /**
  * Pour pouvoir hériter d'abstract : il faut pouvoir associer le protocole IP donc modifier la chaîne d'invocation
@@ -35,7 +36,7 @@ import org.dcache.xdr.model.root.AbstractOncRpcClient;
  *
  * @param <SVC_T>
  */
-public  class GenOncRpcClient  extends AbstractOncRpcClient<IOncRpcSvc,IOncRpcCall,IOncRpcSvcBuilder>  
+public  class GenOncRpcClient  extends AbstractOncRpcClient<IOncRpcSvc,IOncRpcCall,IOncRpcSvcBuilder,XdrTransportItf<IOncRpcSvc,IOncRpcCallWS>> 
     implements  OncRpcClientItf<IOncRpcSvc,IOncRpcCall> {
     protected static final String DEFAULT_SERVICE_NAME = AbstractOncRpcClient.DEFAULT_SERVICE_NAME;
     /**

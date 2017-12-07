@@ -9,16 +9,16 @@ import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.dcache.xdr.model.root.AbstractReplyQueue;
 import org.dcache.xdr.model.root.AbstractRpcProtocolFilter;
 
-public class RpcProtocolFilter extends AbstractRpcProtocolFilter<IOncRpcSvc,IOncRpcCall>{
+public class RpcProtocolFilter extends AbstractRpcProtocolFilter<OncRpcSvc,RpcCall>{
 
-    public RpcProtocolFilter(ReplyQueueItf<IOncRpcSvc, IOncRpcCall> replyQueue) {
+    public RpcProtocolFilter(ReplyQueueItf<OncRpcSvc, RpcCall> replyQueue) {
         super(replyQueue);
     }
 
     @Override
-    protected RpcCallItf<IOncRpcSvc, IOncRpcCall> createRpcCall(HeaderItf<IOncRpcSvc, IOncRpcCall> header, Xdr xdr,
-            XdrTransportItf<IOncRpcSvc, IOncRpcCall> transport) {
-        return new OncRpcCall(header,xdr,transport);
+    protected RpcCallItf<OncRpcSvc, RpcCall> createRpcCall(HeaderItf<OncRpcSvc, RpcCall> header, Xdr xdr,
+            XdrTransportItf<OncRpcSvc, RpcCall> transport) {
+        return new RpcCall(header,xdr,transport);
     }
 
 }

@@ -29,11 +29,11 @@ import org.slf4j.LoggerFactory;
  *
  * @param <SVC_T>
  */
-public class OncRpcSvc extends AbstractOncRpcSvc<IOncRpcSvc,IOncRpcCall,IOncRpcSvcBuilder> 
+public class OncRpcSvc extends AbstractOncRpcSvc<OncRpcSvc,RpcCall,OncRpcSvcBuilder> 
 
-  implements IOncRpcSvc{
+  {
     
-    protected OncRpcSvc(IOncRpcSvcBuilder builder) {
+    protected OncRpcSvc(OncRpcSvcBuilder builder) {
         super(builder);
     }
 
@@ -41,7 +41,7 @@ public class OncRpcSvc extends AbstractOncRpcSvc<IOncRpcSvc,IOncRpcCall,IOncRpcS
     private boolean _publish;
 
     @Override
-    public IOncRpcSvc getThis() {
+    public OncRpcSvc getThis() {
         return this;
     }
     
@@ -66,7 +66,7 @@ public class OncRpcSvc extends AbstractOncRpcSvc<IOncRpcSvc,IOncRpcCall,IOncRpcS
     }
 
     @Override
-    protected void processBuilder(IOncRpcSvcBuilder builder) {
+    protected void processBuilder(OncRpcSvcBuilder builder) {
         _publish = builder.isAutoPublish();
     }
 
@@ -83,7 +83,7 @@ public class OncRpcSvc extends AbstractOncRpcSvc<IOncRpcSvc,IOncRpcCall,IOncRpcS
 
         OncRpcClient rpcClient = new OncRpcClient(InetAddress.getByName(null),
                 IpProtocolType.UDP, OncRpcPortmap.PORTMAP_PORT);
-        XdrTransportItf<IOncRpcSvc,IOncRpcCall> transport = rpcClient.connect();
+        XdrTransportItf<OncRpcSvc,RpcCall> transport = rpcClient.connect();
 
         try {
             OncPortmapClient portmapClient = new GenericPortmapClient(transport);
@@ -140,7 +140,7 @@ public class OncRpcSvc extends AbstractOncRpcSvc<IOncRpcSvc,IOncRpcCall,IOncRpcS
 
         OncRpcClient rpcClient = new OncRpcClient(InetAddress.getByName(null),
                 IpProtocolType.UDP, OncRpcPortmap.PORTMAP_PORT);
-        XdrTransportItf<IOncRpcSvc,IOncRpcCall> transport = rpcClient.connect();
+        XdrTransportItf<OncRpcSvc,RpcCall> transport = rpcClient.connect();
 
         try {
             OncPortmapClient portmapClient = new GenericPortmapClient(transport);
@@ -163,12 +163,12 @@ public class OncRpcSvc extends AbstractOncRpcSvc<IOncRpcSvc,IOncRpcCall,IOncRpcS
     }
 
     @Override
-    protected Filter createRpcProtocolFilter(ReplyQueueItf<IOncRpcSvc, IOncRpcCall> _replyQueue) {
+    protected Filter createRpcProtocolFilter(ReplyQueueItf<OncRpcSvc, RpcCall> _replyQueue) {
         return new RpcProtocolFilter(_replyQueue);
     }
 
     @Override
-    protected ReplyQueueItf<IOncRpcSvc, IOncRpcCall> createReplyQueue() {
+    protected ReplyQueueItf<OncRpcSvc, RpcCall> createReplyQueue() {
         return new ReplyQueue();
     }
 }

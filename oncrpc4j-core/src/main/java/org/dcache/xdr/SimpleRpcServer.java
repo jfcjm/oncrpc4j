@@ -26,7 +26,7 @@ import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
 import org.dcache.xdr.model.root.AbstractSimpleRpcServer;
 import org.dcache.xdr.portmap.OncRpcEmbeddedPortmap;
 
-public class SimpleRpcServer extends AbstractSimpleRpcServer<IOncRpcSvc,IOncRpcCall,IOncRpcSvcBuilder>{
+public class SimpleRpcServer extends AbstractSimpleRpcServer<OncRpcSvc,RpcCall,OncRpcSvcBuilder>{
 
     public static void main(String[] args) throws Exception {
         new SimpleRpcServer().process(args);
@@ -39,7 +39,7 @@ public class SimpleRpcServer extends AbstractSimpleRpcServer<IOncRpcSvc,IOncRpcC
     }
 
     @Override
-    protected OncRpcSvcBuilderItf<IOncRpcSvc, IOncRpcCall, IOncRpcSvcBuilder> createOncRpcSvcBuilder(int port) {
+    protected OncRpcSvcBuilderItf<OncRpcSvc, RpcCall, OncRpcSvcBuilder> createOncRpcSvcBuilder(int port) {
         return new OncRpcSvcBuilder()
                 .withTCP()
                 .withAutoPublish();

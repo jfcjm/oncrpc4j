@@ -28,7 +28,7 @@ import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.dcache.xdr.model.root.AbstractRpcCall;
 import org.dcache.xdr.model.root.AbstractSimpleRpcClient;
 
-public class SimpleRpcClient extends AbstractSimpleRpcClient<IOncRpcSvc,IOncRpcCall>
+public class SimpleRpcClient extends AbstractSimpleRpcClient<OncRpcSvc,RpcCall>
 {
 
     public static void main(String[] args) throws Exception {
@@ -42,18 +42,18 @@ public class SimpleRpcClient extends AbstractSimpleRpcClient<IOncRpcSvc,IOncRpcC
 	}
 
     @Override
-    protected RpcCallItf<IOncRpcSvc, IOncRpcCall> createRpcCall(int i, int j, RpcAuth auth,
-            XdrTransportItf<IOncRpcSvc, IOncRpcCall> transport) {
-        return new OncRpcCall(i,j,auth,transport);
+    protected RpcCallItf<OncRpcSvc, RpcCall> createRpcCall(int i, int j, RpcAuth auth,
+            XdrTransportItf<OncRpcSvc, RpcCall> transport) {
+        return new RpcCall(i,j,auth,transport);
     }
 
     @Override
-    protected OncRpcClientItf<IOncRpcSvc, IOncRpcCall> createRpcClient(InetAddress address, int tcp, int port) {
+    protected OncRpcClientItf<OncRpcSvc, RpcCall> createRpcClient(InetAddress address, int tcp, int port) {
         return new OncRpcClient(address,tcp,port);
     }
 
     @Override
-    protected AbstractSimpleRpcClient<IOncRpcSvc, IOncRpcCall> createSimpleClient() {
+    protected AbstractSimpleRpcClient<OncRpcSvc, RpcCall> createSimpleClient() {
         return null;
     }
 }

@@ -21,6 +21,8 @@ package org.dcache.xdr;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.concurrent.TimeUnit;
+
 import org.dcache.xdr.IoStrategy;
 import org.dcache.xdr.model.itf.OncRpcClientItf;
 import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
@@ -35,8 +37,7 @@ import org.dcache.xdr.model.root.AbstractOncRpcClient;
  *
  * @param <SVC_T>
  */
-public  class OncRpcClient  extends AbstractOncRpcClient<IOncRpcSvc,IOncRpcCall,IOncRpcSvcBuilder>  
-    implements  OncRpcClientItf<IOncRpcSvc,IOncRpcCall> {
+public  class OncRpcClient  extends AbstractOncRpcClient<OncRpcSvc,RpcCall,OncRpcSvcBuilder> {
     protected static final String DEFAULT_SERVICE_NAME = AbstractOncRpcClient.DEFAULT_SERVICE_NAME;
     /**
      * On rajoute le paramètre int protocol, de l'appel pour le moment
@@ -93,15 +94,14 @@ public  class OncRpcClient  extends AbstractOncRpcClient<IOncRpcSvc,IOncRpcCall,
     }
     
     @Override
-    protected IOncRpcSvcBuilder getRpcSvcBuilder() {
+    protected OncRpcSvcBuilder getRpcSvcBuilder() {
         System.out.println("OK 1");;
         return new OncRpcSvcBuilder();
     }
     @Override
-    protected   IOncRpcSvcBuilder getRpcSvcBuilder(OtherParams params) {
+    protected   OncRpcSvcBuilder getRpcSvcBuilder(OtherParams params) {
         return new OncRpcSvcBuilder().withIpProtocolType(((OncCLientParams)params).getProtocol());
     }
-
     
     protected  static class OncCLientParams implements OtherParams{
        final int _protocol ;
