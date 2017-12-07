@@ -21,6 +21,7 @@ package org.dcache.xdr.model.root;
 
 import com.google.common.util.concurrent.MoreExecutors;
 
+import org.dcache.xdr.GenOncRpcSvcBuilder;
 import org.dcache.xdr.IoStrategy;
 import org.dcache.xdr.OncRpcProgram;
 import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;

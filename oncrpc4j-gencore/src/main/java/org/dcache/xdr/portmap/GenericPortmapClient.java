@@ -26,14 +26,15 @@ import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.dcache.xdr.GenOncRpcClient;
-import org.dcache.xdr.IOncRpcCall;
-import org.dcache.xdr.IOncRpcSvc;
+import org.dcache.xdr.GenOncRpcReply;
+import org.dcache.xdr.GenOncRpcSvc;
 import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.GenOncRpcCall;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcAuth;
 import org.dcache.xdr.RpcAuthTypeNone;
 import org.dcache.xdr.RpcProgUnavailable;
+import org.dcache.xdr.XdrTransport;
 import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.dcache.xdr.portmap.PortmapV2Client;
 import org.dcache.xdr.portmap.RpcbindV4Client;
@@ -44,11 +45,11 @@ public class GenericPortmapClient implements OncPortmapClient {
     private final RpcAuth _auth = new RpcAuthTypeNone();
     private final OncPortmapClient _portmapClient;
 
-    public GenericPortmapClient(XdrTransportItf<IOncRpcSvc,IOncRpcCall> transport) throws RpcProgUnavailable {
+    public GenericPortmapClient(XdrTransportItf<GenOncRpcSvc,GenOncRpcCall,XdrTransport,GenOncRpcReply> transport) throws RpcProgUnavailable {
 
-       OncPortmapClient portmapClient = new RpcbindV4Client(new GenOncRpcCall(100000, 4, _auth, transport));
+       OncPortmapClient portmapClient = new RpcbindV4Client(new GenOncRpcCall(100000, 4, _auth, transport.getThis()));
         if( !portmapClient.ping() ) {
-            portmapClient = new PortmapV2Client( new GenOncRpcCall(100000, 2, _auth, transport) );
+            portmapClient = new PortmapV2Client( new GenOncRpcCall(100000, 2, _auth, transport.getThis()) );
             if(!portmapClient.ping()) {
                 // FIXME: return correct exception
                 throw new RpcProgUnavailable("portmap service not available");
@@ -83,7 +84,7 @@ public class GenericPortmapClient implements OncPortmapClient {
         int protocol = IpProtocolType.TCP;
 
         GenOncRpcClient rpcClient = new GenOncRpcClient(InetAddress.getByName(null), IpProtocolType.UDP, 111);
-         XdrTransportItf<IOncRpcSvc, IOncRpcCall> transport = rpcClient.connect();
+          XdrTransport transport = rpcClient.connect();
 
         OncPortmapClient portmapClient = new GenericPortmapClient(transport);
 

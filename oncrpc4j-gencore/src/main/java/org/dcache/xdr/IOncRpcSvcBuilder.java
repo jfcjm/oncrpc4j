@@ -12,7 +12,7 @@ public interface IOncRpcSvcBuilder  extends OncRpcSvcBuilderItf
         GenOncRpcCall,
         IOncRpcSvcBuilder,
         XdrTransport,
-        GenOncReply
+        GenOncRpcReply
     > {
     IOncRpcSvcBuilder withGssSessionManager(GssSessionManager gssSessionManager);
     GssSessionManager getGssSessionManager();

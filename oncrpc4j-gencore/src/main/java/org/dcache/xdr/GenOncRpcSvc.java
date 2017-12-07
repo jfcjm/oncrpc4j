@@ -13,6 +13,7 @@ import org.dcache.utils.net.InetSocketAddresses;
 import org.dcache.xdr.model.itf.ReplyQueueItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
+import org.dcache.xdr.model.root.AbstractGrizzlyXdrTransport;
 import org.dcache.xdr.model.root.AbstractOncRpcSvc;
 import org.dcache.xdr.portmap.GenericPortmapClient;
 import org.dcache.xdr.portmap.OncPortmapClient;
@@ -30,11 +31,16 @@ import org.slf4j.LoggerFactory;
  *
  * @param <SVC_T>
  */
-public class GenOncRpcSvc extends AbstractOncRpcSvc<GenOncRpcSvc,GenOncRpcCall,IOncRpcSvcBuilder,XdrTransport,GenRpcReply> 
+public class GenOncRpcSvc extends AbstractOncRpcSvc
+    <
+        GenOncRpcSvc,GenOncRpcCall,IOncRpcSvcBuilder,
+        XdrTransport, 
+        GenOncRpcReply
+    > 
 
-  implements RpcSvcItf<GenOncRpcSvc,GenOncRpcCall,XdrTransport,GenRpcReply>{
+  implements RpcSvcItf<GenOncRpcSvc,GenOncRpcCall,XdrTransport,GenOncRpcReply>{
 
-    protected GenOncRpcSvc(GenOncRpcSvcBuilder builder) {
+    protected GenOncRpcSvc(IOncRpcSvcBuilder builder) {
         super(builder);
     }
 
@@ -66,12 +72,12 @@ public class GenOncRpcSvc extends AbstractOncRpcSvc<GenOncRpcSvc,GenOncRpcCall,I
         
     }
 
+
+
     @Override
     protected void processBuilder(IOncRpcSvcBuilder builder) {
         _publish = builder.isAutoPublish();
     }
-
-
 
 
     /**
@@ -84,7 +90,7 @@ public class GenOncRpcSvc extends AbstractOncRpcSvc<GenOncRpcSvc,GenOncRpcCall,I
 
         GenOncRpcClient rpcClient = new GenOncRpcClient(InetAddress.getByName(null),
                 IpProtocolType.UDP, OncRpcPortmap.PORTMAP_PORT);
-        XdrTransportItf<IOncRpcSvc,IOncRpcCall> transport = rpcClient.connect();
+         XdrTransport transport = rpcClient.connect();
 
         try {
             OncPortmapClient portmapClient = new GenericPortmapClient(transport);
@@ -141,7 +147,7 @@ public class GenOncRpcSvc extends AbstractOncRpcSvc<GenOncRpcSvc,GenOncRpcCall,I
 
         GenOncRpcClient rpcClient = new GenOncRpcClient(InetAddress.getByName(null),
                 IpProtocolType.UDP, OncRpcPortmap.PORTMAP_PORT);
-        XdrTransportItf<IOncRpcSvc,IOncRpcCall> transport = rpcClient.connect();
+         XdrTransport transport = rpcClient.connect();
 
         try {
             OncPortmapClient portmapClient = new GenericPortmapClient(transport);
@@ -163,13 +169,34 @@ public class GenOncRpcSvc extends AbstractOncRpcSvc<GenOncRpcSvc,GenOncRpcCall,I
         }
     }
 
+
+
+
     @Override
-    protected Filter createRpcProtocolFilter(ReplyQueueItf<IOncRpcSvc, IOncRpcCall> _replyQueue) {
+    protected Filter createRpcProtocolFilter(
+            ReplyQueueItf<GenOncRpcSvc, GenOncRpcCall, XdrTransport, GenOncRpcReply> _replyQueue) {
+        // TODO Auto-generated method stub
         return new GenRpcProtocolFilter(_replyQueue);
     }
 
+
+
+
     @Override
-    protected ReplyQueueItf<IOncRpcSvc, IOncRpcCall> createReplyQueue() {
+    protected ReplyQueueItf<GenOncRpcSvc, GenOncRpcCall, XdrTransport, GenOncRpcReply> createReplyQueue() {
         return new GenReplyQueue();
     }
+
+
+
+
+    @Override
+    protected XdrTransport createTransport(Connection<InetSocketAddress> connection,
+            ReplyQueueItf<GenOncRpcSvc, GenOncRpcCall, XdrTransport, GenOncRpcReply> _replyQueue) {
+        // TODO Auto-generated method stub
+        return new GrizzlyXdrTransport(connection,_replyQueue);
+    }
+
+
+
 }

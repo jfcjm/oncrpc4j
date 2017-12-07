@@ -29,7 +29,7 @@ public class OncRpcEmbeddedPortmapGenericTest {
 		portmap = new OncRpcEmbeddedPortmap();
 		assumeTrue(portmap.isEmbeddedPortmapper()); // skip test if not embedded portmapper
 
-		 RpcSvcItf<?,?> svc = new GenOncRpcSvcBuilder()
+		 RpcSvcItf<?,?,?,?> svc = new GenOncRpcSvcBuilder()
 			.withTCP()
 			.withAutoPublish()
 			.withSameThreadIoStrategy()

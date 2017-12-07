@@ -17,22 +17,12 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.xdr.model.root;
+package org.dcache.xdr.gss;
 
-import org.dcache.xdr.model.itf.RpcCallItf;
-import org.dcache.xdr.model.itf.RpcReplyItf;
-import org.dcache.xdr.model.itf.RpcSvcItf;
-import org.dcache.xdr.model.itf.XdrTransportItf;
-import org.ietf.jgss.GSSContext;
+public interface GssProc {
 
-import javax.security.auth.Subject;
-
-public interface AbstractRpcLoginService<
-    SVC_T extends RpcSvcItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>, 
-    CALL_T extends RpcCallItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>
-    ,TRANSPORT_T extends XdrTransportItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
-    REPLY_T extends RpcReplyItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>
-    >    {
-     Subject  login(XdrTransportItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T> transport, GSSContext context);
+    public static final int RPCSEC_GSS_DATA = 0;
+    public static final int RPCSEC_GSS_INIT = 1;
+    public static final int RPCSEC_GSS_CONTINUE_INIT = 2;
+    public static final int RPCSEC_GSS_DESTROY = 3;
 }
-

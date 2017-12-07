@@ -23,10 +23,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import org.dcache.xdr.IoStrategy;
 import org.dcache.xdr.model.itf.OncRpcClientItf;
-import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
-import org.dcache.xdr.model.itf.RpcCallItf;
-import org.dcache.xdr.model.itf.RpcSvcItf;
-import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.dcache.xdr.model.root.AbstractOncRpcClient;
 /**
  * Pour pouvoir hériter d'abstract : il faut pouvoir associer le protocole IP donc modifier la chaîne d'invocation
@@ -36,8 +32,11 @@ import org.dcache.xdr.model.root.AbstractOncRpcClient;
  *
  * @param <SVC_T>
  */
-public  class GenOncRpcClient  extends AbstractOncRpcClient<IOncRpcSvc,IOncRpcCall,IOncRpcSvcBuilder,XdrTransportItf<IOncRpcSvc,IOncRpcCallWS>> 
-    implements  OncRpcClientItf<IOncRpcSvc,IOncRpcCall> {
+public  class GenOncRpcClient  extends AbstractOncRpcClient
+    <
+        GenOncRpcSvc,GenOncRpcCall,IOncRpcSvcBuilder,XdrTransport,GenOncRpcReply
+    > 
+    implements  OncRpcClientItf<GenOncRpcSvc,GenOncRpcCall,XdrTransport,GenOncRpcReply> {
     protected static final String DEFAULT_SERVICE_NAME = AbstractOncRpcClient.DEFAULT_SERVICE_NAME;
     /**
      * On rajoute le paramètre int protocol, de l'appel pour le moment
@@ -90,7 +89,6 @@ public  class GenOncRpcClient  extends AbstractOncRpcClient<IOncRpcSvc,IOncRpcCa
     //JMK : type cast
     public GenOncRpcClient(InetSocketAddress socketAddress, int protocol, int localPort, IoStrategy ioStrategy, String serviceName) {
         super(socketAddress,localPort,ioStrategy,serviceName,new OncCLientParams(protocol));
-        //comment passe t'on les nouveaux paramètres du builder (withIpProtocolType(protocol)),with GssSessionManager?
     }
     
     @Override
@@ -98,6 +96,7 @@ public  class GenOncRpcClient  extends AbstractOncRpcClient<IOncRpcSvc,IOncRpcCa
         System.out.println("OK 1");;
         return new GenOncRpcSvcBuilder();
     }
+    
     @Override
     protected   IOncRpcSvcBuilder getRpcSvcBuilder(OtherParams params) {
         return new GenOncRpcSvcBuilder().withIpProtocolType(((OncCLientParams)params).getProtocol());

@@ -46,7 +46,7 @@ public class RpcCallGenericTest {
      */
     @Before
     public void setup() throws OncRpcException, IOException{
-        HeaderItf<IOncRpcSvc,IOncRpcCall> header = new AbstractRpcMessage<>(_xdr);
+        HeaderItf<GenOncRpcSvc,GenOncRpcCall,XdrTransport,GenOncRpcReply> header = new AbstractRpcMessage<>(_xdr);
         _call = new GenOncRpcCall(header, _xdr, t);
     }
     

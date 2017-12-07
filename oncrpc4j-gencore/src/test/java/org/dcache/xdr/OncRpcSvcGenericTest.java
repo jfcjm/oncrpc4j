@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
 
 public class OncRpcSvcGenericTest {
 
-    private  IOncRpcSvc svc;
+    private  GenOncRpcSvc svc;
 	
 
     @Test
@@ -80,7 +80,7 @@ public class OncRpcSvcGenericTest {
 		String TEST_PROG_OWNER = "superuser";
 		OncRpcbindServer bindService = new OncRpcbindServer();
 		OncRpcProgram portMapProg = new OncRpcProgram(OncRpcPortmap.PORTMAP_PROGRAMM, OncRpcPortmap.PORTMAP_V2);
-		IOncRpcSvc svc = new GenOncRpcSvcBuilder()
+		GenOncRpcSvc svc = new GenOncRpcSvcBuilder()
                 .withTCP()
                 .withUDP()
                 .withoutAutoPublish()

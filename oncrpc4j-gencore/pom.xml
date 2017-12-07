@@ -10,7 +10,7 @@
   	<dependency>
   		<groupId>org.dcache</groupId>
   		<artifactId>oncrpc4j-model</artifactId>
-  		<version>3.0.0.factory-SNAPSHOT</version>
+  		<version>${project.version}</version>
   	</dependency>
       <dependency>
           <groupId>junit</groupId>

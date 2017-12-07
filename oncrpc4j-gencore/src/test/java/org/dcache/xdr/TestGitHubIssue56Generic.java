@@ -19,7 +19,7 @@ public class TestGitHubIssue56Generic {
 	@Test
 	public void DumpTest() throws IOException, TimeoutException {
 
-		  IOncRpcSvc rpcbindServer = new GenOncRpcSvcBuilder()
+		  GenOncRpcSvc rpcbindServer = new GenOncRpcSvcBuilder()
                 .withTCP()
                 .withUDP()
                 .withoutAutoPublish()
@@ -28,7 +28,7 @@ public class TestGitHubIssue56Generic {
 		rpcbindServer.start();
 		int protoType = IpProtocolType.TCP;
 		GenOncRpcClient rpcClient = new GenOncRpcClient(rpcbindServer.getInetSocketAddress(protoType),protoType );
-		XdrTransportItf<IOncRpcSvc,IOncRpcCall> transport = rpcClient.connect();
+		XdrTransportItf<GenOncRpcSvc,GenOncRpcCall,XdrTransport,GenOncRpcReply> transport = rpcClient.connect();
 		GenericPortmapClient portmapClient = new GenericPortmapClient(transport);
 		for (rpcb r : portmapClient.dump()){
 			assertEquals("superuser",r.getOwner());
@@ -38,7 +38,7 @@ public class TestGitHubIssue56Generic {
 	@Test
 	public void UnsetTest() throws IOException, TimeoutException {
 
-		 IOncRpcSvc rpcbindServer = new GenOncRpcSvcBuilder()
+		 GenOncRpcSvc rpcbindServer = new GenOncRpcSvcBuilder()
                 .withTCP()
                 .withUDP()
                 .withoutAutoPublish()
@@ -47,7 +47,7 @@ public class TestGitHubIssue56Generic {
 		rpcbindServer.start();
 		int protoType = IpProtocolType.TCP;
 		GenOncRpcClient rpcClient = new GenOncRpcClient(rpcbindServer.getInetSocketAddress(protoType),protoType );
-		XdrTransportItf<IOncRpcSvc,IOncRpcCall> transport = rpcClient.connect();
+		XdrTransportItf<GenOncRpcSvc,GenOncRpcCall,XdrTransport,GenOncRpcReply> transport = rpcClient.connect();
 		GenericPortmapClient portmapClient = new GenericPortmapClient(transport);
 		boolean isUnset=portmapClient.unsetPort(OncRpcPortmap.PORTMAP_PROGRAMM, OncRpcPortmap.PORTMAP_V2, "superuser");
 		assertTrue(isUnset);

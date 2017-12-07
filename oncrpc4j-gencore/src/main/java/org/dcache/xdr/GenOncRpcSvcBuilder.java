@@ -1,9 +1,6 @@
 package org.dcache.xdr;
 
 import org.dcache.xdr.gss.GssSessionManager;
-import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
-import org.dcache.xdr.model.itf.RpcDispatchableItf;
-import org.dcache.xdr.model.itf.RpcSessionManagerItf;
 import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
 
 public class GenOncRpcSvcBuilder extends AbstractOncRpcSvcBuilder
@@ -12,52 +9,33 @@ public class GenOncRpcSvcBuilder extends AbstractOncRpcSvcBuilder
         GenOncRpcCall,
         IOncRpcSvcBuilder,
         XdrTransport,
-        GenRpcReply
+        GenOncRpcReply
     >  
-    implements IOncRpcSvcBuilder  {
+    implements IOncRpcSvcBuilder
+     {
+
+    private GssSessionManager _gssManager;
 
     @Override
-    public IOncRpcSvcBuilder withRpcService(OncRpcProgram program,
-            RpcDispatchableItf<IOncRpcSvc, IOncRpcCall, IOncTransport, IOncReply> service) {
-        // TODO Auto-generated method stub
-        return null;
+    protected IOncRpcSvcBuilder getThis() {
+        return this;
     }
 
     @Override
-    public IOncRpcSvcBuilder withRpcSessionManager(
-            RpcSessionManagerItf<IOncRpcSvc, IOncRpcCall, IOncTransport, IOncReply> sessionManager) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public GenOncRpcSvc build() {
-        // TODO Auto-generated method stub
-        return null;
+    protected GenOncRpcSvc getOncRpcSvc(IOncRpcSvcBuilder builder) {
+        return new GenOncRpcSvc(builder );
     }
 
     @Override
     public IOncRpcSvcBuilder withGssSessionManager(GssSessionManager gssSessionManager) {
-        // TODO Auto-generated method stub
-        return null;
+        _gssManager = gssSessionManager;
+        return this;
     }
 
     @Override
     public GssSessionManager getGssSessionManager() {
-        // TODO Auto-generated method stub
-        return null;
+        return _gssManager;
     }
 
-    @Override
-    protected GenOncRpcSvcBuilder getThis() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    protected GenOncRpcSvc getOncRpcSvc(GenOncRpcSvcBuilder builder_T) {
-        // TODO Auto-generated method stub
-        return null;
-    }
     
 }

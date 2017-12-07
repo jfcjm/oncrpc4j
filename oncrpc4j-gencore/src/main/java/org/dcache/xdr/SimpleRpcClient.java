@@ -28,7 +28,7 @@ import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.dcache.xdr.model.root.AbstractRpcCall;
 import org.dcache.xdr.model.root.AbstractSimpleRpcClient;
 
-public class SimpleRpcClient extends AbstractSimpleRpcClient<IOncRpcSvc,IOncRpcCall>
+public class SimpleRpcClient extends AbstractSimpleRpcClient<GenOncRpcSvc,GenOncRpcCall,XdrTransport,GenOncRpcReply>
 {
 
     public static void main(String[] args) throws Exception {
@@ -42,18 +42,22 @@ public class SimpleRpcClient extends AbstractSimpleRpcClient<IOncRpcSvc,IOncRpcC
 	}
 
     @Override
-    protected RpcCallItf<IOncRpcSvc, IOncRpcCall> createRpcCall(int i, int j, RpcAuth auth,
-            XdrTransportItf<IOncRpcSvc, IOncRpcCall> transport) {
+    protected RpcCallItf<GenOncRpcSvc, GenOncRpcCall, XdrTransport, GenOncRpcReply> createRpcCall(int i, int j,
+            RpcAuth auth, XdrTransport transport) {
         return new GenOncRpcCall(i,j,auth,transport);
     }
 
     @Override
-    protected OncRpcClientItf<IOncRpcSvc, IOncRpcCall> createRpcClient(InetAddress address, int tcp, int port) {
-        return new GenOncRpcClient(address,tcp,port);
+    protected OncRpcClientItf<GenOncRpcSvc, GenOncRpcCall, XdrTransport, GenOncRpcReply> createRpcClient(
+            InetAddress address, int tcp, int port) {
+        // TODO Auto-generated method stub
+        return null;
     }
 
     @Override
-    protected AbstractSimpleRpcClient<IOncRpcSvc, IOncRpcCall> createSimpleClient() {
+    protected AbstractSimpleRpcClient<GenOncRpcSvc, GenOncRpcCall, XdrTransport, GenOncRpcReply> createSimpleClient() {
+        // TODO Auto-generated method stub
         return null;
     }
+
 }

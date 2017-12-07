@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 - 2017 Deutsches Elektronen-Synchroton,
+ * Copyright (c) 2009 - 2012 Deutsches Elektronen-Synchroton,
  * Member of the Helmholtz Association, (DESY), HAMBURG, GERMANY
  *
  * This library is free software; you can redistribute it and/or modify
@@ -17,32 +17,40 @@
  * details); if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.dcache.xdr;
+package org.dcache.xdr.gss;
 
-import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
-import org.dcache.xdr.model.root.AbstractSimpleRpcServer;
-import org.dcache.xdr.portmap.OncRpcEmbeddedPortmap;
+import java.io.IOException;
+import org.dcache.xdr.OncRpcException;
+import org.dcache.xdr.XdrAble;
+import org.dcache.xdr.XdrDecodingStream;
+import org.dcache.xdr.XdrEncodingStream;
 
-public class SimpleRpcServer extends AbstractSimpleRpcServer
-    <
-        GenOncRpcSvc,GenOncRpcCall,IOncRpcSvcBuilder,XdrTransport,GenOncRpcReply
-     >{
+/**
+ * RPCGSS_SEC data body for privacy QOS as defined in RFC 2203
+ */
+public class DataBodyPrivacy implements XdrAble {
 
-    public static void main(String[] args) throws Exception {
-        new SimpleRpcServer().process(args);
+    byte[] _data;
+
+    public DataBodyPrivacy() {
     }
-    
+
+    public DataBodyPrivacy(byte[] data) {
+        this._data = data;
+    }
+
     @Override
-    protected void doPreStartAction() {
-        new OncRpcEmbeddedPortmap();
+    public void xdrDecode(XdrDecodingStream xdr) throws OncRpcException, IOException {
+        _data = xdr.xdrDecodeDynamicOpaque();
     }
 
     @Override
-    protected OncRpcSvcBuilderItf<GenOncRpcSvc, GenOncRpcCall, IOncRpcSvcBuilder, XdrTransport, GenOncRpcReply> createOncRpcSvcBuilder(
-            int port) {
-        return new GenOncRpcSvcBuilder()
-                .withTCP()
-                .withAutoPublish();
+    public void xdrEncode(XdrEncodingStream xdr) throws OncRpcException, IOException {
+
+        xdr.xdrEncodeDynamicOpaque(_data);
     }
 
+    public byte[] getData() {
+        return _data;
+    }
 }

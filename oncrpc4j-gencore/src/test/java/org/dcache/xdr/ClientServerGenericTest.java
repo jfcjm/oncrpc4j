@@ -27,14 +27,14 @@ public class ClientServerGenericTest {
     private static final int UPPER = 2;
     private static final int SHUTDOWN = 3;
 
-    private RpcSvcItf<IOncRpcSvc,IOncRpcCall> svc;
-    private RpcSvcItf<?,?>  clnt;
-    private AbstractRpcCall<?,?> clntCall;
+    private RpcSvcItf<GenOncRpcSvc,GenOncRpcCall,XdrTransport,GenOncRpcReply> svc;
+    private RpcSvcItf<?,?,?,?>  clnt;
+    private AbstractRpcCall<?,?,?,?> clntCall;
 
     @Before
     public void setUp() throws IOException {
 
-        RpcDispatchableItf<IOncRpcSvc,IOncRpcCall> echo =  ( call) -> {
+        RpcDispatchableItf<GenOncRpcSvc,GenOncRpcCall,XdrTransport,GenOncRpcReply> echo =  ( call) -> {
             switch (call.getProcedure()) {
 
                 case ECHO: {
@@ -44,7 +44,7 @@ public class ClientServerGenericTest {
                     break;
                 }
                 case UPPER: {
-                    AbstractRpcCall<?,?> cb = new AbstractRpcCall<>(PROGNUM, PROGVER, new RpcAuthTypeNone(), call.getTransport());
+                    AbstractRpcCall<?,?,?,?> cb = new AbstractRpcCall<>(PROGNUM, PROGVER, new RpcAuthTypeNone(), call.getTransport());
                     XdrString s = new XdrString();
                     call.retrieveCall(s);
                     cb.call(ECHO, s, s);
@@ -57,7 +57,7 @@ public class ClientServerGenericTest {
             }
         };
 
-        RpcDispatchableItf<IOncRpcSvc,IOncRpcCall> upper = ( call) -> {
+        RpcDispatchableItf<GenOncRpcSvc,GenOncRpcCall,XdrTransport,GenOncRpcReply> upper = ( call) -> {
             XdrString s = new XdrString();
             call.retrieveCall(s);
             XdrString u = new XdrString(s.stringValue().toUpperCase());
@@ -81,7 +81,7 @@ public class ClientServerGenericTest {
                 .withRpcService(new OncRpcProgram(PROGNUM, PROGVER), upper)
                 .build();
         clnt.start();
-        XdrTransportItf<?,?> t = clnt.connect(svc.getInetSocketAddress(IpProtocolType.TCP));
+        XdrTransportItf<?,?,?,?> t = clnt.connect(svc.getInetSocketAddress(IpProtocolType.TCP));
         clntCall = new AbstractRpcCall<>(PROGNUM, PROGVER, new RpcAuthTypeNone(), t);
     }
 
@@ -138,7 +138,7 @@ public class ClientServerGenericTest {
     @Test
     public void shouldTriggerClientCallbackEvenIfOtherClientDisconnected() throws IOException {
 
-         RpcSvcItf<?,?> clnt = new GenOncRpcSvcBuilder()
+         RpcSvcItf<?,?,?,?> clnt = new GenOncRpcSvcBuilder()
                 .withTCP()
                 .withClientMode()
                 .withWorkerThreadIoStrategy()

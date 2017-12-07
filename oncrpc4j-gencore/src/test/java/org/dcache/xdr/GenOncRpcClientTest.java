@@ -16,7 +16,7 @@ public class GenOncRpcClientTest {
         GenOncRpcClient client = new GenOncRpcClient(InetAddress.getByName("127.0.0.1"),111,4);
         assertNotNull(client);
         
-        XdrTransportItf<IOncRpcSvc,IOncRpcCall> c = client.connect();
+        XdrTransportItf<GenOncRpcSvc,GenOncRpcCall,XdrTransport,GenOncRpcReply> c = client.connect();
     }
 
 }

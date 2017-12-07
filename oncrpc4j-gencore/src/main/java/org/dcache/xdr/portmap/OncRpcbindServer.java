@@ -25,12 +25,14 @@ import java.util.HashSet;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.dcache.xdr.GenOncRpcCall;
+import org.dcache.xdr.GenOncRpcReply;
+import org.dcache.xdr.GenOncRpcSvc;
 import org.dcache.xdr.GenOncRpcSvcBuilder;
-import org.dcache.xdr.IOncRpcCall;
-import org.dcache.xdr.IOncRpcSvc;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.OncRpcProgram;
 import org.dcache.xdr.XdrBoolean;
+import org.dcache.xdr.XdrTransport;
 import org.dcache.xdr.XdrVoid;
 import org.dcache.xdr.model.itf.RpcCallItf;
 import org.dcache.xdr.model.itf.RpcDispatchableItf;
@@ -38,7 +40,7 @@ import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
 
 
-public class OncRpcbindServer implements RpcDispatchableItf<IOncRpcSvc,IOncRpcCall> {
+public class OncRpcbindServer implements RpcDispatchableItf<GenOncRpcSvc,GenOncRpcCall,XdrTransport,GenOncRpcReply> {
 	static final ArrayList<String> v2NetIDs = new ArrayList<String>() {{
 		add("tcp");
 		add("udp");
@@ -57,7 +59,7 @@ public class OncRpcbindServer implements RpcDispatchableItf<IOncRpcSvc,IOncRpcCa
         //_services.add(new rpcb(100000, 4, "tcp", "0.0.0.0.0.111", "superuser"));
     }
     @Override
-    public void dispatchOncRpcCall(IOncRpcCall call) throws OncRpcException, IOException {
+    public void dispatchOncRpcCall(GenOncRpcCall call) throws OncRpcException, IOException {
         int version = call.getProgramVersion();
 
         switch(version) {
@@ -71,7 +73,7 @@ public class OncRpcbindServer implements RpcDispatchableItf<IOncRpcSvc,IOncRpcCa
                 call.failProgramMismatch(2, 4);
         }
     }
-    private void processV2Call( IOncRpcCall call) throws OncRpcException, IOException {
+    private void processV2Call( GenOncRpcCall call) throws OncRpcException, IOException {
         switch(call.getProcedure()) {
             case OncRpcPortmap.PMAPPROC_NULL:
                 call.reply(XdrVoid.XDR_VOID);
@@ -172,16 +174,16 @@ public class OncRpcbindServer implements RpcDispatchableItf<IOncRpcSvc,IOncRpcCa
 
 
         OncRpcbindServer rpcbind = new OncRpcbindServer();
-        IOncRpcSvc server = rpcbind.createServer(port);
+        GenOncRpcSvc server = rpcbind.createServer(port);
 
         server.start();
         System.in.read();
 
     }
     //JMK
-    private  IOncRpcSvc createServer(int port) {
+    private  GenOncRpcSvc createServer(int port) {
 
-        IOncRpcSvc  server = new GenOncRpcSvcBuilder()
+        GenOncRpcSvc  server = new GenOncRpcSvcBuilder()
                 .withPort(port)
                 .withTCP()
                 .withUDP()
