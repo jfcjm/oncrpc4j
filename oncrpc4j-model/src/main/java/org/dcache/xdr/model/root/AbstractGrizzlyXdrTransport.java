@@ -28,6 +28,7 @@ import org.dcache.xdr.Xdr;
 import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.dcache.xdr.model.itf.ReplyQueueItf;
 import org.dcache.xdr.model.itf.RpcCallItf;
+import org.dcache.xdr.model.itf.RpcReplyItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.glassfish.grizzly.Buffer;
 import org.glassfish.grizzly.Connection;
@@ -37,25 +38,27 @@ import org.glassfish.grizzly.asyncqueue.WritableMessage;
 
 import static java.util.Objects.requireNonNull;
 
-public  class AbstractGrizzlyXdrTransport
+public abstract  class AbstractGrizzlyXdrTransport
     <
-        SVC_T extends RpcSvcItf<SVC_T,CALL_T>,
-        CALL_T extends RpcCallItf<SVC_T,CALL_T>> implements XdrTransportItf<SVC_T,CALL_T> {
+        SVC_T extends RpcSvcItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
+        CALL_T extends RpcCallItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
+        TRANSPORT_T extends XdrTransportItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
+        REPLY_T extends RpcReplyItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>> implements XdrTransportItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T> {
 
     private final static Logger _log = LoggerFactory.getLogger(AbstractGrizzlyXdrTransport.class);
 
     private final Connection<InetSocketAddress> _connection;
-    private final ReplyQueueItf<SVC_T,CALL_T> _replyQueue;
+    private final ReplyQueueItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T> _replyQueue;
     private final InetSocketAddress _localAddress;
     private final InetSocketAddress _remoteAddress;
 
   //TODO private ProtocolFactoryItf<SVC_T> _factory;
 
-    public  AbstractGrizzlyXdrTransport(Connection<InetSocketAddress> connection, ReplyQueueItf<SVC_T,CALL_T> replyQueue /*, ProtocolFactoryItf<SVC_T> factory*/) {
+    public  AbstractGrizzlyXdrTransport(Connection<InetSocketAddress> connection, ReplyQueueItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T> replyQueue /*, ProtocolFactoryItf<SVC_T> factory*/) {
         this(connection, connection.getPeerAddress(), replyQueue /*,factory*/);
     }
 
-    public AbstractGrizzlyXdrTransport(Connection<InetSocketAddress> connection, InetSocketAddress remoteAddress, ReplyQueueItf<SVC_T,CALL_T> replyQueue/*, ProtocolFactoryItf<SVC_T> factory */) {
+    public AbstractGrizzlyXdrTransport(Connection<InetSocketAddress> connection, InetSocketAddress remoteAddress, ReplyQueueItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T> replyQueue/*, ProtocolFactoryItf<SVC_T> factory */) {
         _connection = connection;
         _replyQueue = replyQueue;
         _localAddress = _connection.getLocalAddress();
@@ -102,19 +105,25 @@ public  class AbstractGrizzlyXdrTransport
     }
 
     @Override
-    public ReplyQueueItf<SVC_T,CALL_T> getReplyQueue() {
+    public ReplyQueueItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T> getReplyQueue() {
         return _replyQueue;
     }
 
     @Override
-    public XdrTransportItf<SVC_T,CALL_T> getPeerTransport() {
-        return new AbstractGrizzlyXdrTransport<SVC_T,CALL_T>(_connection, getReplyQueue()/*,_factory*/);
+    public XdrTransportItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T> getPeerTransport() {
+        return createGrizzlyXdrTransport(_connection, getReplyQueue());
     }
+
+    protected abstract  AbstractGrizzlyXdrTransport<SVC_T, CALL_T, TRANSPORT_T, REPLY_T> createGrizzlyXdrTransport(Connection<InetSocketAddress> _connection2, ReplyQueueItf<SVC_T, CALL_T, TRANSPORT_T, REPLY_T> replyQueueItf) ;
+    //{
+    //    return new AbstractGrizzlyXdrTransport<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>(_connection, getReplyQueue()/*,_factory*/);
+    //}
 
     @Override
     public String toString() {
         return getRemoteSocketAddress() + " <=> " + getLocalSocketAddress();
     }
+    
     /*
     @Override
     public ProtocolFactoryItf<SVC_T> getProtocolFactory() {

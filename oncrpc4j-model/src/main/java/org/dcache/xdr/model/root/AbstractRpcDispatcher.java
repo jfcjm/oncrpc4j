@@ -34,21 +34,28 @@ import org.dcache.xdr.OncRpcProgram;
 import org.dcache.xdr.RpcException;
 import org.dcache.xdr.model.itf.RpcCallItf;
 import org.dcache.xdr.model.itf.RpcDispatchableItf;
+import org.dcache.xdr.model.itf.RpcReplyItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
+import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.glassfish.grizzly.filterchain.BaseFilter;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.filterchain.NextAction;
 
 import static java.util.Objects.requireNonNull;
 
-public class AbstractRpcDispatcher<SVC_T extends RpcSvcItf<SVC_T,CALL_T>,CALL_T extends RpcCallItf<SVC_T,CALL_T>> extends BaseFilter {
+public class AbstractRpcDispatcher
+    <
+        SVC_T extends RpcSvcItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
+        CALL_T extends RpcCallItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
+        TRANSPORT_T extends XdrTransportItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
+        REPLY_T extends RpcReplyItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>> extends BaseFilter {
 
     private final static Logger _log = LoggerFactory.getLogger(AbstractRpcDispatcher.class);
     /**
      * List of registered RPC services
      *
      */
-    private final Map<OncRpcProgram, RpcDispatchableItf<SVC_T,CALL_T>> _programs;
+    private final Map<OncRpcProgram, RpcDispatchableItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>> _programs;
 
     /**
      * {@link ExecutorService} used for request processing
@@ -72,7 +79,7 @@ public class AbstractRpcDispatcher<SVC_T extends RpcSvcItf<SVC_T,CALL_T>,CALL_T 
      * @throws NullPointerException if executor or program is null
      */
     public AbstractRpcDispatcher(ExecutorService executor, Map<OncRpcProgram,
-            RpcDispatchableItf<SVC_T,CALL_T>> programs, boolean withSubjectPropagation)
+            RpcDispatchableItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>> programs, boolean withSubjectPropagation)
             throws NullPointerException {
 
         _programs = requireNonNull(programs, "Programs is NULL");
@@ -90,7 +97,7 @@ public class AbstractRpcDispatcher<SVC_T extends RpcSvcItf<SVC_T,CALL_T>,CALL_T 
 
         _log.debug("processing request {}", call);
 
-        final RpcDispatchableItf<SVC_T,CALL_T> program = _programs.get(new OncRpcProgram(prog, vers));
+        final RpcDispatchableItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T> program = _programs.get(new OncRpcProgram(prog, vers));
         if (program == null) {
             call.failProgramUnavailable();
         } else {

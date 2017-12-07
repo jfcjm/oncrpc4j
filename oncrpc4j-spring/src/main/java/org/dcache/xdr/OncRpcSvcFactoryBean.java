@@ -38,7 +38,7 @@ public class OncRpcSvcFactoryBean implements FactoryBean<AbstractOncRpcSvcBuilde
     private final AbstractOncRpcSvcBuilder builder;
 
     public OncRpcSvcFactoryBean() {
-        builder = new AbstractOncRpcSvcBuilder();
+        builder = new OncRpcSvcBuilder();
     }
 
     @Override

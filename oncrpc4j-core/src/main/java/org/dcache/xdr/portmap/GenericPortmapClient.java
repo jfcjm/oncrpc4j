@@ -44,7 +44,7 @@ public class GenericPortmapClient implements OncPortmapClient {
     private final RpcAuth _auth = new RpcAuthTypeNone();
     private final OncPortmapClient _portmapClient;
 
-    public GenericPortmapClient(XdrTransportItf<OncRpcSvc,RpcCall> transport) throws RpcProgUnavailable {
+    public GenericPortmapClient(XdrTransport transport) throws RpcProgUnavailable {
 
        OncPortmapClient portmapClient = new RpcbindV4Client(new RpcCall(100000, 4, _auth, transport));
         if( !portmapClient.ping() ) {
@@ -83,7 +83,7 @@ public class GenericPortmapClient implements OncPortmapClient {
         int protocol = IpProtocolType.TCP;
 
         OncRpcClient rpcClient = new OncRpcClient(InetAddress.getByName(null), IpProtocolType.UDP, 111);
-        XdrTransportItf<OncRpcSvc, RpcCall> transport = rpcClient.connect();
+        XdrTransport transport = rpcClient.connect();
 
         OncPortmapClient portmapClient = new GenericPortmapClient(transport);
 

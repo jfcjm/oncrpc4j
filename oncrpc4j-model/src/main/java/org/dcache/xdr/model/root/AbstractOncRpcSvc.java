@@ -28,6 +28,7 @@ import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
 import org.dcache.xdr.model.itf.ReplyQueueItf;
 import org.dcache.xdr.model.itf.RpcCallItf;
 import org.dcache.xdr.model.itf.RpcDispatchableItf;
+import org.dcache.xdr.model.itf.RpcReplyItf;
 import org.dcache.xdr.model.itf.RpcSessionManagerItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
@@ -86,10 +87,12 @@ import static org.dcache.xdr.GrizzlyUtils.transportFor;
  * @param <SVC_T>
  */
 public abstract class AbstractOncRpcSvc<
-                SVC_T extends RpcSvcItf<SVC_T,CALL_T>,
-                CALL_T extends RpcCallItf<SVC_T,CALL_T>,
-                BUILDER_T extends  OncRpcSvcBuilderItf<SVC_T,CALL_T,BUILDER_T>
-          > implements  RpcSvcItf<SVC_T,CALL_T>{
+                SVC_T extends RpcSvcItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
+                CALL_T extends RpcCallItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
+                BUILDER_T extends  OncRpcSvcBuilderItf<SVC_T,CALL_T,BUILDER_T,TRANSPORT_T,REPLY_T>,
+                TRANSPORT_T extends XdrTransportItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
+                REPLY_T extends RpcReplyItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>
+          > implements  RpcSvcItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>{
     
     private final static Logger _log = LoggerFactory.getLogger(AbstractOncRpcSvc.class);
     
@@ -103,18 +106,18 @@ public abstract class AbstractOncRpcSvc<
 
     private final ExecutorService _requestExecutor;
 
-    private final ReplyQueueItf<SVC_T,CALL_T> _replyQueue = createReplyQueue();
+    private final ReplyQueueItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T> _replyQueue = createReplyQueue();
 
     private final boolean _withSubjectPropagation;
     /**
      * Handle RPCSEC_GSS
      */
-    private RpcSessionManagerItf<SVC_T,CALL_T> _rpcSessionManager;
+    private RpcSessionManagerItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T> _rpcSessionManager;
 
     /**
      * mapping of registered programs.
      */
-    private final Map<OncRpcProgram, RpcDispatchableItf<SVC_T,CALL_T>> _programs =
+    private final Map<OncRpcProgram, RpcDispatchableItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>> _programs =
             new ConcurrentHashMap<>();
 
     /**
@@ -193,7 +196,7 @@ public abstract class AbstractOncRpcSvc<
      * @param prog program number
      * @param handler RPC requests handler.
      */
-    public void register(OncRpcProgram prog, RpcDispatchableItf<SVC_T,CALL_T> handler) {
+    public void register(OncRpcProgram prog, RpcDispatchableItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T> handler) {
         _log.info("Registering new program {} : {}", prog, handler);
         _programs.put(prog, handler);
     }
@@ -214,7 +217,7 @@ public abstract class AbstractOncRpcSvc<
      * @deprecated use {@link AbstractOncRpcSvcBuilder#withRpcService} instead.
      */
     @Deprecated
-    public void setPrograms(Map<OncRpcProgram, RpcDispatchableItf<SVC_T,CALL_T>> services) {
+    public void setPrograms(Map<OncRpcProgram, RpcDispatchableItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>> services) {
         _programs.putAll(services);
     }
 
@@ -292,11 +295,11 @@ public abstract class AbstractOncRpcSvc<
         _requestExecutor.shutdown();
     }
 
-    public XdrTransportItf<SVC_T,CALL_T> connect(InetSocketAddress socketAddress) throws IOException {
+    public TRANSPORT_T connect(InetSocketAddress socketAddress) throws IOException {
         return connect(socketAddress, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
 
-    public XdrTransportItf<SVC_T,CALL_T> connect(InetSocketAddress socketAddress, long timeout, TimeUnit timeUnit) throws IOException {
+    public TRANSPORT_T connect(InetSocketAddress socketAddress, long timeout, TimeUnit timeUnit) throws IOException {
 
         // in client mode only one transport is defined
         NIOTransport transport = _transports.get(0);
@@ -312,7 +315,7 @@ public abstract class AbstractOncRpcSvc<
         try {
             //noinspection unchecked
             Connection<InetSocketAddress> connection = connectFuture.get(timeout, timeUnit);
-            return new AbstractGrizzlyXdrTransport<SVC_T,CALL_T>(connection, _replyQueue /*,_protocolFactory*/);
+            return createTransport(connection,_replyQueue);
         } catch (ExecutionException e) {
             Throwable t = getRootCause(e);
             propagateIfPossible(t, IOException.class);
@@ -354,7 +357,7 @@ public abstract class AbstractOncRpcSvc<
 		.collect(Collectors.joining(",", getName() +"-[", "]"));
     }
     
-    protected Map<OncRpcProgram, RpcDispatchableItf<SVC_T,CALL_T>> getPrograms() {
+    protected Map<OncRpcProgram, RpcDispatchableItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>> getPrograms() {
         return _programs;
     }
     
@@ -397,12 +400,20 @@ public abstract class AbstractOncRpcSvc<
      * @param _replyQueue
      * @return
      */
-    protected abstract Filter createRpcProtocolFilter(ReplyQueueItf<SVC_T, CALL_T> _replyQueue);
+    protected abstract Filter createRpcProtocolFilter(ReplyQueueItf<SVC_T, CALL_T,TRANSPORT_T,REPLY_T> _replyQueue);
     
 
     /**
      * Create a replyqueue able to process return message for the given rpc implemntation
      * @return
      */
-    protected abstract ReplyQueueItf<SVC_T, CALL_T> createReplyQueue();
+    protected abstract ReplyQueueItf<SVC_T, CALL_T,TRANSPORT_T,REPLY_T> createReplyQueue();
+    
+
+
+    protected abstract TRANSPORT_T createTransport(
+            Connection<InetSocketAddress> connection, ReplyQueueItf<SVC_T, CALL_T, TRANSPORT_T,REPLY_T> _replyQueue2) ;
+    //{
+      //  return new AbstractGrizzlyXdrTransport<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>(connection, _replyQueue /*,_protocolFactory*/);
+    //}
 }

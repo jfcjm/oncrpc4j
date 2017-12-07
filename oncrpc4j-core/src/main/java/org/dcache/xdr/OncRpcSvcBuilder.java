@@ -3,7 +3,7 @@ package org.dcache.xdr;
 import org.dcache.xdr.gss.GssSessionManager;
 import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
 
-public class OncRpcSvcBuilder extends AbstractOncRpcSvcBuilder<OncRpcSvc, RpcCall,OncRpcSvcBuilder>  
+public class OncRpcSvcBuilder extends AbstractOncRpcSvcBuilder<OncRpcSvc, RpcCall,OncRpcSvcBuilder,XdrTransport,RpcReply>  
      {
     
     GssSessionManager _gssSessionManager =null;

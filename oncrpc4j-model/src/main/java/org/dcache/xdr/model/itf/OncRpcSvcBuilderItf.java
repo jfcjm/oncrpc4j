@@ -5,9 +5,13 @@ import java.util.concurrent.ExecutorService;
 
 import org.dcache.xdr.IoStrategy;
 import org.dcache.xdr.OncRpcProgram;
-public interface OncRpcSvcBuilderItf<SVC_T extends RpcSvcItf<
-                                        SVC_T,CALL_T>,CALL_T extends RpcCallItf<SVC_T,
-                                        CALL_T>,BUILDER_T extends OncRpcSvcBuilderItf<SVC_T,CALL_T,BUILDER_T>> {
+public interface OncRpcSvcBuilderItf
+    <
+           SVC_T extends RpcSvcItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
+           CALL_T extends RpcCallItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
+           BUILDER_T extends OncRpcSvcBuilderItf<SVC_T,CALL_T,BUILDER_T,TRANSPORT_T,REPLY_T>,
+           TRANSPORT_T extends XdrTransportItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
+           REPLY_T extends RpcReplyItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>> {
     BUILDER_T withMaxPort(int maxPort);
 
     BUILDER_T withMinPort(int minPort);
@@ -36,9 +40,9 @@ public interface OncRpcSvcBuilderItf<SVC_T extends RpcSvcItf<
 
     BUILDER_T  withClientMode();
 
-    BUILDER_T withRpcService(OncRpcProgram program, RpcDispatchableItf<SVC_T,CALL_T> service);
+    BUILDER_T withRpcService(OncRpcProgram program, RpcDispatchableItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T> service);
 
-    BUILDER_T withRpcSessionManager(RpcSessionManagerItf<SVC_T,CALL_T> sessionManager);
+    BUILDER_T withRpcSessionManager(RpcSessionManagerItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T> sessionManager);
     
     BUILDER_T withSubjectPropagation();
 
@@ -75,8 +79,8 @@ public interface OncRpcSvcBuilderItf<SVC_T extends RpcSvcItf<
      * et si possible avec un gestonnaire de ssession SASL.
      * @return
      */
-    Map<OncRpcProgram, RpcDispatchableItf<SVC_T,CALL_T>> getRpcServices();
-    RpcSessionManagerItf<SVC_T,CALL_T> getRpcSessionManager();
+    Map<OncRpcProgram, RpcDispatchableItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>> getRpcServices();
+    RpcSessionManagerItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T> getRpcSessionManager();
     SVC_T build();
 
     

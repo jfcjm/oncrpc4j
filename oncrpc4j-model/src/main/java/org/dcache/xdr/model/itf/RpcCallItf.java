@@ -13,7 +13,13 @@ import org.dcache.xdr.Xdr;
 import org.dcache.xdr.XdrAble;
 
 
-public interface RpcCallItf<SVC_T extends RpcSvcItf<SVC_T,CALL_T>, CALL_T extends RpcCallItf<SVC_T,CALL_T>> {
+public interface RpcCallItf
+    <
+        SVC_T extends RpcSvcItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>, 
+        CALL_T extends RpcCallItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
+        TRANSPORT_T extends XdrTransportItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
+        REPLY_T extends RpcReplyItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>
+        > {
 
     /**
      * Accept message. Have to be called prior processing RPC call.
@@ -45,7 +51,7 @@ public interface RpcCallItf<SVC_T extends RpcSvcItf<SVC_T,CALL_T>, CALL_T extend
      * Get RPC {@XdrTransport} used by this call.
      * @return transport.
      */
-    XdrTransportItf<SVC_T,CALL_T> getTransport();
+    XdrTransportItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T> getTransport();
 
     /**
      * Get xid associated with this rpc message.
@@ -138,32 +144,35 @@ public interface RpcCallItf<SVC_T extends RpcSvcItf<SVC_T,CALL_T>, CALL_T extend
      * @throws IOException
      * @since 2.4.0
      */
-    void call(int procedure, XdrAble args, CompletionHandler<RpcReplyItf<SVC_T,CALL_T>, XdrTransportItf<SVC_T,CALL_T>> callback,
+    void call(int procedure, XdrAble args, CompletionHandler<REPLY_T,TRANSPORT_T> callback,
             long timeoutValue, TimeUnit timeoutUnits, RpcAuth auth) throws IOException;
-
+    /*
+    void call(int procedure, XdrAble args, CompletionHandler<RpcReplyItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,XdrTransportItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>> callback,
+            long timeoutValue, TimeUnit timeoutUnits, RpcAuth auth) throws IOException;
+    */
     /**
-     * convenience version of {@link #call(int, XdrAble, CompletionHandler, long, TimeUnit, RpcAuth)} with no auth
+     * convenience version of {@link #call(int, XdrAble, CompletionHandlerItf, long, TimeUnit, RpcAuth)} with no auth
      */
-    void call(int procedure, XdrAble args, CompletionHandler<RpcReplyItf<SVC_T,CALL_T>, XdrTransportItf<SVC_T,CALL_T>> callback,
+    void call(int procedure, XdrAble args,  CompletionHandler<REPLY_T,TRANSPORT_T> callback,
             long timeoutValue, TimeUnit timeoutUnits) throws IOException;
 
     /**
-     * convenience version of {@link #call(int, XdrAble, CompletionHandler, long, TimeUnit, RpcAuth)} with no timeout
+     * convenience version of {@link #call(int, XdrAble, CompletionHandlerItf, long, TimeUnit, RpcAuth)} with no timeout
      */
-    void call(int procedure, XdrAble args, CompletionHandler<RpcReplyItf<SVC_T,CALL_T>, XdrTransportItf<SVC_T,CALL_T>> callback,
+    void call(int procedure, XdrAble args, CompletionHandler<REPLY_T,TRANSPORT_T> callback,
             RpcAuth auth) throws IOException;
 
     /**
-     * convenience version of {@link #call(int, XdrAble, CompletionHandler, long, TimeUnit, RpcAuth)} with no timeout or auth
+     * convenience version of {@link #call(int, XdrAble, CompletionHandlerItf, long, TimeUnit, RpcAuth)} with no timeout or auth
      */
-    void call(int procedure, XdrAble args, CompletionHandler<RpcReplyItf<SVC_T,CALL_T>, XdrTransportItf<SVC_T,CALL_T>> callback)
+    void call(int procedure, XdrAble args, CompletionHandler<REPLY_T,TRANSPORT_T> callback)
             throws IOException;
 
     /**
      * Send asynchronous RPC request to a remove server.
      *
      * This method initiates an asynchronous RPC request. The method behaves in
-     * exactly the same manner as the {@link #call(int, XdrAble, CompletionHandler, long, TimeUnit)}
+     * exactly the same manner as the {@link #call(int, XdrAble, CompletionHandlerItf, long, TimeUnit)}
      * method except that instead of specifying a completion handler, this method
      * returns a Future representing the pending result. The Future's get method
      * returns the RPC reply responded by server.
@@ -217,7 +226,7 @@ public interface RpcCallItf<SVC_T extends RpcSvcItf<SVC_T,CALL_T>, CALL_T extend
     void call(int procedure, XdrAble args, XdrAble result) throws IOException;
 
     /**
-     * Register {@link CompletionHandler} to receive notification when message
+     * Register {@link CompletionHandlerItf} to receive notification when message
      * send is complete. NOTICE: when processing rpc call on the server side
      * the @{code registerSendListener} has the same effect as {@link #registerSendOnceListener}
      * as a new instance of {@link RpcCall} is used to process the request.
@@ -226,7 +235,7 @@ public interface RpcCallItf<SVC_T extends RpcSvcItf<SVC_T,CALL_T>, CALL_T extend
     void registerSendListener(CompletionHandler<Integer, InetSocketAddress> listener);
 
     /**
-     * Register {@link CompletionHandler} to receive notification when message
+     * Register {@link CompletionHandlerItf} to receive notification when message
      * send is complete. The listener will be removed after next send event.
      *
      * @param listener the message sent listener

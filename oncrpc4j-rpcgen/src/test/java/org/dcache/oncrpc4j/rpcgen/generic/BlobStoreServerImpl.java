@@ -1,18 +1,24 @@
-package org.dcache.oncrpc4j.rpcgen;
+package org.dcache.oncrpc4j.rpcgen.generic;
 
 import com.google.common.io.BaseEncoding;
-import org.dcache.xdr.RpcCall;
+
+import org.dcache.oncrpc4j.rpcgen.BlobStoreServer;
+import org.dcache.oncrpc4j.rpcgen.Key;
+import org.dcache.oncrpc4j.rpcgen.Value;
+import org.dcache.xdr.model.itf.RpcCallItf;
+import org.dcache.xdr.model.itf.RpcSvcItf;
+import org.dcache.xdr.model.root.AbstractRpcCall;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class BlobStoreServerImpl extends BlobStoreServer {
+public class BlobStoreServerImpl<SVC_T extends RpcSvcItf<SVC_T>> extends BlobStoreServer<SVC_T> {
     private final ConcurrentHashMap<String, byte[]> store = new ConcurrentHashMap<>();
     private final AtomicInteger requestCounter = new AtomicInteger(0);
     private volatile long sleepFor = 1L;
 
     @Override
-    public void put_1(RpcCall call$, Key key, Value value) {
+    public void put_1(RpcCallItf<SVC_T> call$, Key key, Value value) {
         String hexKey = bytesToHex(key.data);
         store.put(hexKey, value.data);
         requestCounter.incrementAndGet();
@@ -24,7 +30,7 @@ public class BlobStoreServerImpl extends BlobStoreServer {
     }
 
     @Override
-    public Value get_1(RpcCall call$, Key key) {
+    public Value get_1(RpcCallItf<SVC_T> call$, Key key) {
         String hexKey = bytesToHex(key.data);
         byte[] value = store.get(hexKey);
         Value res = new Value();

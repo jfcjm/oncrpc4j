@@ -37,7 +37,7 @@ import org.dcache.xdr.model.root.AbstractOncRpcClient;
  *
  * @param <SVC_T>
  */
-public  class OncRpcClient  extends AbstractOncRpcClient<OncRpcSvc,RpcCall,OncRpcSvcBuilder> {
+public  class OncRpcClient  extends AbstractOncRpcClient<OncRpcSvc,RpcCall,OncRpcSvcBuilder,XdrTransport, RpcReply> {
     protected static final String DEFAULT_SERVICE_NAME = AbstractOncRpcClient.DEFAULT_SERVICE_NAME;
     /**
      * On rajoute le paramètre int protocol, de l'appel pour le moment

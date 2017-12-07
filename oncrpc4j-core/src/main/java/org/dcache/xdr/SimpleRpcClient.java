@@ -24,11 +24,9 @@ import java.util.concurrent.Future;
 
 import org.dcache.xdr.model.itf.OncRpcClientItf;
 import org.dcache.xdr.model.itf.RpcCallItf;
-import org.dcache.xdr.model.itf.XdrTransportItf;
-import org.dcache.xdr.model.root.AbstractRpcCall;
 import org.dcache.xdr.model.root.AbstractSimpleRpcClient;
 
-public class SimpleRpcClient extends AbstractSimpleRpcClient<OncRpcSvc,RpcCall>
+public class SimpleRpcClient extends AbstractSimpleRpcClient<OncRpcSvc,RpcCall,XdrTransport, RpcReply>
 {
 
     public static void main(String[] args) throws Exception {
@@ -42,18 +40,18 @@ public class SimpleRpcClient extends AbstractSimpleRpcClient<OncRpcSvc,RpcCall>
 	}
 
     @Override
-    protected RpcCallItf<OncRpcSvc, RpcCall> createRpcCall(int i, int j, RpcAuth auth,
-            XdrTransportItf<OncRpcSvc, RpcCall> transport) {
+    protected RpcCallItf<OncRpcSvc, RpcCall,XdrTransport, RpcReply> createRpcCall(int i, int j, RpcAuth auth,
+            XdrTransport transport) {
         return new RpcCall(i,j,auth,transport);
     }
 
     @Override
-    protected OncRpcClientItf<OncRpcSvc, RpcCall> createRpcClient(InetAddress address, int tcp, int port) {
+    protected OncRpcClientItf<OncRpcSvc, RpcCall,XdrTransport, RpcReply> createRpcClient(InetAddress address, int tcp, int port) {
         return new OncRpcClient(address,tcp,port);
     }
 
     @Override
-    protected AbstractSimpleRpcClient<OncRpcSvc, RpcCall> createSimpleClient() {
+    protected AbstractSimpleRpcClient<OncRpcSvc, RpcCall,XdrTransport, RpcReply> createSimpleClient() {
         return null;
     }
 }

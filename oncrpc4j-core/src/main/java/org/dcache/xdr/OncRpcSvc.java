@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
  *
  * @param <SVC_T>
  */
-public class OncRpcSvc extends AbstractOncRpcSvc<OncRpcSvc,RpcCall,OncRpcSvcBuilder> 
+public class OncRpcSvc extends AbstractOncRpcSvc<OncRpcSvc,RpcCall,OncRpcSvcBuilder, XdrTransport,RpcReply>
 
   {
     
@@ -83,7 +83,7 @@ public class OncRpcSvc extends AbstractOncRpcSvc<OncRpcSvc,RpcCall,OncRpcSvcBuil
 
         OncRpcClient rpcClient = new OncRpcClient(InetAddress.getByName(null),
                 IpProtocolType.UDP, OncRpcPortmap.PORTMAP_PORT);
-        XdrTransportItf<OncRpcSvc,RpcCall> transport = rpcClient.connect();
+        XdrTransport  transport = rpcClient.connect();
 
         try {
             OncPortmapClient portmapClient = new GenericPortmapClient(transport);
@@ -140,7 +140,7 @@ public class OncRpcSvc extends AbstractOncRpcSvc<OncRpcSvc,RpcCall,OncRpcSvcBuil
 
         OncRpcClient rpcClient = new OncRpcClient(InetAddress.getByName(null),
                 IpProtocolType.UDP, OncRpcPortmap.PORTMAP_PORT);
-        XdrTransportItf<OncRpcSvc,RpcCall> transport = rpcClient.connect();
+        XdrTransport  transport = rpcClient.connect();
 
         try {
             OncPortmapClient portmapClient = new GenericPortmapClient(transport);
@@ -163,12 +163,28 @@ public class OncRpcSvc extends AbstractOncRpcSvc<OncRpcSvc,RpcCall,OncRpcSvcBuil
     }
 
     @Override
-    protected Filter createRpcProtocolFilter(ReplyQueueItf<OncRpcSvc, RpcCall> _replyQueue) {
+    protected Filter createRpcProtocolFilter(ReplyQueueItf<OncRpcSvc, RpcCall,XdrTransport, RpcReply> _replyQueue) {
         return new RpcProtocolFilter(_replyQueue);
     }
 
     @Override
-    protected ReplyQueueItf<OncRpcSvc, RpcCall> createReplyQueue() {
+    protected ReplyQueueItf<OncRpcSvc, RpcCall,XdrTransport, RpcReply> createReplyQueue() {
         return new ReplyQueue();
     }
+
+
+
+
+
+
+
+    @Override
+    protected XdrTransport createTransport(Connection<InetSocketAddress> connection,
+            ReplyQueueItf<OncRpcSvc, RpcCall, XdrTransport, RpcReply> _replyQueue) {
+        return new GrizzlyXdrTransport(connection,_replyQueue);
+    }
+
+
+
+
 }

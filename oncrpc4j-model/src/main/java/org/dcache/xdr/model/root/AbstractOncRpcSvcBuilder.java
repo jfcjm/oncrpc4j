@@ -26,8 +26,10 @@ import org.dcache.xdr.OncRpcProgram;
 import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
 import org.dcache.xdr.model.itf.RpcCallItf;
 import org.dcache.xdr.model.itf.RpcDispatchableItf;
+import org.dcache.xdr.model.itf.RpcReplyItf;
 import org.dcache.xdr.model.itf.RpcSessionManagerItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
+import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.glassfish.grizzly.threadpool.FixedThreadPool;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
 
@@ -65,11 +67,13 @@ import static org.dcache.xdr.IpProtocolType.*;
  * @since 2.0
  */
 public abstract class AbstractOncRpcSvcBuilder <
-        SVC_T extends RpcSvcItf<SVC_T,CALL_T>,
-        CALL_T extends RpcCallItf<SVC_T,CALL_T>,
-        BUILDER_T extends  OncRpcSvcBuilderItf<SVC_T,CALL_T,BUILDER_T>
+        SVC_T extends RpcSvcItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
+        CALL_T extends RpcCallItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
+        BUILDER_T extends  OncRpcSvcBuilderItf<SVC_T,CALL_T,BUILDER_T,TRANSPORT_T,REPLY_T>,
+        TRANSPORT_T extends XdrTransportItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
+        REPLY_T extends RpcReplyItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>
        > 
-    implements OncRpcSvcBuilderItf<SVC_T,CALL_T,BUILDER_T>{
+    implements OncRpcSvcBuilderItf<SVC_T,CALL_T,BUILDER_T,TRANSPORT_T,REPLY_T>{
 
     private int _protocol = 0;
     private int _minPort = 0;
@@ -80,10 +84,10 @@ public abstract class AbstractOncRpcSvcBuilder <
     private int _backlog = 4096;
     private String _bindAddress = "0.0.0.0";
     private String _serviceName = "OncRpcSvc";
-    private RpcSessionManagerItf<SVC_T,CALL_T> _rpcSessionManager;
+    private RpcSessionManagerItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T> _rpcSessionManager;
     private ExecutorService _workerThreadExecutionService;
     private boolean _isClient = false;
-    private final Map<OncRpcProgram, RpcDispatchableItf<SVC_T,CALL_T>> _programs = new HashMap<>();
+    private final Map<OncRpcProgram, RpcDispatchableItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>> _programs = new HashMap<>();
     private int _selectorThreadPoolSize = 0;
     private int _workerThreadPoolSize = 0;
     private boolean _subjectPropagation = false;
@@ -184,7 +188,7 @@ public abstract class AbstractOncRpcSvcBuilder <
     }
     
     @Override
-    public BUILDER_T withRpcSessionManager(RpcSessionManagerItf<SVC_T,CALL_T> rpcSessionManager) {
+    public BUILDER_T withRpcSessionManager(RpcSessionManagerItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T> rpcSessionManager) {
         _rpcSessionManager = rpcSessionManager;
         return getThis();
     }
@@ -199,7 +203,7 @@ public abstract class AbstractOncRpcSvcBuilder <
         return getThis();
     }
 
-    public BUILDER_T withRpcService(OncRpcProgram program, RpcDispatchableItf<SVC_T,CALL_T> service) {
+    public BUILDER_T withRpcService(OncRpcProgram program, RpcDispatchableItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T> service) {
         _programs.put(program, service);
         return getThis();
     }
@@ -254,7 +258,7 @@ public abstract class AbstractOncRpcSvcBuilder <
         return _serviceName;
     }
 
-    public RpcSessionManagerItf<SVC_T,CALL_T> getRpcSessionManager() {
+    public RpcSessionManagerItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T> getRpcSessionManager() {
         return _rpcSessionManager;
     }
 
@@ -284,7 +288,7 @@ public abstract class AbstractOncRpcSvcBuilder <
         return _isClient;
     }
 
-    public Map<OncRpcProgram, RpcDispatchableItf<SVC_T,CALL_T>> getRpcServices() {
+    public Map<OncRpcProgram, RpcDispatchableItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>> getRpcServices() {
         return _programs;
     }
     public SVC_T build() {

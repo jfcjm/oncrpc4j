@@ -60,7 +60,7 @@ public class OncRpcEmbeddedPortmap {
         boolean localPortmapperRunning = false;
         try(OncRpcClient rpcClient = new OncRpcClient(InetAddress.getByName(null), IpProtocolType.UDP, OncRpcPortmap.PORTMAP_PORT)) {
 
-             XdrTransportItf<OncRpcSvc, RpcCall> transport = rpcClient.connect();
+             XdrTransport transport = rpcClient.connect();
             /* check for version 2, 3 and 4 */
             for (int i = 4; i > 1 && !localPortmapperRunning; i--) {
                 RpcCall call = new RpcCall(OncRpcPortmap.PORTMAP_PROGRAMM, i, _auth, transport);
