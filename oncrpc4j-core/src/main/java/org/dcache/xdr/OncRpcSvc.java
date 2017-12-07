@@ -1,28 +1,190 @@
 package org.dcache.xdr;
 
+import java.io.IOException;
+import java.net.Inet6Address;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeoutException;
 
+import org.dcache.utils.net.InetSocketAddresses;
+import org.dcache.xdr.model.itf.ReplyQueueItf;
+import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.dcache.xdr.model.root.AbstractOncRpcSvc;
-import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
+import org.dcache.xdr.portmap.GenericPortmapClient;
+import org.dcache.xdr.portmap.OncPortmapClient;
+import org.dcache.xdr.portmap.OncRpcPortmap;
 import org.glassfish.grizzly.Connection;
+import org.glassfish.grizzly.Transport;
+import org.glassfish.grizzly.filterchain.Filter;
+import org.glassfish.grizzly.nio.transport.TCPNIOTransport;
+import org.glassfish.grizzly.nio.transport.UDPNIOTransport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+/**
+ * Problème de type
+ * @author jmk
+ *
+ * @param <SVC_T>
+ */
+public class OncRpcSvc extends AbstractOncRpcSvc<OncRpcSvc,RpcCall,OncRpcSvcBuilder, XdrTransport,RpcReply>
 
-public class OncRpcSvc extends AbstractOncRpcSvc<IOncRpcSvc> implements IOncRpcSvc{
+  {
     
-    OncRpcSvc(AbstractOncRpcSvcBuilder<IOncRpcSvc> builder) {
+    protected OncRpcSvc(OncRpcSvcBuilder builder) {
         super(builder);
     }
 
+    private final static Logger _log = LoggerFactory.getLogger(OncRpcSvc.class);
+    private boolean _publish;
+
     @Override
-    public Connection<InetSocketAddress> getConnection() {
-        // TODO Auto-generated method stub
-        return null;
+    public OncRpcSvc getThis() {
+        return this;
+    }
+    
+    
+    
+    
+    //TODO JMK Modifier le nom, cela ne s'applique qu'au serveur
+    @Override
+    protected void doPreStartAction(Connection<InetSocketAddress> c) throws IOException {
+        _log.debug("Doing PreStart action publish is {}", _publish);
+        if ( _publish) {
+            publishToPortmap(c, getPrograms().keySet());
+        }
     }
 
     @Override
-    public Set<OncRpcProgram> getPrograms() {
-        // TODO Auto-generated method stub
-        return null;
+    protected void preStopActions() throws IOException {
+        if(!isClient() && _publish) {
+            clearPortmap(getPrograms().keySet());
+        }
+        
     }
-    
+
+    @Override
+    protected void processBuilder(OncRpcSvcBuilder builder) {
+        _publish = builder.isAutoPublish();
+    }
+
+
+
+
+    /**
+     * Register services in portmap.
+     *
+     * @throws IOException
+     * @throws UnknownHostException
+     */
+    private void publishToPortmap(Connection<InetSocketAddress> connection, Set<OncRpcProgram> programs) throws IOException {
+
+        OncRpcClient rpcClient = new OncRpcClient(InetAddress.getByName(null),
+                IpProtocolType.UDP, OncRpcPortmap.PORTMAP_PORT);
+        XdrTransport  transport = rpcClient.connect();
+
+        try {
+            OncPortmapClient portmapClient = new GenericPortmapClient(transport);
+
+            Set<String> netids = new HashSet<>();
+            String username = System.getProperty("user.name");
+            Transport t = connection.getTransport();
+            String uaddr = InetSocketAddresses.uaddrOf(connection.getLocalAddress());
+
+            String netidBase;
+            if (t instanceof TCPNIOTransport) {
+                netidBase = "tcp";
+            } else if (t instanceof UDPNIOTransport) {
+                netidBase = "udp";
+            } else {
+                // must never happens
+                throw new RuntimeException("Unsupported transport type: " + t.getClass().getCanonicalName());
+            }
+
+            InetAddress localAddress = connection.getLocalAddress().getAddress();
+            if (localAddress instanceof Inet6Address) {
+                netids.add(netidBase + "6");
+                if (((Inet6Address)localAddress).isIPv4CompatibleAddress()) {
+                    netids.add(netidBase);
+                }
+            } else {
+                netids.add(netidBase);
+            }
+
+            for (OncRpcProgram program : programs) {
+                for (String netid : netids) {
+                    try {
+                        portmapClient.setPort(program.getNumber(), program.getVersion(),
+                                netid, uaddr, username);
+                    } catch (OncRpcException | TimeoutException e) {
+                        _log.warn("Failed to register program: {}", e.getMessage());
+                    }
+                }
+            }
+        } catch (RpcProgUnavailable e) {
+            _log.warn("Failed to register at portmap: {}", e.getMessage());
+        } finally {
+            rpcClient.close();
+        }
+    }
+
+    /**
+     * UnRegister services in portmap.
+     *
+     * @throws IOException
+     * @throws UnknownHostException
+     */
+    private void clearPortmap(Set<OncRpcProgram> programs) throws IOException {
+
+        OncRpcClient rpcClient = new OncRpcClient(InetAddress.getByName(null),
+                IpProtocolType.UDP, OncRpcPortmap.PORTMAP_PORT);
+        XdrTransport  transport = rpcClient.connect();
+
+        try {
+            OncPortmapClient portmapClient = new GenericPortmapClient(transport);
+
+            String username = System.getProperty("user.name");
+
+            for (OncRpcProgram program : programs) {
+                try {
+                    portmapClient.unsetPort(program.getNumber(),
+                            program.getVersion(), username);
+                } catch (OncRpcException | TimeoutException e) {
+                    _log.info("Failed to unregister program: {}", e.getMessage());
+                }
+            }
+        } catch (RpcProgUnavailable e) {
+            _log.info("portmap service not available");
+        } finally {
+            rpcClient.close();
+        }
+    }
+
+    @Override
+    protected Filter createRpcProtocolFilter(ReplyQueueItf<OncRpcSvc, RpcCall,XdrTransport, RpcReply> _replyQueue) {
+        return new RpcProtocolFilter(_replyQueue);
+    }
+
+    @Override
+    protected ReplyQueueItf<OncRpcSvc, RpcCall,XdrTransport, RpcReply> createReplyQueue() {
+        return new ReplyQueue();
+    }
+
+
+
+
+
+
+
+    @Override
+    protected XdrTransport createTransport(Connection<InetSocketAddress> connection,
+            ReplyQueueItf<OncRpcSvc, RpcCall, XdrTransport, RpcReply> _replyQueue) {
+        return new GrizzlyXdrTransport(connection,_replyQueue);
+    }
+
+
+
+
 }

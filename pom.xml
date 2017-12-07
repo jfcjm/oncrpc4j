@@ -42,6 +42,7 @@
       <module>oncrpc4j-rpcgen</module>
       <module>oncrpc4j-portmapdaemon</module>
       <module>oncrpc4j-model</module>
+      <module>oncrpc4j-gencore</module>
   </modules>
   
   <properties>

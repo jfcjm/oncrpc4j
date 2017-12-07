@@ -22,20 +22,23 @@ package org.dcache.xdr.portmap;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.dcache.xdr.OncRpcException;
+import org.dcache.xdr.RpcCall;
+import org.dcache.xdr.RpcDispatchable;
+import org.dcache.xdr.OncRpcSvc;
 import org.dcache.xdr.OncRpcProgram;
+import org.dcache.xdr.OncRpcSvcBuilder;
 import org.dcache.xdr.XdrBoolean;
 import org.dcache.xdr.XdrVoid;
-import org.dcache.xdr.model.itf.RpcCallItf;
-import org.dcache.xdr.model.itf.RpcDispatchableItf;
-import org.dcache.xdr.model.itf.RpcSvcItf;
-import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
 
 
-public class OncRpcbindServer<SVC_T extends RpcSvcItf<SVC_T>> implements RpcDispatchableItf<SVC_T> {
+public class OncRpcbindServer implements RpcDispatchable {
 	static final ArrayList<String> v2NetIDs = new ArrayList<String>() {{
 		add("tcp");
 		add("udp");
@@ -53,8 +56,7 @@ public class OncRpcbindServer<SVC_T extends RpcSvcItf<SVC_T>> implements RpcDisp
         _services.add(new rpcb(OncRpcPortmap.PORTMAP_PROGRAMM, OncRpcPortmap.PORTMAP_V2, "udp", "0.0.0.0.0.111", "superuser"));
         //_services.add(new rpcb(100000, 4, "tcp", "0.0.0.0.0.111", "superuser"));
     }
-    
-    public void dispatchOncRpcCall(RpcCallItf<SVC_T> call) throws OncRpcException, IOException {
+    public void dispatchOncRpcCall(RpcCall call) throws OncRpcException, IOException {
         int version = call.getProgramVersion();
 
         switch(version) {
@@ -69,7 +71,7 @@ public class OncRpcbindServer<SVC_T extends RpcSvcItf<SVC_T>> implements RpcDisp
         }
     }
 
-    private void processV2Call(RpcCallItf<SVC_T> call) throws OncRpcException, IOException {
+    private void processV2Call(RpcCall call) throws OncRpcException, IOException {
         switch(call.getProcedure()) {
             case OncRpcPortmap.PMAPPROC_NULL:
                 call.reply(XdrVoid.XDR_VOID);
@@ -169,26 +171,20 @@ public class OncRpcbindServer<SVC_T extends RpcSvcItf<SVC_T>> implements RpcDisp
         }
 
 
-        OncRpcbindServer<?> rpcbind = new OncRpcbindServer<>();
-        RpcSvcItf<?> server = rpcbind.createServer(port);
+        RpcDispatchable rpcbind = new OncRpcbindServer();
 
-        server.start();
-        System.in.read();
-
-    }
-    //JMK
-    private  RpcSvcItf<SVC_T> createServer(int port) {
-
-        RpcSvcItf<SVC_T> server  =  new AbstractOncRpcSvcBuilder<SVC_T>()
+        OncRpcSvc server  = new OncRpcSvcBuilder()
                 .withPort(port)
                 .withTCP()
                 .withUDP()
                 .withSameThreadIoStrategy()
                 .withoutAutoPublish()
                 .build();
-        
         server.register(new OncRpcProgram( OncRpcPortmap.PORTMAP_PROGRAMM,
-                OncRpcPortmap.PORTMAP_V2), this);
-        return server;
+                OncRpcPortmap.PORTMAP_V2), rpcbind);
+
+        server.start();
+        System.in.read();
+
     }
 }

@@ -19,44 +19,29 @@
  */
 package org.dcache.xdr;
 
+import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
+import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.root.AbstractOncRpcSvc;
 import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
+import org.dcache.xdr.model.root.AbstractSimpleRpcServer;
 import org.dcache.xdr.portmap.OncRpcEmbeddedPortmap;
 
-public class SimpleRpcServer {
-
-    static final int DEFAULT_PORT = 1717;
-    private static final int PROG_NUMBER = 100017;
-    private static final int PROG_VERS = 1;
+public class SimpleRpcServer extends AbstractSimpleRpcServer<OncRpcSvc,RpcCall,OncRpcSvcBuilder,XdrTransport, RpcReply>{
 
     public static void main(String[] args) throws Exception {
-
-        if( args.length > 1) {
-            System.err.println("Usage: SimpleRpcServer <port>");
-            System.exit(1);
-        }
-
-        int port = DEFAULT_PORT;
-        if( args.length == 1) {
-            port = Integer.parseInt(args[0]);
-        }
-
+        new SimpleRpcServer().process(args);
+    }
+    
+    @Override
+    protected void doPreStartAction() {
         new OncRpcEmbeddedPortmap();
-        //JMK
-        AbstractOncRpcSvc<?> svc =  (AbstractOncRpcSvc<?>) new AbstractOncRpcSvcBuilder<>()
-                .withTCP()
-                .withAutoPublish()
-                .withPort(port)
-                .withSameThreadIoStrategy()
-                .withJMX()
-                .withRpcService(new OncRpcProgram(PROG_NUMBER, PROG_VERS),
-			call -> call.reply(XdrVoid.XDR_VOID))
-                .build();
-
-        svc.start();
-        System.in.read();
-
-        svc.stop();
+        
     }
 
+    @Override
+    protected OncRpcSvcBuilderItf<OncRpcSvc, RpcCall, OncRpcSvcBuilder,XdrTransport, RpcReply> createOncRpcSvcBuilder(int port) {
+        return new OncRpcSvcBuilder()
+                .withTCP()
+                .withAutoPublish();
+    }
 }

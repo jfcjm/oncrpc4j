@@ -22,6 +22,7 @@ package org.dcache.xdr.model.root;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.CompletionHandler;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.dcache.xdr.OncRpcAcceptedException;
@@ -31,25 +32,32 @@ import org.dcache.xdr.RpcAccepsStatus;
 import org.dcache.xdr.RpcException;
 import org.dcache.xdr.RpcMessageType;
 import org.dcache.xdr.Xdr;
-import org.dcache.xdr.model.impl.AbstractGrizzlyXdrTransport;
 import org.dcache.xdr.model.itf.HeaderItf;
-import org.dcache.xdr.model.itf.ProtocolFactoryItf;
+import org.dcache.xdr.model.itf.ReplyQueueItf;
+import org.dcache.xdr.model.itf.RpcCallItf;
 import org.dcache.xdr.model.itf.RpcReplyItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
+import org.glassfish.grizzly.Connection;
 import org.glassfish.grizzly.filterchain.BaseFilter;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.filterchain.NextAction;
 
-public class AbstractRpcProtocolFilter<SVC_T extends RpcSvcItf<SVC_T>> extends BaseFilter {
+public abstract class  AbstractRpcProtocolFilter
+    <
+        SVC_T extends RpcSvcItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
+        CALL_T extends RpcCallItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
+        TRANSPORT_T extends XdrTransportItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
+        REPLY_T extends RpcReplyItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>
+        > extends BaseFilter {
 
     private final static Logger _log = LoggerFactory.getLogger(AbstractRpcProtocolFilter.class);
-    private final AbstractReplyQueue<SVC_T> _replyQueue;
-    private ProtocolFactoryItf<SVC_T> _protoFactory;
+    private final ReplyQueueItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T> _replyQueue;
+    //TODO private ProtocolFactoryItf<SVC_T> _protoFactory;
 
-    public AbstractRpcProtocolFilter(AbstractReplyQueue<SVC_T> replyQueue, ProtocolFactoryItf<SVC_T> protoFactory) {
+    public AbstractRpcProtocolFilter(ReplyQueueItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T> replyQueue /*, ProtocolFactoryItf<SVC_T> protoFactory*/) {
         _replyQueue = replyQueue;
-        _protoFactory = protoFactory;
+        //TODO _protoFactory = protoFactory;
     }
 
     @Override
@@ -62,17 +70,17 @@ public class AbstractRpcProtocolFilter<SVC_T extends RpcSvcItf<SVC_T>> extends B
         }
 
         xdr.beginDecoding();
-        final HeaderItf<SVC_T> header = new AbstractRpcMessage<SVC_T>(xdr);
+        final HeaderItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T> header = new AbstractRpcMessage<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>(xdr);
         /**
          * In case of UDP grizzly does not populates connection with correct destination address.
          * We have to get peer address from the request context, which will contain SocketAddress where from
          * request was coming.
          */
-        XdrTransportItf<SVC_T> transport = new AbstractGrizzlyXdrTransport<>(ctx.getConnection(), (InetSocketAddress)ctx.getAddress(), _replyQueue, _protoFactory);
-
+        //TODO  XdrTransportItf<SVC_T> transport = new AbstractGrizzlyXdrTransport<>(ctx.getConnection(), (InetSocketAddress)ctx.getAddress(), _replyQueue, _protoFactory);
+       TRANSPORT_T transport = createTransport(ctx.getConnection(), (InetSocketAddress)ctx.getAddress(), _replyQueue).getThis();
         switch (header.getMessageType()) {
             case RpcMessageType.CALL:
-                AbstractRpcCall<SVC_T> call = new AbstractRpcCall<SVC_T>(header, xdr, transport);
+                RpcCallItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T> call = createRpcCall(header, xdr, transport);
                 try {
                     call.accept();
                     ctx.setMessage(call);
@@ -88,8 +96,8 @@ public class AbstractRpcProtocolFilter<SVC_T extends RpcSvcItf<SVC_T>> extends B
                 return ctx.getInvokeAction();
             case RpcMessageType.REPLY:
                 try {
-                    RpcReplyItf<SVC_T> reply = new AbstractRpcReply<SVC_T>(header, xdr, transport);
-                    CompletionHandler<RpcReplyItf<SVC_T>, XdrTransportItf<SVC_T>> callback = _replyQueue.get(header.getXid());
+                      REPLY_T reply = createRpcReply(xdr, header, transport).getThis();
+                      CompletionHandler<REPLY_T, TRANSPORT_T> callback = _replyQueue.get(header.getXid());
                     if (callback != null) {
                         if (!reply.isAccepted()) {
                             callback.failed(new OncRpcRejectedException(reply.getRejectStatus()), transport);
@@ -108,4 +116,22 @@ public class AbstractRpcProtocolFilter<SVC_T extends RpcSvcItf<SVC_T>> extends B
                 return ctx.getStopAction();
         }
     }
+
+    protected abstract  AbstractRpcReply<SVC_T, CALL_T, TRANSPORT_T,REPLY_T> createRpcReply(Xdr xdr, final HeaderItf<SVC_T, CALL_T, TRANSPORT_T, REPLY_T> header,
+            XdrTransportItf<SVC_T, CALL_T, TRANSPORT_T, REPLY_T> transport) throws OncRpcException, IOException;
+    //return new AbstractRpcReply<>(header, xdr, transport);
+
+    
+
+
+    
+    protected abstract XdrTransportItf<SVC_T, CALL_T, TRANSPORT_T,REPLY_T> createTransport(Connection connection,
+            InetSocketAddress address, ReplyQueueItf<SVC_T, CALL_T, TRANSPORT_T,REPLY_T> _replyQueue2);
+    /*
+    {
+        return new AbstractGrizzlyXdrTransport<>(ctx.getConnection(), (InetSocketAddress)ctx.getAddress(), _replyQueue);
+    }
+    */
+    protected abstract RpcCallItf<SVC_T, CALL_T,TRANSPORT_T,REPLY_T> createRpcCall(HeaderItf<SVC_T, CALL_T,TRANSPORT_T,REPLY_T> header, Xdr xdr,
+            XdrTransportItf<SVC_T, CALL_T,TRANSPORT_T,REPLY_T> transport);
 }

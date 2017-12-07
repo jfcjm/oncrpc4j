@@ -5,7 +5,8 @@ import java.io.IOException;
 import org.dcache.xdr.BadXdrOncRpcException;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.RpcAuth;
-import org.dcache.xdr.RpcCredential;
+import org.dcache.xdr.RpcAuthTypeNone;
+import org.dcache.xdr.BaseRpcCredential;
 import org.dcache.xdr.RpcMessageType;
 import org.dcache.xdr.RpcMismatchReply;
 import org.dcache.xdr.RpcReplyStatus;
@@ -13,11 +14,21 @@ import org.dcache.xdr.Xdr;
 import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrDecodingStream;
 import org.dcache.xdr.XdrEncodingStream;
+import org.dcache.xdr.XdrVoid;
 import org.dcache.xdr.model.itf.HeaderItf;
+import org.dcache.xdr.model.itf.RpcCallItf;
+import org.dcache.xdr.model.itf.RpcReplyItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
+import org.dcache.xdr.model.itf.XdrTransportItf;
+public class AbstractRpcMessage
+    <
+        SVC_T extends RpcSvcItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
+        CALL_T extends RpcCallItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
+        TRANSPORT_T extends XdrTransportItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
+        REPLY_T extends RpcReplyItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>> implements  HeaderItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T> {
 
-public class AbstractRpcMessage<SVC_T extends RpcSvcItf<SVC_T>> implements  HeaderItf<SVC_T> {
-
+    private static final RpcAuth DEFAULT_AUTH = new RpcAuthTypeNone();
+            
     private static final int RPCVERS = 2;
     
     // field replacing rpcmessage
@@ -28,8 +39,8 @@ public class AbstractRpcMessage<SVC_T extends RpcSvcItf<SVC_T>> implements  Head
     private int _prog;
     private int _version;
     private int _proc;
-    private RpcAuth _cred;
-    private XdrAble _args;
+    private RpcAuth _cred = DEFAULT_AUTH;
+    private XdrAble _args = XdrVoid.XDR_VOID;
     
   //appel de protocolfilter when receiving a message
     public AbstractRpcMessage(Xdr xdr) throws OncRpcException, IOException {
@@ -53,8 +64,16 @@ public class AbstractRpcMessage<SVC_T extends RpcSvcItf<SVC_T>> implements  Head
         _cred = (null != auth ) ? auth :cred;
         _args = args;
     }
-
-	@Override
+    /**
+     * Only use in test
+     * @param xid
+     * @param callType
+     */
+	public AbstractRpcMessage(int xid, int mType) {
+	    _xid = xid;
+	    _messageType = mType;
+    }
+    @Override
 	public void update(int xid, int mType, int rpcvers, int procedure, RpcAuth auth,XdrAble args) {
 		_xid = xid;
 		_messageType = mType;
@@ -124,7 +143,7 @@ public class AbstractRpcMessage<SVC_T extends RpcSvcItf<SVC_T>> implements  Head
        _prog = xdr.xdrDecodeInt();
        _version = xdr.xdrDecodeInt();
        _proc = xdr.xdrDecodeInt();
-       _cred = RpcCredential.decode(xdr);
+       _cred = BaseRpcCredential.decode(xdr);
 
     }
     

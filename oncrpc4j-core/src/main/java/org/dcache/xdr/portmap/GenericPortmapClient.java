@@ -21,31 +21,34 @@ package org.dcache.xdr.portmap;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.dcache.xdr.IpProtocolType;
+import org.dcache.xdr.OncRpcClient;
 import org.dcache.xdr.OncRpcException;
+import org.dcache.xdr.OncRpcSvc;
+import org.dcache.xdr.OncRpcSvcBuilder;
 import org.dcache.xdr.RpcAuth;
 import org.dcache.xdr.RpcAuthTypeNone;
+import org.dcache.xdr.RpcCall;
 import org.dcache.xdr.RpcProgUnavailable;
-import org.dcache.xdr.model.itf.RpcSvcItf;
+import org.dcache.xdr.XdrTransport;
 import org.dcache.xdr.model.itf.XdrTransportItf;
-import org.dcache.xdr.model.root.AbstractOncRpcClient;
-import org.dcache.xdr.model.root.AbstractRpcCall;
 
-public class GenericPortmapClient<SVC_T extends RpcSvcItf<SVC_T>> implements OncPortmapClient<SVC_T> {
+public class GenericPortmapClient implements OncPortmapClient {
 
     private final static Logger _log = LoggerFactory.getLogger(GenericPortmapClient.class);
     private final RpcAuth _auth = new RpcAuthTypeNone();
-    private final OncPortmapClient<SVC_T> _portmapClient;
+    private final OncPortmapClient _portmapClient;
 
-    public GenericPortmapClient(XdrTransportItf<SVC_T> transport) throws RpcProgUnavailable {
+    public GenericPortmapClient(XdrTransport transport) throws RpcProgUnavailable {
 
-       OncPortmapClient<SVC_T> portmapClient = new RpcbindV4Client(new AbstractRpcCall<>(100000, 4, _auth, transport));
+       OncPortmapClient portmapClient = new RpcbindV4Client(new RpcCall(100000, 4, _auth, transport));
         if( !portmapClient.ping() ) {
-            portmapClient = new PortmapV2Client( new AbstractRpcCall<>(100000, 2, _auth, transport) );
+            portmapClient = new PortmapV2Client( new RpcCall(100000, 2, _auth, transport) );
             if(!portmapClient.ping()) {
                 // FIXME: return correct exception
                 throw new RpcProgUnavailable("portmap service not available");
@@ -79,10 +82,10 @@ public class GenericPortmapClient<SVC_T extends RpcSvcItf<SVC_T>> implements Onc
 
         int protocol = IpProtocolType.TCP;
 
-        AbstractOncRpcClient<?> rpcClient = new AbstractOncRpcClient<>(InetAddress.getByName(null), IpProtocolType.UDP, 111);
-        XdrTransportItf<?> transport = rpcClient.connect();
+        OncRpcClient rpcClient = new OncRpcClient(InetAddress.getByName(null), IpProtocolType.UDP, 111);
+        XdrTransport transport = rpcClient.connect();
 
-        OncPortmapClient<?> portmapClient = new GenericPortmapClient<>(transport);
+        OncPortmapClient portmapClient = new GenericPortmapClient(transport);
 
         try {
 

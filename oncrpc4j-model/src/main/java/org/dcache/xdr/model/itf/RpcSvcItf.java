@@ -6,8 +6,12 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.dcache.xdr.OncRpcProgram;
-
-public interface RpcSvcItf<SVC_T extends RpcSvcItf<SVC_T>>  {
+public interface RpcSvcItf
+    <
+        SVC_T extends RpcSvcItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
+        CALL_T extends RpcCallItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
+        TRANSPORT_T extends XdrTransportItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
+        REPLY_T extends RpcReplyItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>>  {
 
     /**
      * Register a new PRC service. Existing registration will be overwritten.
@@ -15,7 +19,7 @@ public interface RpcSvcItf<SVC_T extends RpcSvcItf<SVC_T>>  {
      * @param prog program number
      * @param handler RPC requests handler.
      */
-    void register(OncRpcProgram prog, RpcDispatchableItf<SVC_T> handler);
+    void register(OncRpcProgram prog, RpcDispatchableItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T> handler);
 
     /**
      * Unregister program.
@@ -29,7 +33,7 @@ public interface RpcSvcItf<SVC_T extends RpcSvcItf<SVC_T>>  {
      * @param services
      * @deprecated use {@link OncRpcSvcBuilder#withRpcService} instead.
      */
-    void setPrograms(Map<OncRpcProgram, RpcDispatchableItf<SVC_T>> services);
+    void setPrograms(Map<OncRpcProgram, RpcDispatchableItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>> services);
 
     void start() throws IOException;
 
@@ -37,9 +41,9 @@ public interface RpcSvcItf<SVC_T extends RpcSvcItf<SVC_T>>  {
 
     void stop(long gracePeriod, TimeUnit timeUnit) throws IOException;
 
-    XdrTransportItf<SVC_T> connect(InetSocketAddress socketAddress) throws IOException;
+    TRANSPORT_T connect(InetSocketAddress socketAddress) throws IOException;
 
-    XdrTransportItf<SVC_T> connect(InetSocketAddress socketAddress, long timeout, TimeUnit timeUnit) throws IOException;
+    TRANSPORT_T connect(InetSocketAddress socketAddress, long timeout, TimeUnit timeUnit) throws IOException;
 
     /**
      * Returns the address of the endpoint this service is bound to,

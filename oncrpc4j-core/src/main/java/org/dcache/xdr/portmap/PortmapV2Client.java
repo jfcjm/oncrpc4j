@@ -21,11 +21,11 @@ package org.dcache.xdr.portmap;
 
 import org.dcache.utils.net.InetSocketAddresses;
 import org.dcache.xdr.OncRpcException;
+import org.dcache.xdr.RpcCall;
 import org.dcache.xdr.XdrBoolean;
 import org.dcache.xdr.XdrInt;
 import org.dcache.xdr.XdrVoid;
 import org.dcache.xdr.netid;
-import org.dcache.xdr.model.root.AbstractRpcCall;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,9 +39,9 @@ import java.util.concurrent.TimeoutException;
 public class PortmapV2Client implements OncPortmapClient {
 
     private final static Logger _log = LoggerFactory.getLogger(PortmapV2Client.class);
-    private final AbstractRpcCall _call;
+    private final RpcCall _call;
 
-    public PortmapV2Client(AbstractRpcCall call) {
+    public PortmapV2Client(RpcCall call) {
         _call = call;
     }
 

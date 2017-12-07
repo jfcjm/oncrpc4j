@@ -51,11 +51,15 @@ public class RpcProtocolFilterTest {
         assertEquals(STOP, filter.handleRead(mockedContext).type());
     }
 
-    private Xdr createBadXdr() {
+    private Xdr createBadXdr() throws OncRpcException, IOException {
         Xdr xdr = new Xdr(32);
         xdr.beginEncoding();
+        /*
         RpcMessage rpcMessage = new RpcMessage(1, 2); // xdr, type 0 = call, 1 = reply, 2 = not allowed
         rpcMessage.xdrEncode(xdr);
+        */
+        xdr.xdrEncodeInt(1);;
+        xdr.xdrEncodeInt(2);;
         return xdr;
     }
 }

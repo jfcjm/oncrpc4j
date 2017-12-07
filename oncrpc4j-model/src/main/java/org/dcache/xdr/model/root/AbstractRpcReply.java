@@ -31,13 +31,21 @@ import org.dcache.xdr.RpcReplyStatus;
 import org.dcache.xdr.Xdr;
 import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.model.itf.HeaderItf;
+import org.dcache.xdr.model.itf.RpcCallItf;
 import org.dcache.xdr.model.itf.RpcReplyItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AbstractRpcReply<SVC_T extends RpcSvcItf<SVC_T>> implements RpcReplyItf<SVC_T>{
+public abstract class AbstractRpcReply
+    <
+    SVC_T extends RpcSvcItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
+    CALL_T extends RpcCallItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
+    TRANSPORT_T extends XdrTransportItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
+    REPLY_T extends RpcReplyItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>> 
+    
+    implements RpcReplyItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>{
 
     private final static Logger _log = LoggerFactory.getLogger(AbstractRpcReply.class);
     /**
@@ -55,15 +63,15 @@ public class AbstractRpcReply<SVC_T extends RpcSvcItf<SVC_T>> implements RpcRepl
     private int _authStatus;
 
     private RpcAuthVerifier _verf;
-    private final XdrTransportItf<SVC_T> _transport;
+    private final XdrTransportItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T> _transport;
 
 
 
-    public AbstractRpcReply(HeaderItf<SVC_T> header, Xdr xdr, XdrTransportItf<SVC_T> transport) throws OncRpcException, IOException {
+    public AbstractRpcReply(HeaderItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T> header, Xdr xdr, XdrTransportItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T> transport) throws OncRpcException, IOException {
         this(header.getXid(),xdr,transport);
     }
     
-    public AbstractRpcReply(int xid, Xdr xdr, XdrTransportItf<SVC_T> transport) throws OncRpcException, IOException {
+    public AbstractRpcReply(int xid, Xdr xdr, XdrTransportItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T> transport) throws OncRpcException, IOException {
         _xid = xid;
         _xdr = xdr;
         _transport = transport;
@@ -152,4 +160,7 @@ public class AbstractRpcReply<SVC_T extends RpcSvcItf<SVC_T>> implements RpcRepl
 
         return sb.toString();
     }
+
+    @Override
+    public  abstract REPLY_T getThis();
 }

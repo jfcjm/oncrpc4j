@@ -22,11 +22,12 @@ package org.dcache.xdr;
 import java.net.InetAddress;
 import java.util.concurrent.Future;
 
-import org.dcache.xdr.model.itf.XdrTransportItf;
-import org.dcache.xdr.model.root.AbstractOncRpcClient;
-import org.dcache.xdr.model.root.AbstractRpcCall;
+import org.dcache.xdr.model.itf.OncRpcClientItf;
+import org.dcache.xdr.model.itf.RpcCallItf;
+import org.dcache.xdr.model.root.AbstractSimpleRpcClient;
 
-public class SimpleRpcClient {
+public class SimpleRpcClient extends AbstractSimpleRpcClient<OncRpcSvc,RpcCall,XdrTransport, RpcReply>
+{
 
     public static void main(String[] args) throws Exception {
 
@@ -34,23 +35,23 @@ public class SimpleRpcClient {
             System.err.println("usage: SimpleRpcClient host port");
             System.exit(1);
         }
+        new SimpleRpcClient().process(args);
 
-        InetAddress address = InetAddress.getByName(args[0]);
-        int port = Integer.parseInt(args[1]);
-    //JMK
-	try (AbstractOncRpcClient<?> rpcClient = new AbstractOncRpcClient<>(address, IpProtocolType.TCP, port)) {
-	    XdrTransportItf<?> transport = rpcClient.connect();
-	    RpcAuth auth = new RpcAuthTypeNone();
-
-	    AbstractRpcCall<?> call = new AbstractRpcCall<>(100017, 1, auth, transport);
-
-	    /*
-	    * call PROC_NULL (ping)
-	    */
-	    call.call(0, XdrVoid.XDR_VOID, XdrVoid.XDR_VOID);
-
-	    Future<XdrVoid> r = call.call(0, XdrVoid.XDR_VOID, XdrVoid.class);
-	    r.get();
 	}
+
+    @Override
+    protected RpcCallItf<OncRpcSvc, RpcCall,XdrTransport, RpcReply> createRpcCall(int i, int j, RpcAuth auth,
+            XdrTransport transport) {
+        return new RpcCall(i,j,auth,transport);
+    }
+
+    @Override
+    protected OncRpcClientItf<OncRpcSvc, RpcCall,XdrTransport, RpcReply> createRpcClient(InetAddress address, int tcp, int port) {
+        return new OncRpcClient(address,tcp,port);
+    }
+
+    @Override
+    protected AbstractSimpleRpcClient<OncRpcSvc, RpcCall,XdrTransport, RpcReply> createSimpleClient() {
+        return null;
     }
 }

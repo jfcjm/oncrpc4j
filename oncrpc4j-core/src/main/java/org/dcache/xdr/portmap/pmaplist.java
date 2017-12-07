@@ -20,6 +20,8 @@
 package org.dcache.xdr.portmap;
 
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 import org.dcache.xdr.OncRpcException;
 import org.dcache.xdr.XdrAble;
 import org.dcache.xdr.XdrDecodingStream;

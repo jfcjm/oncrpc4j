@@ -25,30 +25,29 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 import org.dcache.xdr.gss.GssSessionManager;
-import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
 
 /**
- * A {@link FactoryBean} to use {@link AbstractOncRpcSvcBuilder}
+ * A {@link FactoryBean} to use {@link OncRpcSvcBuilder}
  * within Spring framework.
  *
  * @since 2.1
  */
-public class OncRpcSvcFactoryBean implements FactoryBean<AbstractOncRpcSvcBuilder> {
+public class OncRpcSvcFactoryBean implements FactoryBean<OncRpcSvcBuilder> {
 
-    private final AbstractOncRpcSvcBuilder builder;
+    private final OncRpcSvcBuilder builder;
 
     public OncRpcSvcFactoryBean() {
-        builder = new AbstractOncRpcSvcBuilder();
+        builder = new OncRpcSvcBuilder();
     }
 
     @Override
-    public AbstractOncRpcSvcBuilder getObject() throws Exception {
+    public OncRpcSvcBuilder getObject() throws Exception {
         return builder;
     }
 
     @Override
-    public Class<? extends AbstractOncRpcSvcBuilder> getObjectType() {
-        return AbstractOncRpcSvcBuilder.class;
+    public Class<? extends OncRpcSvcBuilder> getObjectType() {
+        return OncRpcSvcBuilder.class;
     }
 
     @Override

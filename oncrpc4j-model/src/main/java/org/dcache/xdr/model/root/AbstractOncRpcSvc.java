@@ -24,9 +24,11 @@ import static org.dcache.xdr.GrizzlyUtils.rpcMessageReceiverFor;
 import org.dcache.xdr.IoStrategy;
 import org.dcache.xdr.IpProtocolType;
 import org.dcache.xdr.OncRpcProgram;
-import org.dcache.xdr.model.impl.AbstractGrizzlyXdrTransport;
-import org.dcache.xdr.model.itf.ProtocolFactoryItf;
+import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
+import org.dcache.xdr.model.itf.ReplyQueueItf;
+import org.dcache.xdr.model.itf.RpcCallItf;
 import org.dcache.xdr.model.itf.RpcDispatchableItf;
+import org.dcache.xdr.model.itf.RpcReplyItf;
 import org.dcache.xdr.model.itf.RpcSessionManagerItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
@@ -37,6 +39,7 @@ import org.glassfish.grizzly.GrizzlyFuture;
 import org.glassfish.grizzly.PortRange;
 import org.glassfish.grizzly.SocketBinder;
 import org.glassfish.grizzly.Transport;
+import org.glassfish.grizzly.filterchain.Filter;
 import org.glassfish.grizzly.filterchain.FilterChain;
 import org.glassfish.grizzly.filterchain.FilterChainBuilder;
 import org.glassfish.grizzly.filterchain.TransportFilter;
@@ -71,16 +74,27 @@ import java.net.SocketAddress;
 import java.util.stream.Collectors;
 import static org.dcache.xdr.GrizzlyUtils.getSelectorPoolCfg;
 import static org.dcache.xdr.GrizzlyUtils.transportFor;
-
-public class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implements  RpcSvcItf<SVC_T>{
+/**
+ * Base abstract class for Rpc Services. Subclasses must define the following methods :
+ * <UL>
+ * <LI>{@link #getThis()} : technical method for generic purposes</LI>
+ * <LI>{@link #processBuilder()} : how to process assoociated builder</LI>
+ * <LI>{@link #doPreStartAction()} : Actions to execute before starting the service</LI>
+ * <LI>{@link #preStopActions()} Action di do before stopping the service</LI>
+ * </UL>
+ * @author jmk
+ *
+ * @param <SVC_T>
+ */
+public abstract class AbstractOncRpcSvc<
+                SVC_T extends RpcSvcItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
+                CALL_T extends RpcCallItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
+                BUILDER_T extends  OncRpcSvcBuilderItf<SVC_T,CALL_T,BUILDER_T,TRANSPORT_T,REPLY_T>,
+                TRANSPORT_T extends XdrTransportItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
+                REPLY_T extends RpcReplyItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>
+          > implements  RpcSvcItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>{
     
     private final static Logger _log = LoggerFactory.getLogger(AbstractOncRpcSvc.class);
-    
-    
-    
-    
-    
-    private ProtocolFactoryItf<SVC_T> _protocolFactory = AbstractRpcProtocolFactory();
     
     private final int _backlog;
     private final PortRange _portRange;
@@ -92,18 +106,18 @@ public class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implements  RpcSv
 
     private final ExecutorService _requestExecutor;
 
-    private final AbstractReplyQueue<SVC_T> _replyQueue = new AbstractReplyQueue<>();
+    private final ReplyQueueItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T> _replyQueue = createReplyQueue();
 
     private final boolean _withSubjectPropagation;
     /**
      * Handle RPCSEC_GSS
      */
-    private RpcSessionManagerItf<SVC_T> _rpcSessionManager;
+    private RpcSessionManagerItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T> _rpcSessionManager;
 
     /**
      * mapping of registered programs.
      */
-    private final Map<OncRpcProgram, RpcDispatchableItf<SVC_T>> _programs =
+    private final Map<OncRpcProgram, RpcDispatchableItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>> _programs =
             new ConcurrentHashMap<>();
 
     /**
@@ -115,7 +129,7 @@ public class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implements  RpcSv
      * Create new RPC service with defined configuration.
      * @param builder to build this service
      */
-    protected AbstractOncRpcSvc(AbstractOncRpcSvcBuilder<SVC_T> builder) {
+    protected   AbstractOncRpcSvc(BUILDER_T builder) {
         final int protocol = builder.getProtocol();
 
         if ((protocol & (IpProtocolType.TCP | IpProtocolType.UDP)) == 0) {
@@ -149,7 +163,7 @@ public class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implements  RpcSv
                     .build();
             _transports.add(udpTransport);
         }
-        _protocolFactory = builder.getFactory();
+        //TODO _protocolFactory = builder.getFactory();
         _isClient = builder.isClient();
         _portRange = builder.getMinPort() > 0 ?
                 new PortRange(builder.getMinPort(), builder.getMaxPort()) : null;
@@ -173,12 +187,7 @@ public class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implements  RpcSv
         _programs.putAll(builder.getRpcServices());
         _withSubjectPropagation = builder.getSubjectPropagation();
 	_svcName = builder.getServiceName();
-	    _protocolFactory.processBuilder(builder);
-    }
-
-    private ProtocolFactoryItf<SVC_T> AbstractRpcProtocolFactory() {
-        // TODO Auto-generated method stub
-        return null;
+	processBuilder(builder);
     }
 
     /**
@@ -187,7 +196,7 @@ public class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implements  RpcSv
      * @param prog program number
      * @param handler RPC requests handler.
      */
-    public void register(OncRpcProgram prog, RpcDispatchableItf<SVC_T> handler) {
+    public void register(OncRpcProgram prog, RpcDispatchableItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T> handler) {
         _log.info("Registering new program {} : {}", prog, handler);
         _programs.put(prog, handler);
     }
@@ -208,21 +217,22 @@ public class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implements  RpcSv
      * @deprecated use {@link AbstractOncRpcSvcBuilder#withRpcService} instead.
      */
     @Deprecated
-    public void setPrograms(Map<OncRpcProgram, RpcDispatchableItf<SVC_T>> services) {
+    public void setPrograms(Map<OncRpcProgram, RpcDispatchableItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>> services) {
         _programs.putAll(services);
     }
 
 
 
     public void start() throws IOException {
-        _protocolFactory.preStopActions(this);
+        preStopActions();
         
         for (Transport t : _transports) {
 
             FilterChainBuilder filterChain = FilterChainBuilder.stateless();
             filterChain.add(new TransportFilter());
             filterChain.add(rpcMessageReceiverFor(t));
-            filterChain.add(new AbstractRpcProtocolFilter<>(_replyQueue,_protocolFactory));
+          //TODO filterChain.add(new AbstractRpcProtocolFilter<>(_replyQueue,_protocolFactory));
+            filterChain.add(createRpcProtocolFilter(_replyQueue));
             // use GSS if configures
             filterChain.add(_rpcSessionManager);
             filterChain.add(new AbstractRpcDispatcher<>(_requestExecutor, _programs, _withSubjectPropagation));
@@ -245,15 +255,15 @@ public class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implements  RpcSv
                         ((SocketBinder) t).bind(_bindAddress, _portRange, _backlog);
 
                 _boundConnections.add(connection);
+                doPreStartAction(connection);
             }
-            _protocolFactory.doPreStartAction(this);
-            t.start();
+           t.start();
 
         }
     }
 
     public void stop() throws IOException {
-        _protocolFactory.preStopActions(this);
+        preStopActions();
 
         for (Transport t : _transports) {
             t.shutdownNow();
@@ -264,7 +274,7 @@ public class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implements  RpcSv
     }
 
     public void stop(long gracePeriod, TimeUnit timeUnit) throws IOException {
-        _protocolFactory.preStopActions(this);
+        preStopActions();
         
         List<GrizzlyFuture<Transport>> transportsShuttingDown = new ArrayList<>();
         for (Transport t : _transports) {
@@ -285,11 +295,11 @@ public class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implements  RpcSv
         _requestExecutor.shutdown();
     }
 
-    public XdrTransportItf<SVC_T> connect(InetSocketAddress socketAddress) throws IOException {
+    public TRANSPORT_T connect(InetSocketAddress socketAddress) throws IOException {
         return connect(socketAddress, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
 
-    public XdrTransportItf<SVC_T> connect(InetSocketAddress socketAddress, long timeout, TimeUnit timeUnit) throws IOException {
+    public TRANSPORT_T connect(InetSocketAddress socketAddress, long timeout, TimeUnit timeUnit) throws IOException {
 
         // in client mode only one transport is defined
         NIOTransport transport = _transports.get(0);
@@ -305,7 +315,7 @@ public class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implements  RpcSv
         try {
             //noinspection unchecked
             Connection<InetSocketAddress> connection = connectFuture.get(timeout, timeUnit);
-            return new AbstractGrizzlyXdrTransport<SVC_T>(connection, _replyQueue,_protocolFactory);
+            return createTransport(connection,_replyQueue);
         } catch (ExecutionException e) {
             Throwable t = getRootCause(e);
             propagateIfPossible(t, IOException.class);
@@ -314,7 +324,7 @@ public class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implements  RpcSv
             throw new IOException(e.toString(), e);
         }
     }
-
+    
     /**
      * Returns the address of the endpoint this service is bound to,
      * or <code>null</code> if it is not bound yet.
@@ -346,4 +356,64 @@ public class AbstractOncRpcSvc<SVC_T extends RpcSvcItf<SVC_T>> implements  RpcSv
 		.map(Object::toString)
 		.collect(Collectors.joining(",", getName() +"-[", "]"));
     }
+    
+    protected Map<OncRpcProgram, RpcDispatchableItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>> getPrograms() {
+        return _programs;
+    }
+    
+    protected boolean isClient() {
+        return _isClient;
+    }
+    
+    protected abstract SVC_T getThis() ;
+    /**
+     * Method that defines how a subclass of {@link #AbstractOncRpcSvc} will process its associated builder
+     * @param builder
+     */
+    protected abstract  void processBuilder(BUILDER_T builder);
+    
+
+    /**
+     * Actions to réalize before starting the service.
+     * <em>Example</em> In the ONC-RPC case this method could try to register
+     * the service to portmap/rpcbind.
+     * @param connection 
+     * @param abstractOncRpcSvc
+     * @throws IOException 
+     */
+    protected abstract void doPreStartAction(Connection<InetSocketAddress> connection) throws IOException;
+    
+    /**
+     * Actions to realize before stopping the rpc service;  This action
+     * is also called at the beginning of the {@link #start()}) method to clean
+     * states related to the service.
+     * <em>Example</em> In the ONC-RPC case this method could try to unregister
+     * The service from portmap/rpcbind.
+     * @param abstractOncRpcSvc
+     * @throws IOException 
+     */
+    protected abstract void preStopActions() throws IOException;
+    
+    /**
+     * create an rpcprotocolfilter able to handle message for the given Rpc Implementation
+     *
+     * @param _replyQueue
+     * @return
+     */
+    protected abstract Filter createRpcProtocolFilter(ReplyQueueItf<SVC_T, CALL_T,TRANSPORT_T,REPLY_T> _replyQueue);
+    
+
+    /**
+     * Create a replyqueue able to process return message for the given rpc implemntation
+     * @return
+     */
+    protected abstract ReplyQueueItf<SVC_T, CALL_T,TRANSPORT_T,REPLY_T> createReplyQueue();
+    
+
+
+    protected abstract TRANSPORT_T createTransport(
+            Connection<InetSocketAddress> connection, ReplyQueueItf<SVC_T, CALL_T, TRANSPORT_T,REPLY_T> _replyQueue2) ;
+    //{
+      //  return new AbstractGrizzlyXdrTransport<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>(connection, _replyQueue /*,_protocolFactory*/);
+    //}
 }

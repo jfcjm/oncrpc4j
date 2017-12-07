@@ -26,53 +26,108 @@ import java.util.concurrent.TimeUnit;
 
 import org.dcache.xdr.IoStrategy;
 import org.dcache.xdr.model.itf.OncRpcClientItf;
+import org.dcache.xdr.model.itf.OncRpcSvcBuilderItf;
+import org.dcache.xdr.model.itf.RpcCallItf;
+import org.dcache.xdr.model.itf.RpcReplyItf;
 import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
+import org.dcache.xdr.model.root.AbstractOncRpcClient.OtherParams;
 
-public class AbstractOncRpcClient<SVC_T extends RpcSvcItf<SVC_T>> implements AutoCloseable, OncRpcClientItf<SVC_T> {
+public abstract class AbstractOncRpcClient
+    <
+        SVC_T extends RpcSvcItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>, 
+        CALL_T extends RpcCallItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
+        BUILDER_T extends  OncRpcSvcBuilderItf<SVC_T,CALL_T,BUILDER_T,TRANSPORT_T,REPLY_T>,
+        TRANSPORT_T extends XdrTransportItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>,
+        REPLY_T extends RpcReplyItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T>
+    > 
+        implements AutoCloseable, OncRpcClientItf<SVC_T,CALL_T,TRANSPORT_T,REPLY_T> {
 
-    private static final String DEFAULT_SERVICE_NAME = null;
+    protected static final String DEFAULT_SERVICE_NAME = null;
 
     private final InetSocketAddress _socketAddress;
-    private final AbstractOncRpcSvc<SVC_T> _rpcsvc;
-
-    public AbstractOncRpcClient(InetAddress address, int protocol, int port) {
-        this(new InetSocketAddress(address, port), protocol, 0, IoStrategy.SAME_THREAD, DEFAULT_SERVICE_NAME);
+    private final SVC_T _rpcsvc;
+    /**
+     * On a enleve le paramètre int protocol, de l'appel pour le moment
+     * @param address
+     * @param port
+     */
+    public AbstractOncRpcClient(InetAddress address,  int port) {
+        this(new InetSocketAddress(address, port), 0, IoStrategy.SAME_THREAD, DEFAULT_SERVICE_NAME);
     }
-
-    public AbstractOncRpcClient(InetAddress address, int protocol, int port, int localPort) {
-        this(new InetSocketAddress(address, port), protocol, localPort, IoStrategy.SAME_THREAD, DEFAULT_SERVICE_NAME);
+    /**
+     * On a enleve le paramètre int protocol, de l'appel pour le moment
+     * @param address
+     * @param port
+     * @param localPort
+     */
+    public AbstractOncRpcClient(InetAddress address,  int port, int localPort) {
+        this(new InetSocketAddress(address, port), localPort, IoStrategy.SAME_THREAD, DEFAULT_SERVICE_NAME);
     }
-
-    public AbstractOncRpcClient(InetAddress address, int protocol, int port, int localPort, IoStrategy ioStrategy) {
-        this(new InetSocketAddress(address, port), protocol, localPort, ioStrategy, DEFAULT_SERVICE_NAME);
+    /**
+     * On a enleve le paramètre int protocol, de l'appel pour le moment
+     * @param address
+     * @param port
+     * @param localPort
+     * @param ioStrategy
+     */
+    public AbstractOncRpcClient(InetAddress address,  int port, int localPort, IoStrategy ioStrategy) {
+        this(new InetSocketAddress(address, port),  localPort, ioStrategy, DEFAULT_SERVICE_NAME);
     }
-
-    public AbstractOncRpcClient(InetAddress address, int protocol, int port, int localPort, IoStrategy ioStrategy, String serviceName) {
-        this(new InetSocketAddress(address, port), protocol, localPort, ioStrategy, serviceName);
+    /**
+     * On a enleve le paramètre int protocol, de l'appel pour le moment
+     * @param address
+     * @param port
+     * @param localPort
+     * @param ioStrategy
+     * @param serviceName
+     */
+    public AbstractOncRpcClient(InetAddress address,  int port, int localPort, IoStrategy ioStrategy, String serviceName) {
+        this(new InetSocketAddress(address, port), localPort, ioStrategy, serviceName);
     }
-
+    /**
+     * On a enleve le paramètre int protocol, de l'appel pour le moment
+     * @param socketAddress
+     * @param protocol
+     */
     public AbstractOncRpcClient(InetSocketAddress socketAddress, int protocol) {
-        this(socketAddress, protocol, 0, IoStrategy.SAME_THREAD, DEFAULT_SERVICE_NAME);
+        this(socketAddress,  0, IoStrategy.SAME_THREAD, DEFAULT_SERVICE_NAME);
     }
     //JMK : type cast
-    public AbstractOncRpcClient(InetSocketAddress socketAddress, int protocol, int localPort, IoStrategy ioStrategy, String serviceName) {
+    
+    public AbstractOncRpcClient(InetSocketAddress socketAddress,  int localPort, IoStrategy ioStrategy, String serviceName) {
+        this(socketAddress,localPort,ioStrategy,serviceName,null);
+    }
+    
+    
+    /**
+     * On a enleve le paramètre int protocol, de l'appel pour le moment
+     * @param socketAddress
+     * @param localPort
+     * @param ioStrategy
+     * @param serviceName
+     */
+    public AbstractOncRpcClient(InetSocketAddress socketAddress,  int localPort, IoStrategy ioStrategy, String serviceName,OtherParams params) {
         _socketAddress = socketAddress;
-        _rpcsvc = (AbstractOncRpcSvc<SVC_T>) new AbstractOncRpcSvcBuilder<SVC_T>()
+        BUILDER_T builder ;
+        if (null == params) {
+            builder = getRpcSvcBuilder();
+        } else {
+            builder = getRpcSvcBuilder(params);
+        }
+        _rpcsvc = builder
                 .withClientMode()
                 .withPort(localPort)
-                .withIpProtocolType(protocol)
                 .withIoStrategy(ioStrategy)
                 .withServiceName(serviceName)
-                .build();
+                .build(); 
     }
-
-    public XdrTransportItf<SVC_T> connect() throws IOException {
+    public TRANSPORT_T connect() throws IOException {
         return connect(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
 
-    public XdrTransportItf<SVC_T> connect(long timeout, TimeUnit timeUnit) throws IOException {
-        XdrTransportItf<SVC_T> t;
+    public TRANSPORT_T connect(long timeout, TimeUnit timeUnit) throws IOException {
+        TRANSPORT_T t;
         try {
         _rpcsvc.start();
             t =_rpcsvc.connect(_socketAddress, timeout, timeUnit);
@@ -86,5 +141,12 @@ public class AbstractOncRpcClient<SVC_T extends RpcSvcItf<SVC_T>> implements Aut
     @Override
     public void close() throws IOException {
         _rpcsvc.stop();
+    }
+    abstract protected   BUILDER_T getRpcSvcBuilder();
+
+
+    abstract protected  BUILDER_T getRpcSvcBuilder(OtherParams params);
+    public interface OtherParams {
+
     }
 }

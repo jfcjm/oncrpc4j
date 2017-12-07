@@ -3,6 +3,7 @@ package org.dcache.xdr;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.channels.CompletionHandler;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -119,7 +120,7 @@ public class ClientServerTest {
             // ignore disconnect error
         }
 
-        clntCall.call(ECHO, s, (CompletionHandler) null);
+        clntCall.call(ECHO, s,  (CompletionHandler)null);
     }
 
     @Test(expected = EOFException.class, timeout = 5000)

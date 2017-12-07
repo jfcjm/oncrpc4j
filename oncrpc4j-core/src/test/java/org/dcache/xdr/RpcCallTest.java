@@ -20,15 +20,21 @@
 package org.dcache.xdr;
 
 import org.junit.Test;
+import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
 
 public class RpcCallTest {
 
     private Xdr _xdr = new XdrBuffer(1024);
-    private RpcCall _call = new RpcCall(0, _xdr, null);
-
+    XdrTransport t = mock(XdrTransport.class);
+    
+    
     @Test(expected=RpcMismatchReply.class)
     public void testBadRpcVerion() throws Exception {
+
+         RpcMessage header = new RpcMessage(_xdr);
+        RpcCall _call = new RpcCall(header, _xdr, t);
+        
         _xdr.beginEncoding();
 
         _xdr.xdrEncodeInt(3); // rpc version
@@ -41,6 +47,9 @@ public class RpcCallTest {
 
     @Test(expected=RpcAuthException.class)
     public void testBadAuthType() throws Exception {
+
+        RpcMessage header = new RpcMessage(_xdr);
+       RpcCall _call = new RpcCall(header, _xdr, t);
         _xdr.beginEncoding();
 
         _xdr.xdrEncodeInt(2); // rpc version
