@@ -11,6 +11,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.dcache.utils.net.InetSocketAddresses;
 import org.dcache.xdr.model.itf.ReplyQueueItf;
+import org.dcache.xdr.model.itf.RpcSvcItf;
 import org.dcache.xdr.model.itf.XdrTransportItf;
 import org.dcache.xdr.model.root.AbstractOncRpcSvc;
 import org.dcache.xdr.portmap.GenericPortmapClient;
@@ -29,11 +30,11 @@ import org.slf4j.LoggerFactory;
  *
  * @param <SVC_T>
  */
-public class GenOncRpcSvc extends AbstractOncRpcSvc<IOncRpcSvc,IOncRpcCall,IOncRpcSvcBuilder> 
+public class GenOncRpcSvc extends AbstractOncRpcSvc<GenOncRpcSvc,GenOncRpcCall,IOncRpcSvcBuilder,XdrTransport,GenRpcReply> 
 
-  implements IOncRpcSvc{
-    
-    protected GenOncRpcSvc(IOncRpcSvcBuilder builder) {
+  implements RpcSvcItf<GenOncRpcSvc,GenOncRpcCall,XdrTransport,GenRpcReply>{
+
+    protected GenOncRpcSvc(GenOncRpcSvcBuilder builder) {
         super(builder);
     }
 
@@ -41,7 +42,7 @@ public class GenOncRpcSvc extends AbstractOncRpcSvc<IOncRpcSvc,IOncRpcCall,IOncR
     private boolean _publish;
 
     @Override
-    public IOncRpcSvc getThis() {
+    public GenOncRpcSvc getThis() {
         return this;
     }
     
