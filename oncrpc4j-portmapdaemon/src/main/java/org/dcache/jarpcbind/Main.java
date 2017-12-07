@@ -19,20 +19,16 @@
  */
 package org.dcache.jarpcbind;
 
-import java.io.IOException;
-
 import org.dcache.xdr.OncRpcProgram;
+import org.dcache.xdr.OncRpcSvc;
+import org.dcache.xdr.OncRpcSvcBuilder;
 import org.dcache.xdr.RpcDispatchable;
-import org.dcache.xdr.model.itf.RpcDispatchableItf;
-import org.dcache.xdr.model.itf.RpcSvcItf;
-import org.dcache.xdr.model.root.AbstractOncRpcSvc;
-import org.dcache.xdr.model.root.AbstractOncRpcSvcBuilder;
 import org.dcache.xdr.portmap.OncRpcPortmap;
 import org.dcache.xdr.portmap.OncRpcbindServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Main <SVC_T extends RpcSvcItf<SVC_T>>{
+public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
     private static final Object LOCK = new Object();
     private static volatile boolean on = true;
@@ -58,10 +54,15 @@ public class Main <SVC_T extends RpcSvcItf<SVC_T>>{
                 logger.info("exiting");
             }
         });
-        
-        //JMK : we need to link the wildcard in order to re be able
-        // to register :-> creation of a private method
-         RpcSvcItf<?> server = new Main<>().createServer();
+        RpcDispatchable rpcbind = new OncRpcbindServer();
+        OncRpcSvc server  = new OncRpcSvcBuilder()
+                .withPort(OncRpcPortmap.PORTMAP_PORT)
+                .withTCP()
+                .withUDP()
+                .withSameThreadIoStrategy()
+                .withoutAutoPublish()
+                .build();
+        server.register(new OncRpcProgram(OncRpcPortmap.PORTMAP_PROGRAMM, OncRpcPortmap.PORTMAP_V2), rpcbind);
         server.start();
         logger.info("up and running");
         synchronized (LOCK) {
@@ -76,19 +77,5 @@ public class Main <SVC_T extends RpcSvcItf<SVC_T>>{
             }
         }
         logger.info("shutting down");
-    }
-
-    private  RpcSvcItf<?> createServer() throws IOException {
-        RpcDispatchableItf<SVC_T> rpcbind = new OncRpcbindServer<>();
-        RpcSvcItf<SVC_T> server  =  new AbstractOncRpcSvcBuilder<SVC_T>()
-                .withPort(OncRpcPortmap.PORTMAP_PORT)
-                .withTCP()
-                .withUDP()
-                .withSameThreadIoStrategy()
-                .withoutAutoPublish()
-                .build();
-        
-        server.register(new OncRpcProgram(OncRpcPortmap.PORTMAP_PROGRAMM, OncRpcPortmap.PORTMAP_V2), rpcbind);
-        return server;
     }
 }
